@@ -11,8 +11,8 @@ from pydub.playback import play
 
 from wubwub.audio import add_effects
 from wubwub.errors import WubWubError
-from wubwub.resources import MINUTE
-from wubwub.tracks import TrackManager
+from wubwub.resources import MINUTE, unique_name
+from wubwub.tracks import TrackManager, Sampler, Arpeggiator
 
 class Sequencer:
     def __init__(self, bpm, beats):
@@ -38,16 +38,21 @@ class Sequencer:
     def tracknames(self):
         return self.__trackmanager.get_tracknames()
 
-    def new_track(self, sample, name=None, overlap=True, basepitch='C4'):
+    def new_sampler(self, sample, name=None, overlap=True, basepitch='C4'):
         if name is None:
-            names = self.tracknames()
-            base = "Track"
-            c = 1
-            while name in names or name is None:
-                name = base + str(c)
-                c += 1
-        return self.__trackmanager.new_track(name=name, sample=sample,
-                                             overlap=overlap, basepitch=basepitch)
+            name = unique_name('Track', self.tracknames())
+        new = Sampler(name=name, sample=sample, overlap=overlap,
+                      basepitch=basepitch, manager=self.__trackmanager)
+        return new
+
+    def new_arpeggiator(self, sample, name=None, freq=0.5, method='up',
+                        basepitch='C4'):
+        if name is None:
+            name = unique_name('Track', self.tracknames())
+        new = Arpeggiator(name=name, sample=sample, freq=freq,
+                          method=method, basepitch=basepitch,
+                          manager=self.__trackmanager)
+        return new
 
     def delete_track(self, track):
         self.__trackmanager.delete_track(track)

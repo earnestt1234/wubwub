@@ -14,3 +14,11 @@ MINUTE = 60 * SECOND
 def random_choice_generator(x):
     while True:
         yield random.choice(x)
+
+def unique_name(base, others):
+    c = 1
+    name = base + str(c)
+    while name in others:
+        name = base + str(c)
+        c += 1
+    return name
