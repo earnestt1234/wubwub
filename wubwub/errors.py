@@ -8,3 +8,6 @@ Created on Tue Feb  9 10:13:43 2021
 
 class WubWubError(Exception):
     """Class for errors in WubWub."""
+
+class WubWubWarning(Warning):
+    """Class for warnings in WubWub."""

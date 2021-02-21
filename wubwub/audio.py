@@ -14,6 +14,8 @@ from wubwub.pitch import relative_pitch_to_int, shift_pitch
 
 def add_note_to_audio(note, audio, sample, position, duration, basepitch):
     pitch = note.pitch
+    if pitch is None:
+        return audio
     if isinstance(pitch, str):
         pitch = relative_pitch_to_int(basepitch, pitch)
     sound = sample if pitch == 0 else shift_pitch(sample, pitch)

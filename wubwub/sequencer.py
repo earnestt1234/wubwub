@@ -15,10 +15,13 @@ from wubwub.resources import MINUTE, unique_name
 from wubwub.tracks import TrackManager, Sampler, Arpeggiator
 
 class Sequencer:
+
+    handle_new_track_notes = 'clean'
+
     def __init__(self, bpm, beats):
         self.bpm = bpm
         self.beats = beats
-        self.__trackmanager = TrackManager(self)
+        self._trackmanager = TrackManager(self)
 
         self.effects = None
 
@@ -30,32 +33,32 @@ class Sequencer:
         if not isinstance(name, str):
             e = f'Can only index Sequencer with str, not {type(name)}'
             raise WubWubError(e)
-        return self.__trackmanager.get_track(name)
+        return self._trackmanager.get_track(name)
 
     def tracks(self):
-        return tuple(self.__trackmanager.tracks)
+        return tuple(self._trackmanager.tracks)
 
     def tracknames(self):
-        return self.__trackmanager.get_tracknames()
+        return self._trackmanager.get_tracknames()
 
-    def new_sampler(self, sample, name=None, overlap=True, basepitch='C4'):
+    def add_sampler(self, sample, name=None, overlap=True, basepitch='C4'):
         if name is None:
             name = unique_name('Track', self.tracknames())
         new = Sampler(name=name, sample=sample, overlap=overlap,
-                      basepitch=basepitch, manager=self.__trackmanager)
+                      basepitch=basepitch, sequencer=self)
         return new
 
-    def new_arpeggiator(self, sample, name=None, freq=0.5, method='up',
+    def add_arpeggiator(self, sample, name=None, freq=0.5, method='up',
                         basepitch='C4'):
         if name is None:
             name = unique_name('Track', self.tracknames())
         new = Arpeggiator(name=name, sample=sample, freq=freq,
                           method=method, basepitch=basepitch,
-                          manager=self.__trackmanager)
+                          sequencer=self)
         return new
 
     def delete_track(self, track):
-        self.__trackmanager.delete_track(track)
+        self._trackmanager.delete_track(track)
 
     def build(self, overhang=0, overhang_type='beats'):
         b = (1/self.bpm) * MINUTE
