@@ -6,6 +6,7 @@ Created on Tue Feb  9 10:13:53 2021
 @author: earnestt1234
 """
 
+from copy import copy
 from itertools import cycle, chain
 
 from wubwub.errors import WubWubError
@@ -20,6 +21,25 @@ class Note:
     def __repr__(self):
         attribs = ', '.join([str(k)+'='+str(v) for k, v in vars(self).items()])
         return f'Note({attribs})'
+
+    def __add__(self, other):
+        other = other.copy()
+        if hasattr(other, 'notes'):
+            other = list(other.notes)
+        else:
+            other = [other]
+        return Chord([self.copy()] + other)
+
+    def __radd__(self, other):
+        if other == 0:
+            return self.copy()
+        else:
+            return self.__add__(other)
+
+    def copy(self):
+        return Note(pitch=copy(self.pitch),
+                    length=copy(self.length),
+                    volume=copy(self.volume))
 
 class Chord:
     def __init__(self, notes):
@@ -38,6 +58,24 @@ class Chord:
         s = f'Chord(pitches={pitches}, lengths={lengths}, volumes={volumes})'
         return s
 
+    def __add__(self, other):
+        other = other.copy()
+        if hasattr(other, 'notes'):
+            other = list(other.notes)
+        else:
+            other = [other]
+        return Chord(list(self.copy().notes) + other)
+
+    def __radd__(self, other):
+        if other == 0:
+            return self.copy()
+        else:
+            return self.__add__(other)
+
+    def copy(self):
+        return Chord([note.copy() for note in self.notes])
+
+
 class ArpChord:
     def __init__(self, notes, length):
         self.notes = notes
@@ -48,6 +86,23 @@ class ArpChord:
 
         s = f'ArpChord(pitches={pitches}, length={self.length})'
         return s
+
+    def __add__(self, other):
+        other = other.copy()
+        if hasattr(other, 'notes'):
+            other = list(other.notes)
+        else:
+            other = [other]
+        return ArpChord([self.copy().notes] + other)
+
+    def __radd__(self, other):
+        if other == 0:
+            return self.copy()
+        else:
+            return self.__add__(other)
+
+    def copy(self):
+        return ArpChord([note.copy() for note in self.notes], self.length)
 
 def arpeggio_generator(notes, method):
     methods = ['up', 'down', 'updown', 'downup', 'up&down', 'down&up',
@@ -71,19 +126,20 @@ def arpeggio_generator(notes, method):
     if method == 'random':
         return random_choice_generator(notes)
 
-def arpeggiate(chord, beat, freq=0.5, method='up', chord_length='max'):
+def arpeggiate(chord, beat, length=None, freq=0.5, method='up', auto_chord_length='max'):
 
     notes = chord.notes
 
-    if isinstance(chord, ArpChord):
-        length = chord.length
+    if length is None:
+        if isinstance(chord, ArpChord):
+            length = chord.length
 
-    elif isinstance(chord, Chord):
-        choices = {'min':min, 'max':max}
-        length = choices[chord_length]([note.length for note in notes])
+        elif isinstance(chord, Chord):
+            choices = {'min':min, 'max':max}
+            length = choices[auto_chord_length]([note.length for note in notes])
 
-    else:
-        raise WubWubError('chord must be wubwub.Chord or wubwub.ArpChord')
+        else:
+            raise WubWubError('chord must be wubwub.Chord or wubwub.ArpChord')
 
     current = beat
     end = beat + length
@@ -97,17 +153,5 @@ def arpeggiate(chord, beat, freq=0.5, method='up', chord_length='max'):
         current += freq
 
     return arpeggiated
-
-def chordify(a, b):
-    if hasattr(a, 'notes'):
-        a = list(a.notes)
-    else:
-        a = [a]
-    if hasattr(b, 'notes'):
-        b = list(b.notes)
-    else:
-        b = [b]
-
-    return Chord(a + b)
 
 

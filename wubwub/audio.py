@@ -25,6 +25,8 @@ def add_note_to_audio(note, audio, sample, position, duration, basepitch):
     return audio
 
 def add_effects(sound, fx):
+    if fx is None:
+        return sound
     samples = np.array(sound.get_array_of_samples())
     samples = fx(samples)
     samples = array.array(sound.array_type, samples)

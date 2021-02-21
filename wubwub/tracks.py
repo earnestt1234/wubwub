@@ -21,7 +21,7 @@ from sortedcontainers import SortedDict
 
 from wubwub.audio import add_note_to_audio, add_effects
 from wubwub.errors import WubWubError, WubWubWarning
-from wubwub.notes import ArpChord, Chord, Note, arpeggiate, chordify
+from wubwub.notes import ArpChord, Chord, Note, arpeggiate
 from wubwub.resources import random_choice_generator, MINUTE
 
 class Track(metaclass=ABCMeta):
@@ -30,9 +30,13 @@ class Track(metaclass=ABCMeta):
 
     def __init__(self, name, sample, sequencer, basepitch='C4'):
         self.basepitch = basepitch
-        self.effects = None
         self.notes = SortedDict()
         self.samplepath = None
+
+        self.effects = None
+        self.volume = 0
+        self.pan = 0
+        self.postprocess_steps = ['effects', 'volume', 'pan']
 
         self._name = None
         self._sample = None
@@ -43,6 +47,26 @@ class Track(metaclass=ABCMeta):
 
     def __repr__(self):
         return f'GenericTrack(name="{self.name}", sample="{self.samplepath}")'
+
+    def __getitem__(self, beat):
+        if isinstance(beat, int):
+            return {beat, self.notes[beat]}
+        elif isinstance(beat, slice):
+            start, stop = (beat.start, beat.stop)
+            return {b:note for b, note in self.notes.items()
+                    if start <= b < stop}
+        elif isinstance(beat, Iterable):
+            if len(beat) != len(self.notes):
+                raise WubWubError(f'Length of boolean slice ({len(beat)}) '
+                                  'does not equal number of notes in '
+                                  f'track ({len(self.notes)}).')
+            return {b:note for boo, (b, note) in zip(beat, self.notes.items())
+                    if boo}
+
+        else:
+            raise WubWubError('Index wubwub.Track with [beat], '
+                              '[start:stop], or boolean index, '
+                              f'not {type(beat)}')
 
     @property
     def sequencer(self):
@@ -77,59 +101,62 @@ class Track(metaclass=ABCMeta):
     @sample.setter
     def sample(self, sample):
         if isinstance(sample, str):
-            self._sample = pydub.AudioSegment.from_wav(sample)
+            _, ext = os.path.splitext(sample)
+            self._sample = pydub.AudioSegment.from_file(sample,
+                                                        format=ext.lower())
             self.samplepath = os.path.abspath(sample)
         elif isinstance(sample, pydub.AudioSegment):
             self._sample = sample
         else:
             raise WubWubError('sample must be a path or pydub.AudioSegment')
 
-    def _insert_note(self, beat, new, merge=False):
+    def add(self, beat, element, merge=False, copy=True, outsiders=None):
+
+        if beat >= self.get_beats() + 1:
+            method = self.handle_new_notes if outsiders is None else outsiders
+            options = ['skip', 'add', 'warn', 'raise']
+            if method not in options:
+                w = ('`method` not recognized, '
+                     'defaulting to "skip".',)
+                warnings.warn(w, WubWubWarning)
+                method = 'skip'
+            if method == 'skip':
+                return
+            if method == 'warn':
+                s = ("Adding note on beat beyond the "
+                     "sequencer's length.  See `handle_new_notes` "
+                     "in class docstring for `wb.Track` to toggle "
+                     "this behavior.")
+                warnings.warn(s, WubWubWarning)
+
+            elif method == 'raise':
+                s = ("Tried to add note on beat beyond the "
+                     "sequencer's length.  See `handle_new_notes` "
+                     "in class docstring for `wb.Track` to toggle "
+                     "this behavior.")
+                raise WubWubError(s)
+
+        if copy:
+            element = element.copy()
         existing = self.notes.get(beat, None)
         if existing and merge:
-            new = chordify(existing, new)
-        self.notes[beat] = new
+            element = existing + element
+        self.notes[beat] = element
 
+    def add_fromdict(self, d, outsiders=None, merge=False, copy=True):
+        for beat, element in d.items():
+            self.add(beat=beat, element=element, merge=merge, copy=copy,
+                     outsiders=outsiders)
 
-    def add_notes_from_dict(self, d, outsiders=None, merge=False):
-        method = self.handle_new_notes if outsiders is None else outsiders
-        options = ['skip', 'add', 'warn', 'raise']
-
-        if method not in options:
-            w = ('`method` not recognized, '
-                 'defaulting to "skip".',)
-            warnings.warn(w, WubWubWarning)
-
-        if method == 'add':
-            for k, v in d.items():
-                self._insert_note(k, v, merge)
-        if method == 'warn':
-            beats = self.get_beats()
-            for k, v in d.items():
-                if k >= beats + 1:
-                    s = ("Added note on beat beyond the "
-                         "sequencer's length.  See `handle_new_notes` "
-                         "in class docstring for `wb.Track` to toggle "
-                         "this behavior.")
-                    warnings.warn(s, WubWubWarning)
-                self._insert_note(k, v, merge)
-        if method == 'raise':
-            beats = self.get_beats()
-            for k, v in d.items():
-                if k < beats + 1:
-                    self._insert_note(k, v, merge)
-                else:
-                    s = ("Tried to add note on beat beyond the "
-                         "sequencer's length.  See `handle_new_notes` "
-                         "in class docstring for `wb.Track` to toggle "
-                         "this behavior.")
-                    raise WubWubError(s)
-        else:
-            beats = self.get_beats()
-            for k, v in d.items():
-                if k < beats + 1:
-                    self._insert_note(k, v, merge)
-
+    def shift(self, beats, start=1, end=None, merge=False):
+        if end is None:
+            end = np.inf
+        newkeys = [k + beats if start <= k < end else k
+                   for k in self.notes.keys()]
+        oldnotes = self.notes.values()
+        self.delete_all_notes()
+        for newbeat, note in zip(newkeys, oldnotes):
+            self.add(newbeat, note, merge=merge, copy=False)
 
     def get_bpm(self):
         return self.sequencer.bpm
@@ -151,9 +178,13 @@ class Track(metaclass=ABCMeta):
     def delete_single_note(self, beat):
         del self.notes[beat]
 
+    def delete_multiple_notes(self, beats):
+        for beat in beats:
+            del self.notes[beat]
+
     def delete_range_notes(self, lo, hi):
         self.notes = SortedDict({b:note for b, note in self.notes.items()
-                                 if not lo <= b < hi+1})
+                                 if not lo <= b < hi})
 
     def unpack_notes(self):
         unpacked = []
@@ -166,11 +197,32 @@ class Track(metaclass=ABCMeta):
         return unpacked
 
     @abstractmethod
-    def build(self):
+    def build(self, overhang=0, overhang_type='beats'):
         pass
 
-    def play(self, overhang=0, overhang_type='beats'):
-        play(self.build(overhang, overhang_type))
+    def postprocess(self, build):
+        for step in self.postprocess_steps:
+            if step == 'effects':
+                build = add_effects(build, self.effects)
+            if step == 'volume':
+                build += self.volume
+            if step == 'pan':
+                build = build.pan(self.pan)
+        return build
+
+    def play(self, start=1, end=None, overhang=0, overhang_type='beats'):
+        b = (1/self.get_bpm()) * MINUTE
+        start = (start-1) * b
+        if end is not None:
+            end = (end-1) * b
+        build = self.build(overhang, overhang_type)
+        play(build[start:end])
+
+    def soundtest(self, postprocess=True):
+        test = self.sample
+        if postprocess:
+            test = self.postprocess(test)
+        play(test)
 
 class Sampler(Track):
     def __init__(self, name, sample, sequencer, basepitch='C4', overlap=True):
@@ -180,43 +232,57 @@ class Sampler(Track):
     def __repr__(self):
         return f'Sampler(name="{self.name}", sample="{self.samplepath}")'
 
-    def add_notes(self, beat, pitch=0, length=1, volume=0,
-                  pitch_select='cycle', length_select='cycle',
-                  volume_select='cycle', merge=False):
+    def make_notes(self, beats, pitch=0, length=1, volume=0,
+                   pitch_select='cycle', length_select='cycle',
+                   volume_select='cycle', merge=False):
 
-        if not isinstance(beat, Iterable):
-            beat = [beat]
+        if not isinstance(beats, Iterable):
+            beats = [beats]
 
         pitch = self._convert_select_arg(pitch, pitch_select)
         length = self._convert_select_arg(length, length_select)
         volume = self._convert_select_arg(volume, volume_select)
 
         d = {b : Note(next(pitch), next(length), next(volume))
-             for b in beat}
+             for b in beats}
 
-        self.add_notes_from_dict(d, merge=merge)
+        self.add_fromdict(d, merge=merge, copy=False)
 
-    def add_notes_every(self, freq, offset=0, pitch=0, length=1, volume=0,
-                        pitch_select='cycle', length_select='cycle',
-                        volume_select='cycle', merge=False):
+    def make_notes_every(self, freq, offset=0, pitch=0, length=1, volume=0,
+                         start=1, end=None, pitch_select='cycle',
+                         length_select='cycle', volume_select='cycle', merge=False):
 
         pitch = self._convert_select_arg(pitch, pitch_select)
         length = self._convert_select_arg(length, length_select)
         volume = self._convert_select_arg(volume, volume_select)
 
-        b = 1 + offset
+        b = start + offset
+        if end is None:
+            end = self.get_beats() + 1
         d = {}
-        while b < self.get_beats() + 1:
+        while b < end:
             d[b] = Note(next(pitch), next(length), next(volume))
             b += freq
 
-        self.add_notes_from_dict(d, merge=merge)
+        self.add_fromdict(d, merge=merge, copy=False)
 
-    def add_chord(self, beat, pitches, lengths=1, volumes=0, merge=False):
+    def make_chord(self, beat, pitches, lengths=1, volumes=0, merge=False):
+        chord = self._make_chord_assemble(pitches, lengths, volumes)
+        self.add(beat, chord, merge=merge, copy=False)
 
-        if not isinstance(beat, Iterable):
-            beat = [beat]
+    def make_chord_every(self, freq, offset=0, pitches=0, lengths=1, volumes=0,
+                         start=1, end=None, merge=False):
+        chord = self._make_chord_assemble(pitches, lengths, volumes)
+        b = start + offset
+        if end is None:
+            end = self.get_beats() + 1
+        d = {}
+        while b < end:
+            d[b] = chord.copy()
+            b += freq
+        self.add_fromdict(d, merge=merge, copy=False)
 
+    def _make_chord_assemble(self, pitches, lengths, volumes):
         if not isinstance(pitches, Iterable) or isinstance(pitches, str):
             pitches = [pitches]
 
@@ -227,10 +293,7 @@ class Sampler(Track):
             volumes = [volumes] * len(pitches)
 
         notes = [Note(p, l, v) for p, l, v in zip(pitches, lengths, volumes)]
-
-        d = {b : Chord(notes) for b in beat}
-
-        self.add_notes_from_dict(d, merge=merge)
+        return Chord(notes)
 
     def _convert_select_arg(self, arg, option):
         if not isinstance(arg, Iterable) or isinstance(arg, str):
@@ -285,10 +348,7 @@ class Sampler(Track):
                                               basepitch=basepitch)
                 next_position = position
 
-
-        if self.effects:
-            audio = add_effects(audio, self.effects)
-        return audio
+        return self.postprocess(audio)
 
 class Arpeggiator(Track):
     def __init__(self, name, sample, sequencer, basepitch='C4', freq=.5,
@@ -301,15 +361,23 @@ class Arpeggiator(Track):
         return (f'Arpeggiator(name="{self.name}", sample="{self.samplepath}", ' +
                 f'freq={self.freq}, method="{self.method}")')
 
-    def add_chord(self, beat, pitches, length=1, merge=False):
-        notes = [Note(p) for p  in pitches]
+    def make_chord(self, beat, pitches, length=1, merge=False):
+        notes = [Note(p) for p in pitches]
+        chord = ArpChord(notes, length)
+        self.add(beat, chord, merge=merge, copy=False)
 
-        if not isinstance(beat, Iterable):
-            beat = [beat]
-
-        d = {b: ArpChord(notes, length) for b in beat}
-
-        self.add_notes_from_dict(d, merge=merge)
+    def make_chord_every(self, freq, offset=0, pitches=0, length=1,
+                         start=1, end=None, merge=False):
+        notes = [Note(p) for p in pitches]
+        chord = ArpChord(notes, length)
+        b = start + offset
+        if end is None:
+            end = self.get_beats() + 1
+        d = {}
+        while b < end:
+            d[b] = chord.copy()
+            b += freq
+        self.add_fromdict(d, merge=merge, copy=False)
 
     def build(self, overhang=0, overhang_type='beats'):
         b = (1/self.get_bpm()) * MINUTE
@@ -325,11 +393,14 @@ class Arpeggiator(Track):
         basepitch = self.basepitch
         next_beat = np.inf
         for beat, chord in sorted(self.notes.items(), reverse=True):
-            length = max(note.length for note in chord.notes)
-            if beat + length > next_beat:
+            try:
+                length = chord.length
+            except AttributeError:
+                length = max(n.length for n in chord.notes)
+            if beat + length >= next_beat:
                 length = next_beat - beat
             next_beat = beat
-            arpeggiated = arpeggiate(chord, beat=beat,
+            arpeggiated = arpeggiate(chord, beat=beat, length=length,
                                      freq=self.freq, method=self.method)
             for arpbeat, note in arpeggiated.items():
                 position = (arpbeat-1) * b
@@ -341,10 +412,7 @@ class Arpeggiator(Track):
                                           duration=duration,
                                           basepitch=basepitch)
 
-        if self.effects:
-            audio = add_effects(audio, self.effects)
-        return audio
-
+        return self.postprocess(audio)
 
 class TrackManager:
     def __init__(self, sequencer):

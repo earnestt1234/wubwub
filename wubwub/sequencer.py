@@ -5,13 +5,14 @@ Music sequencer for WubWub.
 
 @author: earnestt1234
 """
+import time
 
 import pydub
 from pydub.playback import play
 
 from wubwub.audio import add_effects
 from wubwub.errors import WubWubError
-from wubwub.resources import MINUTE, unique_name
+from wubwub.resources import MINUTE, SECOND, unique_name
 from wubwub.tracks import TrackManager, Sampler, Arpeggiator
 
 class Sequencer:
@@ -24,6 +25,13 @@ class Sequencer:
         self._trackmanager = TrackManager(self)
 
         self.effects = None
+        self.volume = 0
+        self.pan = 0
+        self.postprocess_steps = ['effects', 'volume', 'pan']
+
+        self.volume = 0
+        self.pan = 0
+        self.effects = None
 
     def __repr__(self):
         l = len(self.tracks())
@@ -34,6 +42,11 @@ class Sequencer:
             e = f'Can only index Sequencer with str, not {type(name)}'
             raise WubWubError(e)
         return self._trackmanager.get_track(name)
+
+    def set_beats_and_clean(self, new):
+        self.beats = new
+        for track in self.tracks():
+            track.clean()
 
     def tracks(self):
         return tuple(self._trackmanager.tracks)
@@ -72,11 +85,35 @@ class Sequencer:
         audio = pydub.AudioSegment.silent(duration=tracklength)
         for track in self.tracks():
             audio = audio.overlay(track.build(overhang, overhang_type))
-        if self.effects:
-            audio = add_effects(audio, self.effects)
-        return audio
+        return self.postprocess(audio)
 
-    def play(self, overhang=0, overhang_type='beats'):
-        play(self.build(overhang, overhang_type))
+    def postprocess(self, build):
+        for step in self.postprocess_steps:
+            if step == 'effects':
+                build = add_effects(build, self.effects)
+            if step == 'volume':
+                build += self.volume
+            if step == 'pan':
+                build = build.pan(self.pan)
+        return build
 
+    def play(self, start=1, end=None, overhang=0, overhang_type='beats'):
+        b = (1/self.bpm) * MINUTE
+        start = (start-1) * b
+        if end is not None:
+            end = (end-1) * b
+        build = self.build(overhang, overhang_type)
+        play(build[start:end])
+
+    def soundtest(self, selection=None, postprocess=True, gap=.5):
+        if selection is None:
+            selection = self.tracks()
+        else:
+            selection = [self._trackmanager.get_track(i) for i in selection]
+
+        for track in selection:
+            print(f'Playing sample(s) for "{track.name}"...')
+            time.sleep(.25)
+            track.soundtest(postprocess=postprocess)
+            time.sleep(gap)
 

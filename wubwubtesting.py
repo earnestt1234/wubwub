@@ -14,17 +14,13 @@ x = wb.Sequencer(bpm=100, beats=8)
 hihat = x.add_sampler('samples/808/hi hat (1).wav')
 snare = x.add_sampler('samples/808/snare (1).wav')
 kick = x.add_sampler('samples/808/kick (11).wav')
-synth = x.add_sampler('samples/trumpet.wav')
-hihat.add_notes_every(1/4)
-snare.add_notes_every(2, 1)
-kick.add_notes_every(1)
-synth.add_notes_every(.5, pitch=0, length=.25)
-synth.add_notes_every(.5, pitch=3, length=.25, merge=True)
-synth.add_notes_every(.5, pitch=7, length=.25, merge=True)
+synth = x.add_arpeggiator('samples/trumpet.wav', freq=1/8)
+hihat.make_notes_every(1/4)
+snare.make_notes_every(2, 1)
+kick.make_notes_every(1)
+synth.make_chord_every(.5, pitches=[0,3,7], length=.375)
 
 fx = AudioEffectsChain().reverb(wet_gain=10)
 synth.effects=fx
 
-synth.pprint_notes()
-
-x.play()
+# x.play()
