@@ -6,6 +6,7 @@ Created on Tue Feb  9 10:13:53 2021
 @author: earnestt1234
 """
 
+from collections.abc import Iterable
 from copy import copy
 from itertools import cycle, chain
 
@@ -58,6 +59,9 @@ class Chord:
         s = f'Chord(pitches={pitches}, lengths={lengths}, volumes={volumes})'
         return s
 
+    def __getitem__(self, index):
+        return self.notes[index]
+
     def __add__(self, other):
         other = other.copy()
         if hasattr(other, 'notes'):
@@ -72,13 +76,17 @@ class Chord:
         else:
             return self.__add__(other)
 
+    def add(self, note, copy=True):
+        if copy:
+            note = note.copy()
+        self.notes.append(note)
+
     def copy(self):
         return Chord([note.copy() for note in self.notes])
 
-
-class ArpChord:
+class ArpChord(Chord):
     def __init__(self, notes, length):
-        self.notes = notes
+        super().__init__(notes)
         self.length = length
 
     def __repr__(self):
@@ -153,5 +161,3 @@ def arpeggiate(chord, beat, length=None, freq=0.5, method='up', auto_chord_lengt
         current += freq
 
     return arpeggiated
-
-

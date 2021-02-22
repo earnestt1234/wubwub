@@ -19,7 +19,7 @@ import pydub
 from pydub.playback import play
 from sortedcontainers import SortedDict
 
-from wubwub.audio import add_note_to_audio, add_effects
+from wubwub.audio import add_note_to_audio, add_effects, _overhang_to_milli
 from wubwub.errors import WubWubError, WubWubWarning
 from wubwub.notes import ArpChord, Chord, Note, arpeggiate
 from wubwub.resources import random_choice_generator, MINUTE
@@ -50,23 +50,34 @@ class Track(metaclass=ABCMeta):
 
     def __getitem__(self, beat):
         if isinstance(beat, int):
-            return {beat, self.notes[beat]}
+            return {beat: self.notes[beat]}
         elif isinstance(beat, slice):
             start, stop = (beat.start, beat.stop)
+            start = 0 if start is None else start
+            stop = np.inf if stop is None else stop
             return {b:note for b, note in self.notes.items()
                     if start <= b < stop}
         elif isinstance(beat, Iterable):
-            if len(beat) != len(self.notes):
-                raise WubWubError(f'Length of boolean slice ({len(beat)}) '
-                                  'does not equal number of notes in '
-                                  f'track ({len(self.notes)}).')
-            return {b:note for boo, (b, note) in zip(beat, self.notes.items())
-                    if boo}
+            if getattr(beat, 'dtype', False) == bool:
+                if not len(beat) == len(self.notes):
+                    raise IndexError(f'Length of boolean index ({len(beat)}) '
+                                     f"does not match number of notes ({len(self.notes)}).")
+                return {b:note for boo, (b, note) in zip(beat, self.notes.items())
+                        if boo}
 
+            else:
+                return {k: self.notes[k] for k in beat}
         else:
             raise WubWubError('Index wubwub.Track with [beat], '
                               '[start:stop], or boolean index, '
                               f'not {type(beat)}')
+
+    def get(self, beats):
+        beats = self._handle_beats_dict_boolarray(beats)
+        out = [self.notes[b] for b in beats]
+        if len(out) == 1:
+            out = out[0]
+        return out
 
     @property
     def sequencer(self):
@@ -148,10 +159,24 @@ class Track(metaclass=ABCMeta):
             self.add(beat=beat, element=element, merge=merge, copy=copy,
                      outsiders=outsiders)
 
-    def shift(self, beats, start=1, end=None, merge=False):
-        if end is None:
-            end = np.inf
-        newkeys = [k + beats if start <= k < end else k
+    def array_of_beats(self):
+        return np.array(self.notes.keys())
+
+    def array_of_notes(self):
+        return np.array(self.notes.values())
+
+    def _handle_beats_dict_boolarray(self, beats):
+        if getattr(beats, 'dtype', False) == bool:
+            beats = self[beats].keys()
+        elif isinstance(beats, dict):
+            beats = beats.keys()
+        elif isinstance(beats, Number):
+            return [beats]
+        return beats
+
+    def shift(self, beats, by, merge=False):
+        beats = self._handle_beats_dict_boolarray(beats)
+        newkeys = [k + by if k in beats else k
                    for k in self.notes.keys()]
         oldnotes = self.notes.values()
         self.delete_all_notes()
@@ -164,7 +189,7 @@ class Track(metaclass=ABCMeta):
     def get_beats(self):
         return self.sequencer.beats
 
-    def pprint_notes(self):
+    def pprint_notedict(self):
         pprint.pprint(self.notes)
 
     def clean(self):
@@ -172,17 +197,15 @@ class Track(metaclass=ABCMeta):
         self.notes = SortedDict({b:note for b, note in self.notes.items()
                                  if b < maxi +1})
 
-    def delete_all_notes(self):
+    def delete_all(self):
         self.notes = SortedDict({})
 
-    def delete_single_note(self, beat):
-        del self.notes[beat]
-
-    def delete_multiple_notes(self, beats):
+    def delete(self, beats):
+        beats = self._handle_beats_dict_boolarray(beats)
         for beat in beats:
             del self.notes[beat]
 
-    def delete_range_notes(self, lo, hi):
+    def delete_fromrange(self, lo, hi):
         self.notes = SortedDict({b:note for b, note in self.notes.items()
                                  if not lo <= b < hi})
 
@@ -309,12 +332,7 @@ class Sampler(Track):
 
     def build(self, overhang=0, overhang_type='beats'):
         b = (1/self.get_bpm()) * MINUTE
-        if overhang_type == 'beats':
-            overhang = b * overhang
-        elif overhang_type in ['s', 'seconds']:
-            overhang = overhang * 1000
-        else:
-            raise WubWubError('overhang must be "beats" or "s"')
+        overhang = _overhang_to_milli(overhang, overhang_type, b)
         tracklength = self.get_beats() * b + overhang
         audio = pydub.AudioSegment.silent(duration=tracklength)
         sample = self.sample
@@ -381,12 +399,7 @@ class Arpeggiator(Track):
 
     def build(self, overhang=0, overhang_type='beats'):
         b = (1/self.get_bpm()) * MINUTE
-        if overhang_type == 'beats':
-            overhang = b * overhang
-        elif overhang_type in ['s', 'seconds']:
-            overhang = overhang * 1000
-        else:
-            raise WubWubError('overhang must be "beats" or "s"')
+        overhang = _overhang_to_milli(overhang, overhang_type, b)
         tracklength = self.get_beats() * b + overhang
         audio = pydub.AudioSegment.silent(duration=tracklength)
         sample = self.sample

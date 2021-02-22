@@ -5,14 +5,15 @@ Music sequencer for WubWub.
 
 @author: earnestt1234
 """
+from copy import deepcopy
 import time
 
 import pydub
 from pydub.playback import play
 
-from wubwub.audio import add_effects
+from wubwub.audio import add_effects, _overhang_to_milli
 from wubwub.errors import WubWubError
-from wubwub.resources import MINUTE, SECOND, unique_name
+from wubwub.resources import MINUTE, unique_name
 from wubwub.tracks import TrackManager, Sampler, Arpeggiator
 
 class Sequencer:
@@ -48,6 +49,9 @@ class Sequencer:
         for track in self.tracks():
             track.clean()
 
+    def get_track(self, track):
+        return self._trackmanager.get_track(track)
+
     def tracks(self):
         return tuple(self._trackmanager.tracks)
 
@@ -70,17 +74,23 @@ class Sequencer:
                           sequencer=self)
         return new
 
+    def duplicate_track(self, track, newname=None):
+        if newname is None:
+            newname = unique_name('Track', self.tracknames())
+        copy = deepcopy(self.get_track(track))
+        copy.name = newname
+        self._trackmanager.add_track(copy)
+        return copy
+
+    def copy(self):
+        return deepcopy(self)
+
     def delete_track(self, track):
         self._trackmanager.delete_track(track)
 
     def build(self, overhang=0, overhang_type='beats'):
         b = (1/self.bpm) * MINUTE
-        if overhang_type == 'beats':
-            seq_oh = b * overhang
-        elif overhang_type in ['s', 'seconds']:
-            seq_oh = overhang * 1000
-        else:
-            raise WubWubError('overhang must be "beats" or "seconds"')
+        seq_oh = _overhang_to_milli(overhang, overhang_type, b)
         tracklength = self.beats * b + seq_oh
         audio = pydub.AudioSegment.silent(duration=tracklength)
         for track in self.tracks():
@@ -116,4 +126,24 @@ class Sequencer:
             time.sleep(.25)
             track.soundtest(postprocess=postprocess)
             time.sleep(gap)
+
+def stitch(sequencers, internal_overhang=0, end_overhang=0, overhang_type='s'):
+    total_length = 0
+    current = 0
+    sectionstarts = []
+    for seq in sequencers:
+        b = (1/seq.bpm) * MINUTE
+        seq_length = b * seq.beats
+        total_length += seq_length
+        sectionstarts.append(current)
+        current += seq_length
+    total_length += _overhang_to_milli(end_overhang, overhang_type, b)
+
+    stitched = pydub.AudioSegment.silent(duration=total_length)
+    for start, seq in zip(sectionstarts, sequencers):
+        build = seq.build(internal_overhang, overhang_type)
+        stitched = stitched.overlay(build, start)
+
+    return stitched
+
 

@@ -9,7 +9,9 @@ Created on Tue Feb  9 10:17:19 2021
 import array
 
 import numpy as np
+from pydub.playback import play as _play
 
+from wubwub.errors import WubWubError
 from wubwub.pitch import relative_pitch_to_int, shift_pitch
 
 def add_note_to_audio(note, audio, sample, position, duration, basepitch):
@@ -32,3 +34,15 @@ def add_effects(sound, fx):
     samples = array.array(sound.array_type, samples)
     effected = sound._spawn(samples)
     return effected
+
+def _overhang_to_milli(overhang, overhang_type, b=600):
+    if overhang_type == 'beats':
+        overhang = b * overhang
+    elif overhang_type in ['s', 'seconds']:
+        overhang = overhang * 1000
+    else:
+        raise WubWubError('overhang must be "beats" or "seconds"')
+    return overhang
+
+def play(audiosegment):
+    _play(audiosegment)
