@@ -178,8 +178,9 @@ class Track(metaclass=ABCMeta):
     def sample(self, sample):
         if isinstance(sample, str):
             _, ext = os.path.splitext(sample)
+            ext = ext.lower().strip('.')
             self._sample = pydub.AudioSegment.from_file(sample,
-                                                        format=ext.lower())
+                                                        format=ext)
             self.samplepath = os.path.abspath(sample)
         elif isinstance(sample, pydub.AudioSegment):
             self._sample = sample
