@@ -31,4 +31,4 @@ x.play()
 a = wb.stitch([x, y])
 # wb.play(a)
 
-d = wb.SliceableDict({1:'a', 2:'b'})
+# d = wb.SliceableDict({1:'a', 2:'b'})
