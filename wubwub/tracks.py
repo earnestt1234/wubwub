@@ -24,6 +24,38 @@ from wubwub.errors import WubWubError, WubWubWarning
 from wubwub.notes import ArpChord, Chord, Note, arpeggiate
 from wubwub.resources import random_choice_generator, MINUTE
 
+class SliceableDict(SortedDict):
+    def __init__(self, d):
+        super().__init__(d)
+
+    def ___repr__(self):
+        return dict(self)
+
+    def __getitem__(self, keys):
+        if isinstance(keys, int):
+            return {keys: dict.get(self, keys)}
+        elif isinstance(keys, slice):
+            start, stop = (keys.start, keys.stop)
+            start = 0 if start is None else start
+            stop = np.inf if stop is None else stop
+            return {k:v for k, v in self.items()
+                    if start <= k < stop}
+        elif isinstance(keys, Iterable):
+            if getattr(keys, 'dtype', False) == bool:
+                if not len(keys) == len(self):
+                    raise IndexError(f'Length of boolean index ({len(keys)}) '
+                                     f"does not match size of dict ({len(self)}).")
+                return {k:v for boolean, (k, v) in
+                        zip(keys, self.items()) if boolean}
+
+            else:
+                return {k: dict.get(self, k) for k in keys}
+        else:
+            raise IndexError('Could not interpret input as int, '
+                             'slice, iterable, or boolean index.')
+
+
+
 class Track(metaclass=ABCMeta):
 
     handle_new_notes = 'skip'
@@ -50,13 +82,40 @@ class Track(metaclass=ABCMeta):
 
     def __getitem__(self, beat):
         if isinstance(beat, int):
-            return {beat: self.notes[beat]}
+            return self.notes[beat]
         elif isinstance(beat, slice):
             start, stop = (beat.start, beat.stop)
             start = 0 if start is None else start
             stop = np.inf if stop is None else stop
-            return {b:note for b, note in self.notes.items()
-                    if start <= b < stop}
+            return [self.notes[k] for k in self.notes.keys() if start <= k < stop]
+        elif isinstance(beat, Iterable):
+            if getattr(beat, 'dtype', False) == bool:
+                if not len(beat) == len(self.notes):
+                    raise IndexError(f'Length of boolean index ({len(beat)}) '
+                                     f"does not match number of notes ({len(self.notes)}).")
+                return [self.notes[k] for k, b in zip(self.notes.keys(), beat)
+                        if b]
+
+            else:
+                return [self.notes[b] for b in beat]
+        else:
+            raise WubWubError('Index wubwub.Track with [beat], '
+                              '[start:stop], or boolean index, '
+                              f'not {type(beat)}')
+
+    def __setitem__(self, beat, value):
+        if isinstance(beat, int):
+            self.notes[beat] = value
+        elif isinstance(beat, slice):
+            start, stop = (beat.start, beat.stop)
+            start = 0 if start is None else start
+            stop = np.inf if stop is None else stop
+            for k, v in self.notes.items():
+                if k < start:
+                    continue
+                if k >= stop:
+                    break
+                self.notes[k] = value
         elif isinstance(beat, Iterable):
             if getattr(beat, 'dtype', False) == bool:
                 if not len(beat) == len(self.notes):
@@ -72,12 +131,18 @@ class Track(metaclass=ABCMeta):
                               '[start:stop], or boolean index, '
                               f'not {type(beat)}')
 
-    def get(self, beats):
-        beats = self._handle_beats_dict_boolarray(beats)
-        out = [self.notes[b] for b in beats]
-        if len(out) == 1:
-            out = out[0]
-        return out
+    # def get(self, beats):
+    #     beats = self._handle_beats_dict_boolarray(beats)
+    #     out = [self.notes[b] for b in beats]
+    #     if len(out) == 1:
+    #         out = out[0]
+    #     return out
+
+    def slicedict(self):
+        return SliceableDict(self.notes)
+
+    def sd(self):
+        return SliceableDict(self.notes)
 
     @property
     def sequencer(self):
