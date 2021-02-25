@@ -44,9 +44,9 @@ class Sequencer:
             raise WubWubError(e)
         return self._trackmanager.get_track(name)
 
-    # def copypaste_section(self, start, stop, newstart):
-    #     for track in self.tracks():
-    #         track.copypaste(start, stop, newstart)
+    def copypaste_section(self, start, stop, newstart):
+        for track in self.tracks():
+            track.copypaste(start, stop, newstart)
 
     def set_beats_and_clean(self, new):
         self.beats = new

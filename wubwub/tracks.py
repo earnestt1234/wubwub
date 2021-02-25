@@ -237,13 +237,13 @@ class Track(metaclass=ABCMeta):
     def array_of_notes(self):
         return np.array(self.notes.values())
 
-    # def copypaste(self, start, stop, newstart, outsiders=None, merge=False,
-    #               copy=True):
-    #     section = self.sd()[start:stop]
-    #     if section:
-    #         offset = min(section.keys()) - start
-    #         at_one = {k-offset:v for k, v in section.items()}
-    #         self.add_fromdict(at_one, offset=newstart-1)
+    def copypaste(self, start, stop, newstart, outsiders=None, merge=False,
+                  copy=True):
+        section = self.sd()[start:stop]
+        if section:
+            offset = start - 1
+            at_one = {k-offset:v for k, v in section.items()}
+            self.add_fromdict(at_one, offset=newstart-1)
 
     def _handle_beats_dict_boolarray(self, beats):
         if getattr(beats, 'dtype', False) == bool:

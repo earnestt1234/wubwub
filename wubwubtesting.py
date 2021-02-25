@@ -19,5 +19,7 @@ hihat.make_notes([1,2,3,4])
 kick.make_notes([1,2,3,4])
 snare.make_notes([2,4])
 
-x.copypaste_section(1, 5, 5)
-x.play()
+# x.copypaste_section(1, 5, 5.5)
+# x.play()
+
+b = wb.repeated_measures([1,2], measurelen=4, measures=4)
