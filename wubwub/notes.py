@@ -76,6 +76,9 @@ class Chord:
         else:
             return self.__add__(other)
 
+    def __len__(self):
+        return len(self.notes)
+
     def add(self, note, copy=True):
         if copy:
             note = note.copy()
@@ -163,3 +166,25 @@ def arpeggiate(chord, beat, length=None, freq=0.5, method='up', auto_chord_lengt
         current += freq
 
     return arpeggiated
+
+def replace_note(self, note, newpitch=False, newlength=False, newvolume=False):
+    new = note.copy()
+    if newpitch is not False: # allow for None pitch value
+        new.pitch = newpitch
+    if newlength:
+        new.length = newlength
+    if newvolume:
+        new.volume = newvolume
+
+    return new
+
+def new_chord(self, pitches, lengths=1, volumes=0):
+    size = len(pitches)
+    if not isinstance(lengths, Iterable):
+        lengths = [lengths] * size
+    if not isinstance(volumes, Iterable):
+        volumes = [volumes] * size
+
+    notes = [Note(p, l, v) for p, l, v in zip(pitches, lengths, volumes)]
+    return Chord(notes)
+

@@ -29,7 +29,7 @@ class SliceableDict:
         self.d = d
 
     def __getitem__(self, keys):
-        if isinstance(keys, int):
+        if isinstance(keys, Number):
             return {keys: self.d[keys]}
         elif isinstance(keys, slice):
             start, stop = (keys.start, keys.stop)
@@ -54,6 +54,7 @@ class SliceableDict:
 class Track(metaclass=ABCMeta):
 
     handle_new_notes = 'skip'
+    setitem_copy = True
 
     def __init__(self, name, sample, sequencer, basepitch='C4'):
         self.basepitch = basepitch
@@ -76,7 +77,7 @@ class Track(metaclass=ABCMeta):
         return f'GenericTrack(name="{self.name}", sample="{self.samplepath}")'
 
     def __getitem__(self, beat):
-        if isinstance(beat, int):
+        if isinstance(beat, Number):
             return self.notes[beat]
         elif isinstance(beat, slice):
             start, stop = (beat.start, beat.stop)
@@ -99,8 +100,13 @@ class Track(metaclass=ABCMeta):
                               f'not {type(beat)}')
 
     def __setitem__(self, beat, value):
-        if isinstance(beat, int):
-            self.notes[beat] = value.copy()
+
+        def prep(value, copy=True):
+            return value.copy() if copy else value
+        t = self.setitem_copy
+
+        if isinstance(beat, Number):
+            self.notes[beat] = prep(value, t)
         elif isinstance(beat, slice):
             start, stop = (beat.start, beat.stop)
             start = 0 if start is None else start
@@ -110,7 +116,7 @@ class Track(metaclass=ABCMeta):
                     continue
                 if k >= stop:
                     break
-                self.notes[k] = value.copy()
+                self.notes[k] = prep(value, t)
         elif isinstance(beat, Iterable):
             if getattr(beat, 'dtype', False) == bool:
                 if not len(beat) == len(self.notes):
@@ -121,10 +127,16 @@ class Track(metaclass=ABCMeta):
                                      'boolean index.')
                 for k, b in zip(self.notes.keys(), beat):
                     if b:
-                        self.notes[k] = value.copy()
+                        self.notes[k] = prep(value, t)
             else:
+                if type(value) in _notetypes_:
+                    value = [value] * len(beat)
                 if len(beat) != len(value):
-                    raise IndexError()
+                    raise IndexError(f'Length of new values ({len(value)}) '
+                                     'does not equal length of indexer '
+                                     f'({len(beat)}).')
+                for b, v in zip(beat, value):
+                    self.notes[b] = prep(v, t)
 
         else:
             raise WubWubError('Index wubwub.Track with [beat], '
@@ -213,16 +225,25 @@ class Track(metaclass=ABCMeta):
             element = existing + element
         self.notes[beat] = element
 
-    def add_fromdict(self, d, outsiders=None, merge=False, copy=True):
+    def add_fromdict(self, d, offset=0, outsiders=None, merge=False, copy=True):
         for beat, element in d.items():
-            self.add(beat=beat, element=element, merge=merge, copy=copy,
-                     outsiders=outsiders)
+
+            self.add(beat=beat + offset, element=element, merge=merge,
+                     copy=copy, outsiders=outsiders)
 
     def array_of_beats(self):
         return np.array(self.notes.keys())
 
     def array_of_notes(self):
         return np.array(self.notes.values())
+
+    # def copypaste(self, start, stop, newstart, outsiders=None, merge=False,
+    #               copy=True):
+    #     section = self.sd()[start:stop]
+    #     if section:
+    #         offset = min(section.keys()) - start
+    #         at_one = {k-offset:v for k, v in section.items()}
+    #         self.add_fromdict(at_one, offset=newstart-1)
 
     def _handle_beats_dict_boolarray(self, beats):
         if getattr(beats, 'dtype', False) == bool:

@@ -44,6 +44,10 @@ class Sequencer:
             raise WubWubError(e)
         return self._trackmanager.get_track(name)
 
+    # def copypaste_section(self, start, stop, newstart):
+    #     for track in self.tracks():
+    #         track.copypaste(start, stop, newstart)
+
     def set_beats_and_clean(self, new):
         self.beats = new
         for track in self.tracks():
@@ -115,6 +119,12 @@ class Sequencer:
         build = self.build(overhang, overhang_type)
         play(build[start:end])
 
+    def loop(self, times=4, internal_overhang=0, end_overhang=0, overhang_type='beats'):
+        looped = loop(self, times=times, internal_overhang=internal_overhang,
+                      end_overhang=end_overhang, overhang_type=overhang_type)
+        play(looped)
+
+
     def soundtest(self, selection=None, postprocess=True, gap=.5):
         if selection is None:
             selection = self.tracks()
@@ -127,7 +137,7 @@ class Sequencer:
             track.soundtest(postprocess=postprocess)
             time.sleep(gap)
 
-def stitch(sequencers, internal_overhang=0, end_overhang=0, overhang_type='s'):
+def stitch(sequencers, internal_overhang=0, end_overhang=0, overhang_type='beats'):
     total_length = 0
     current = 0
     sectionstarts = []
@@ -145,5 +155,9 @@ def stitch(sequencers, internal_overhang=0, end_overhang=0, overhang_type='s'):
         stitched = stitched.overlay(build, start)
 
     return stitched
+
+def loop(sequencer, times=4, internal_overhang=0, end_overhang=0, overhang_type='beats'):
+    return stitch([sequencer] * times, internal_overhang, end_overhang,
+                  overhang_type)
 
 
