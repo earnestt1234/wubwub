@@ -112,6 +112,8 @@ class ArpChord(Chord):
     def copy(self):
         return ArpChord([note.copy() for note in self.notes], self.length)
 
+_notetypes_ = [Note, Chord, ArpChord]
+
 def arpeggio_generator(notes, method):
     methods = ['up', 'down', 'updown', 'downup', 'up&down', 'down&up',
                'random']

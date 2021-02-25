@@ -26,7 +26,7 @@ synth.effects=fx
 y = x.copy()
 synth2 = y['Track4']
 
-x.play()
+# x.play()
 
 a = wb.stitch([x, y])
 # wb.play(a)
