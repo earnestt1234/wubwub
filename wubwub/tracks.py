@@ -21,7 +21,7 @@ from sortedcontainers import SortedDict
 
 from wubwub.audio import add_note_to_audio, add_effects, _overhang_to_milli
 from wubwub.errors import WubWubError, WubWubWarning
-from wubwub.notes import ArpChord, Chord, Note, arpeggiate
+from wubwub.notes import ArpChord, Chord, Note, arpeggiate, _notetypes_
 from wubwub.resources import random_choice_generator, MINUTE
 
 class SliceableDict:
@@ -100,7 +100,7 @@ class Track(metaclass=ABCMeta):
 
     def __setitem__(self, beat, value):
         if isinstance(beat, int):
-            self.notes[beat] = value
+            self.notes[beat] = value.copy()
         elif isinstance(beat, slice):
             start, stop = (beat.start, beat.stop)
             start = 0 if start is None else start
@@ -110,17 +110,22 @@ class Track(metaclass=ABCMeta):
                     continue
                 if k >= stop:
                     break
-                self.notes[k] = value
+                self.notes[k] = value.copy()
         elif isinstance(beat, Iterable):
             if getattr(beat, 'dtype', False) == bool:
                 if not len(beat) == len(self.notes):
                     raise IndexError(f'Length of boolean index ({len(beat)}) '
                                      f"does not match number of notes ({len(self.notes)}).")
-                return {b:note for boo, (b, note) in zip(beat, self.notes.items())
-                        if boo}
-
+                if not type(value) in _notetypes_:
+                    raise IndexError('Can only set with single note using '
+                                     'boolean index.')
+                for k, b in zip(self.notes.keys(), beat):
+                    if b:
+                        self.notes[k] = value.copy()
             else:
-                return {k: self.notes[k] for k in beat}
+                if len(beat) != len(value):
+                    raise IndexError()
+
         else:
             raise WubWubError('Index wubwub.Track with [beat], '
                               '[start:stop], or boolean index, '
