@@ -14,7 +14,8 @@ from pydub.playback import play as _play
 from wubwub.errors import WubWubError
 from wubwub.pitch import relative_pitch_to_int, shift_pitch
 
-def add_note_to_audio(note, audio, sample, position, duration, basepitch):
+def add_note_to_audio(note, audio, sample, position, duration, basepitch,
+                      fade=10):
     pitch = note.pitch
     if pitch is None:
         return audio
@@ -23,6 +24,7 @@ def add_note_to_audio(note, audio, sample, position, duration, basepitch):
     sound = sample if pitch == 0 else shift_pitch(sample, pitch)
     sound += note.volume
     sound = sound[:duration]
+    sound = sound.fade_out(10)
     audio = audio.overlay(sound, position=position)
     return audio
 

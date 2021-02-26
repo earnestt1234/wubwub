@@ -10,16 +10,13 @@ from pysndfx import AudioEffectsChain
 import wubwub as wb
 
 
-x = wb.Sequencer(bpm=100, beats=8)
+x = wb.Sequencer(bpm=300, beats=7 * 4)
 hihat = x.add_sampler('samples/808/hi hat (1).wav')
 snare = x.add_sampler('samples/808/snare (1).wav')
 kick = x.add_sampler('samples/808/kick (11).wav')
 synth = x.add_arpeggiator('samples/trumpet.wav', freq=1/4)
-hihat.make_notes([1,2,3,4])
-kick.make_notes([1,2,3,4])
-snare.make_notes([2,4])
+hihat.make_notes(wb.repeated_measures([1, 4, 6], measurelen=7, measures=4))
+kick.make_notes(wb.repeated_measures([1, 1.5], measurelen=7, measures=4))
+snare.make_notes(wb.repeated_measures([4, 7], measurelen=7, measures=4))
 
-# x.copypaste_section(1, 5, 5.5)
-# x.play()
-
-b = wb.repeated_measures([1,2], measurelen=4, measures=4)
+x.play()

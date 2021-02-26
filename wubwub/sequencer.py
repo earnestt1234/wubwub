@@ -62,7 +62,7 @@ class Sequencer:
     def tracknames(self):
         return self._trackmanager.get_tracknames()
 
-    def add_sampler(self, sample, name=None, overlap=True, basepitch='C4'):
+    def add_sampler(self, sample, name=None, overlap=False, basepitch='C4'):
         if name is None:
             name = unique_name('Track', self.tracknames())
         new = Sampler(name=name, sample=sample, overlap=overlap,
