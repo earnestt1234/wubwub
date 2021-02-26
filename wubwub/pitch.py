@@ -40,19 +40,11 @@ def valid_pitch_str(s):
     pattern = f"^({NOTES_JOIN})[0-9]$"
     return bool(re.match(pattern, s))
 
-def int_to_relative_pitch(note, diff):
-    octaves = 0 if diff == 0 else diff // 12
-    posdiff = diff % 12 if diff > 0 else (12 + diff) % 12
-    oldpitch, oldoct = splitoctave(note)
-    idx_old = NOTES.index(oldpitch)
-    idx_new = DIFF.index((idx_old + posdiff) % len(NOTES))
-    newpitch = NOTES[idx_new]
-    if idx_new < idx_old and diff > 0:
-        octaves += 1
-    if idx_new > idx_old and diff < 0:
-        octaves -= 1
-    return newpitch + str(oldoct + octaves)
-
+def pitch_from_semitones(pitch, semitones):
+    oldname, oldoct = splitoctave(pitch)
+    lookfor = semitones % 12 if semitones > 0 else -1 * (semitones % -12)
+    s = DIFFDF.loc[oldname, :] if semitones >= 0 else DIFFDF.loc[:, oldname]
+    newname = s[s == semitones].index[0]
 
 
 def relative_pitch_to_int(a, b):

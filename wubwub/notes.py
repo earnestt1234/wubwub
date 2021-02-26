@@ -11,7 +11,7 @@ from copy import copy
 from itertools import cycle, chain
 
 from wubwub.errors import WubWubError
-from wubwub.pitch import named_chords, valid_chord_str, splitchordname
+from wubwub.pitch import named_chords, splitchordname
 from wubwub.resources import random_choice_generator
 
 class Note:
@@ -189,7 +189,9 @@ def new_chord(self, pitches, lengths=1, volumes=0):
     notes = [Note(p, l, v) for p, l, v in zip(pitches, lengths, volumes)]
     return Chord(notes)
 
-def create_named_chord(chord, octave=4, voicing=0):
+def create_named_chord(root, name, voicing=0):
+    if not isinstance(root, int):
+
 
 
 
