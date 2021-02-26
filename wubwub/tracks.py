@@ -335,36 +335,36 @@ class Sampler(Track):
     def __repr__(self):
         return f'Sampler(name="{self.name}", sample="{self.samplepath}")'
 
-    def make_notes(self, beats, pitch=0, length=1, volume=0,
+    def make_notes(self, beats, pitches=0, lengths=1, volumes=0,
                    pitch_select='cycle', length_select='cycle',
                    volume_select='cycle', merge=False):
 
         if not isinstance(beats, Iterable):
             beats = [beats]
 
-        pitch = self._convert_select_arg(pitch, pitch_select)
-        length = self._convert_select_arg(length, length_select)
-        volume = self._convert_select_arg(volume, volume_select)
+        pitches = self._convert_select_arg(pitches, pitch_select)
+        lengths = self._convert_select_arg(lengths, length_select)
+        volumes = self._convert_select_arg(volumes, volume_select)
 
-        d = {b : Note(next(pitch), next(length), next(volume))
+        d = {b : Note(next(pitches), next(lengths), next(volumes))
              for b in beats}
 
         self.add_fromdict(d, merge=merge, copy=False)
 
-    def make_notes_every(self, freq, offset=0, pitch=0, length=1, volume=0,
+    def make_notes_every(self, freq, offset=0, pitches=0, lengths=1, volumes=0,
                          start=1, end=None, pitch_select='cycle',
                          length_select='cycle', volume_select='cycle', merge=False):
 
-        pitch = self._convert_select_arg(pitch, pitch_select)
-        length = self._convert_select_arg(length, length_select)
-        volume = self._convert_select_arg(volume, volume_select)
+        pitches = self._convert_select_arg(pitches, pitch_select)
+        lengths = self._convert_select_arg(lengths, length_select)
+        volumes = self._convert_select_arg(volumes, volume_select)
 
         b = start + offset
         if end is None:
             end = self.get_beats() + 1
         d = {}
         while b < end:
-            d[b] = Note(next(pitch), next(length), next(volume))
+            d[b] = Note(next(pitches), next(lengths), next(volumes))
             b += freq
 
         self.add_fromdict(d, merge=merge, copy=False)
