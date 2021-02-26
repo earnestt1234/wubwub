@@ -8,15 +8,14 @@ Created on Tue Feb  9 10:13:16 2021
 from collections import deque
 import re
 
-import pandas as pd
-
-# from wubwub.errors import WubWubError
+from wubwub.errors import WubWubError
 
 NOTES = ['C' , 'C#', 'Db', 'D' , 'D#', 'Eb', 'E' , 'F', 'F#',
          'Gb', 'G' , 'G#', 'Ab', 'A' , 'A#', 'Bb', 'B',]
-NOTES_JOIN = '|'.join(NOTES)
 DIFF =  [0   , 1   , 1   , 2   , 3   , 3   , 4   , 5   , 6   ,
          6   , 7   , 8   , 8   , 9   , 10  , 10  , 11  ]
+
+NOTES_JOIN = '|'.join(NOTES)
 
 named_chords = (
     {''     : [0, 4, 7],
@@ -25,12 +24,12 @@ named_chords = (
      'm'    : [0, 3, 7],
      'minor': [0, 3, 7],
      'maj7' : [0, 4, 7, 11],
-     'min7' : [0, 3, 7, 10],})
+     'M7'   : [0, 4, 7, 11],
+     'min7' : [0, 3, 7, 10],
+     'm7'   : [0, 3, 7, 10]
+     })
 
 chordnames_re = '|'.join(named_chords.keys())
-
-DIFF_DEQUE = deque(DIFF)
-DIFFDF = pd.DataFrame(index=NOTES, columns=NOTES,)
 
 def valid_chord_str(s):
     pattern = f"^({NOTES_JOIN})({chordnames_re})$"
@@ -42,10 +41,13 @@ def valid_pitch_str(s):
 
 def pitch_from_semitones(pitch, semitones):
     oldname, oldoct = splitoctave(pitch)
-    lookfor = semitones % 12 if semitones > 0 else -1 * (semitones % -12)
-    s = DIFFDF.loc[oldname, :] if semitones >= 0 else DIFFDF.loc[:, oldname]
-    newname = s[s == semitones].index[0]
-
+    idx_old = NOTES.index(oldname)
+    old_diff = DIFF[idx_old]
+    octave_change = (old_diff + semitones) // 12
+    new_diff = semitones + old_diff
+    new_diff = new_diff % 12 if new_diff >= 0 else 12 + (new_diff % -12)
+    newpitch = NOTES[DIFF.index(new_diff)]
+    return newpitch + str(oldoct + octave_change)
 
 def relative_pitch_to_int(a, b):
     pitch_a, octave_a = splitoctave(a)

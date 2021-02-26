@@ -9,9 +9,10 @@ Created on Tue Feb  9 10:13:53 2021
 from collections.abc import Iterable
 from copy import copy
 from itertools import cycle, chain
+from numbers import Number
 
 from wubwub.errors import WubWubError
-from wubwub.pitch import named_chords, splitchordname
+from wubwub.pitch import named_chords, pitch_from_semitones
 from wubwub.resources import random_choice_generator
 
 class Note:
@@ -87,6 +88,25 @@ class Chord:
 
     def copy(self):
         return Chord([note.copy() for note in self.notes])
+
+    def pitches(self):
+        return [note.pitch for note in self.notes]
+
+    def lengths(self):
+        return [note.length for note in self.notes]
+
+    def volumes(self):
+        return [note.volume for note in self.notes]
+
+    def alternotes(self, value, new):
+        if value not in ['pitches', 'lengths', 'volumes']:
+            raise WubWubError('Value must be "pitches", "lengths", or '
+                              '"volumes".')
+        if isinstance(new, Number):
+            new = [new] * len(self.notes)
+        if len(new) != len(self.notes):
+            raise WubWubError(f'Length of new values {len(new)} '
+                              f'does not equal notes in chord ({len(self.notes)}).')
 
 class ArpChord(Chord):
     def __init__(self, notes, length):
@@ -168,7 +188,7 @@ def arpeggiate(chord, beat, length=None, freq=0.5, method='up', auto_chord_lengt
 
     return arpeggiated
 
-def replace_note(self, note, newpitch=False, newlength=False, newvolume=False):
+def replace_note(note, newpitch=False, newlength=False, newvolume=False):
     new = note.copy()
     if newpitch is not False: # allow for None pitch value
         new.pitch = newpitch
@@ -179,7 +199,7 @@ def replace_note(self, note, newpitch=False, newlength=False, newvolume=False):
 
     return new
 
-def new_chord(self, pitches, lengths=1, volumes=0):
+def new_chord(pitches, lengths=1, volumes=0):
     size = len(pitches)
     if not isinstance(lengths, Iterable):
         lengths = [lengths] * size
@@ -189,9 +209,13 @@ def new_chord(self, pitches, lengths=1, volumes=0):
     notes = [Note(p, l, v) for p, l, v in zip(pitches, lengths, volumes)]
     return Chord(notes)
 
-def create_named_chord(root, name, voicing=0):
-    if not isinstance(root, int):
-
-
-
+def create_named_chord(root, kind='', voicing=0, lengths=1, volumes=0):
+    try:
+        pitches = named_chords[kind]
+    except KeyError:
+        raise WubWubError(f'Chord "{kind}" either not recognized or not '
+                          'implemented.')
+    if isinstance(root, str):
+        pitches = [pitch_from_semitones(root, p) for p in pitches]
+    return new_chord(pitches, lengths, volumes)
 
