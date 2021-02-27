@@ -20,4 +20,4 @@ synth.effects = AudioEffectsChain().lowpass(1200).reverb().delay(delays=[600])
 
 kick = seq.add_sampler('samples/808/kick (5).WAV')
 kick.make_notes_every(freq=1)
-
+#

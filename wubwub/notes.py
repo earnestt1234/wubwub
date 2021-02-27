@@ -102,11 +102,13 @@ class Chord:
         if value not in ['pitches', 'lengths', 'volumes']:
             raise WubWubError('Value must be "pitches", "lengths", or '
                               '"volumes".')
-        if isinstance(new, Number):
+        if isinstance(new, Number) or isinstance(new, str):
             new = [new] * len(self.notes)
         if len(new) != len(self.notes):
             raise WubWubError(f'Length of new values {len(new)} '
                               f'does not equal notes in chord ({len(self.notes)}).')
+        for note, n in zip(self.notes, new):
+            setattr(note, value, n)
 
 class ArpChord(Chord):
     def __init__(self, notes, length):
@@ -209,12 +211,20 @@ def new_chord(pitches, lengths=1, volumes=0):
     notes = [Note(p, l, v) for p, l, v in zip(pitches, lengths, volumes)]
     return Chord(notes)
 
-def create_named_chord(root, kind='', voicing=0, lengths=1, volumes=0):
+def chord_from_name(root, kind='', voicing=0, lengths=1, volumes=0, add=None):
     try:
         pitches = named_chords[kind]
     except KeyError:
         raise WubWubError(f'Chord "{kind}" either not recognized or not '
                           'implemented.')
+
+    if add is None:
+        add = []
+
+    if add:
+        if not isinstance(add, Iterable):
+            add = [add]
+        pitches += add
     if isinstance(root, str):
         pitches = [pitch_from_semitones(root, p) for p in pitches]
     return new_chord(pitches, lengths, volumes)
