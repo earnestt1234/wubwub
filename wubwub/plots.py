@@ -5,6 +5,7 @@ Created on Thu Feb 11 14:34:36 2021
 
 @author: earnestt1234
 """
+import math
 
 import matplotlib.pyplot as plt
 
@@ -22,10 +23,14 @@ def sequencer_plot(sequencer, timesig=None):
 
     yticks = []
     ylabs = []
+    max_beats = -1
     for y, track in enumerate(sequencer.tracks()):
         color = colors[y]
         beats = track.array_of_beats()
         notes = track.array_of_notes()
+
+        if max(beats) > max_beats:
+            max_beats = max(beats)
 
         ax.scatter(beats, [-y] * len(beats), color=color, zorder=5)
         yticks.append(-y)
@@ -41,6 +46,11 @@ def sequencer_plot(sequencer, timesig=None):
 
     ax.set_yticks(yticks)
     ax.set_yticklabels(ylabs)
+    beat_range = max_beats
+    ax.set_xlim(0.5, beat_range + 0.5)
+    # if timesig:
+    #     step = 1
+    #     xticks = range(1, max_beats+1)
 
 
 
