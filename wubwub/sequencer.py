@@ -86,8 +86,34 @@ class Sequencer:
         self._trackmanager.add_track(copy)
         return copy
 
-    def copy(self):
-        return deepcopy(self)
+    def copy(self, with_notes=True):
+        if with_notes:
+            return deepcopy(self)
+        else:
+            d = deepcopy(self)
+            for track in d.tracks():
+                track.delete_all()
+            return d
+
+    def split(self, beat):
+        if not isinstance(beat, int):
+            raise TypeError(f'Beat for split must be int, not {type(beat)}.')
+
+        a1, a2 = (1, beat)
+        b1, b2 = (beat, self.beats+1)
+
+        a = self.copy(with_notes=False)
+        a.beats = a2 - a1
+        b = self.copy(with_notes=False)
+        b.beats = b2 - b1
+
+        for selftrack, atrack, btrack in zip(self.tracks(), a.tracks(), b.tracks()):
+            anotes = selftrack.sd()[a1:a2]
+            atrack.add_fromdict(anotes)
+            bnotes = selftrack.sd()[b1:b2]
+            btrack.add_fromdict(bnotes, offset=-b.beats)
+
+        return a, b
 
     def delete_track(self, track):
         self._trackmanager.delete_track(track)

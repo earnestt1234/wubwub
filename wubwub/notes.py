@@ -16,7 +16,7 @@ from wubwub.pitch import named_chords, pitch_from_semitones
 from wubwub.resources import random_choice_generator
 
 class Note:
-    def __init__(self, pitch, length=1, volume=0):
+    def __init__(self, pitch=0, length=1, volume=0):
         self.pitch = pitch
         self.length = length
         self.volume = volume
@@ -98,17 +98,21 @@ class Chord:
     def volumes(self):
         return [note.volume for note in self.notes]
 
-    def alternotes(self, value, new):
-        if value not in ['pitches', 'lengths', 'volumes']:
-            raise WubWubError('Value must be "pitches", "lengths", or '
-                              '"volumes".')
-        if isinstance(new, Number) or isinstance(new, str):
-            new = [new] * len(self.notes)
-        if len(new) != len(self.notes):
-            raise WubWubError(f'Length of new values {len(new)} '
-                              f'does not equal notes in chord ({len(self.notes)}).')
-        for note, n in zip(self.notes, new):
-            setattr(note, value, n)
+    def alternotes(self, pitches=None, lengths=None, volumes=None):
+        order = ['pitch', 'length', 'volume']
+        for val, s in zip([pitches, lengths, volumes], order):
+            if not val:
+                continue
+
+            if isinstance(val, Number) or isinstance(pitches, str):
+                val = [val] * len(self.notes)
+
+            if len(val) != len(self.notes):
+                raise WubWubError(f'Length of new values {len(val)} '
+                                  f'does not equal notes in chord ({len(self.notes)}).')
+
+            for note, v in zip(self.notes, val):
+                setattr(note, s, v)
 
 class ArpChord(Chord):
     def __init__(self, notes, length):
@@ -213,7 +217,7 @@ def new_chord(pitches, lengths=1, volumes=0):
 
 def chord_from_name(root, kind='', voicing=0, lengths=1, volumes=0, add=None):
     try:
-        pitches = named_chords[kind]
+        pitches = list(named_chords[kind])
     except KeyError:
         raise WubWubError(f'Chord "{kind}" either not recognized or not '
                           'implemented.')

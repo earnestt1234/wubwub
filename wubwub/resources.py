@@ -10,6 +10,7 @@ import random
 
 import numpy as np
 
+
 SECOND = 1000
 MINUTE = 60 * SECOND
 
