@@ -30,10 +30,6 @@ class Sequencer:
         self.pan = 0
         self.postprocess_steps = ['effects', 'volume', 'pan']
 
-        self.volume = 0
-        self.pan = 0
-        self.effects = None
-
     def __repr__(self):
         l = len(self.tracks())
         return f"Sequencer(bpm={self.bpm}, beats={self.beats}, tracks={l})"

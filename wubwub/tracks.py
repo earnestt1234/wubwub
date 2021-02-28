@@ -73,6 +73,8 @@ class Track(metaclass=ABCMeta):
         self.name = name
         self.sample = sample
 
+        self.plotting = {}
+
     def __repr__(self):
         return f'GenericTrack(name="{self.name}", sample="{self.samplepath}")'
 
@@ -233,9 +235,6 @@ class Track(metaclass=ABCMeta):
 
     def array_of_beats(self):
         return np.array(self.notes.keys())
-
-    def array_of_notes(self):
-        return np.array(self.notes.values())
 
     def copypaste(self, start, stop, newstart, outsiders=None, merge=False,
                   copy=True):
