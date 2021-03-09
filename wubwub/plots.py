@@ -7,6 +7,7 @@ Created on Thu Feb 11 14:34:36 2021
 """
 from numbers import Number
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 
@@ -16,6 +17,7 @@ from wubwub.resources import MINUTE
 
 prop_cycle = plt.rcParams['axes.prop_cycle']
 colors = prop_cycle.by_key()['color']
+plt.rcParams["font.family"] = "monospace"
 
 def sequencerplot(sequencer, timesig=4, grid=True, ax=None, scatter_kwds=None,
                   plot_kwds=None):
@@ -49,7 +51,7 @@ def sequencerplot(sequencer, timesig=4, grid=True, ax=None, scatter_kwds=None,
             marker = 'o'
 
         beats = track.array_of_beats()
-        notes = track.notes.values()
+        notes = track.notedict.values()
 
         ax.scatter(beats, [-y] * len(beats), color=color, marker=marker,
                    zorder=5, **scatter_kwds)
@@ -90,7 +92,6 @@ def _convert_semitones_str_yaxis(plottype, note, track):
         return note.pitch
 
 def _format_pitch_yaxis(ax, pitchnums, max_range=24, max_pitches=12):
-    # names = [pitch_from_semitones('C1', p) for p in pitchnums]
     lo = min(pitchnums)
     hi = max(pitchnums)
     pitchrange = hi - lo
@@ -118,7 +119,6 @@ def trackplot(track, yaxis='semitones', timesig=4, grid=True, ax=None):
     ax.set_ylabel(yaxis)
     ax.set_xlabel('beats')
 
-
     mpb = 1 / track.get_bpm() * MINUTE
     pitchnums = set()
 
@@ -134,7 +134,7 @@ def trackplot(track, yaxis='semitones', timesig=4, grid=True, ax=None):
     notes = []
     lengths = []
 
-    for beat, element in track.notes.items():
+    for beat, element in track.notedict.items():
 
         clss = element.__class__.__name__
 
@@ -179,7 +179,84 @@ def trackplot(track, yaxis='semitones', timesig=4, grid=True, ax=None):
     minor_locator = AutoMinorLocator(2)
     ax.xaxis.set_minor_locator(minor_locator)
 
+def draw_pianoroll(ax, lo, hi, notenames=True):
+    lo_num = relative_pitch_to_int('C1', lo) - 2
+    hi_num = relative_pitch_to_int('C1', hi) + 2
+    num_notes = hi_num - lo_num
+    if 14 < num_notes < 20:
+        fontsize = 8
+    if num_notes >= 20:
+        notenames = False
 
+    ax.set_xlim(0, 1)
+    ax.set_ylim(lo_num, hi_num+1)
+
+    black = [1, 3, 6, 8, 10]
+    for i in range(lo_num, hi_num+1):
+        facecolor = 'black' if i % 12 in black else 'white'
+        rect = mpl.patches.Rectangle((0, i), width=1, height=1, facecolor=facecolor,
+                                     edgecolor='black')
+        ax.add_patch(rect)
+        if notenames:
+            note = pitch_from_semitones('C1', i)
+            textcolor = {'white':'black', 'black':'white'}[facecolor]
+            ax.text(0.1, i + 0.5, note, color=textcolor, va='center', fontsize=10)
+
+
+
+
+
+def pianoroll(track, timesig=4, grid=True,):
+
+    fig = plt.figure()
+    gs = fig.add_gridspec(1, 10)
+    plt.subplots_adjust(wspace=0)
+
+    ax0 = fig.add_subplot(gs[:, 1])
+    ax1 = fig.add_subplot(gs[:, 2:], sharey=ax0)
+
+    beats = []
+    notes = []
+    lengths = []
+    mpb = 1 / track.get_bpm() * MINUTE
+
+    for beat, element in track.notedict.items():
+
+        clss = element.__class__.__name__
+
+        if clss == "Note":
+            beats.append(beat)
+            notes.append(_convert_semitones_str_yaxis('semitones', element, track))
+            lengths.append(_actual_soundlength(element.length, track.sample, mpb))
+
+        if clss == 'Chord':
+            for note in element.notes:
+                beats.append(beat)
+                notes.append(_convert_semitones_str_yaxis('semitones', note, track))
+                lengths.append(_actual_soundlength(note.length, track.sample, mpb))
+
+        if clss == 'ArpChord':
+            for note in element.notes:
+                beats.append(beat)
+                notes.append(_convert_semitones_str_yaxis('semitones', note, track))
+                lengths.append(element.length)
+
+    lo = pitch_from_semitones('C1', min(notes))
+    hi = pitch_from_semitones('C1', max(notes))
+    draw_pianoroll(ax0, lo, hi)
+    ax1.set_xlim(1, track.get_beats() + 1)
+
+    for b, n, l in zip(beats, notes, lengths):
+        rect = mpl.patches.Rectangle((b, n), width=l, height=1, color='firebrick', alpha=.7)
+        ax1.add_patch(rect)
+
+    ax0.set_xticks([])
+    if grid:
+        ax1.set_yticks(range(min(notes)-2, max(notes)+3))
+        ax1.yaxis.grid(True, which='major', alpha=.3)
+        ax1.xaxis.grid(True, which='major', alpha=.3)
+        ax1.xaxis.grid(which='minor', alpha=.3)
+    ax1.set_xlabel('beats')
 
 
 

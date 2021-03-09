@@ -58,7 +58,7 @@ class Track(metaclass=ABCMeta):
 
     def __init__(self, name, sample, sequencer, basepitch='C4'):
         self.basepitch = basepitch
-        self.notes = SortedDict()
+        self.notedict = SortedDict()
         self.samplepath = None
 
         self.effects = None
@@ -80,22 +80,22 @@ class Track(metaclass=ABCMeta):
 
     def __getitem__(self, beat):
         if isinstance(beat, Number):
-            return self.notes[beat]
+            return self.notedict[beat]
         elif isinstance(beat, slice):
             start, stop = (beat.start, beat.stop)
             start = 0 if start is None else start
             stop = np.inf if stop is None else stop
-            return [self.notes[k] for k in self.notes.keys() if start <= k < stop]
+            return [self.notedict[k] for k in self.notedict.keys() if start <= k < stop]
         elif isinstance(beat, Iterable):
             if getattr(beat, 'dtype', False) == bool:
-                if not len(beat) == len(self.notes):
+                if not len(beat) == len(self.notedict):
                     raise IndexError(f'Length of boolean index ({len(beat)}) '
-                                     f"does not match number of notes ({len(self.notes)}).")
-                return [self.notes[k] for k, b in zip(self.notes.keys(), beat)
+                                     f"does not match number of notes ({len(self.notedict)}).")
+                return [self.notedict[k] for k, b in zip(self.notedict.keys(), beat)
                         if b]
 
             else:
-                return [self.notes[b] for b in beat]
+                return [self.notedict[b] for b in beat]
         else:
             raise WubWubError('Index wubwub.Track with [beat], '
                               '[start:stop], or boolean index, '
@@ -108,28 +108,28 @@ class Track(metaclass=ABCMeta):
         t = self.setitem_copy
 
         if isinstance(beat, Number):
-            self.notes[beat] = prep(value, t)
+            self.notedict[beat] = prep(value, t)
         elif isinstance(beat, slice):
             start, stop = (beat.start, beat.stop)
             start = 0 if start is None else start
             stop = np.inf if stop is None else stop
-            for k, v in self.notes.items():
+            for k, v in self.notedict.items():
                 if k < start:
                     continue
                 if k >= stop:
                     break
-                self.notes[k] = prep(value, t)
+                self.notedict[k] = prep(value, t)
         elif isinstance(beat, Iterable):
             if getattr(beat, 'dtype', False) == bool:
-                if not len(beat) == len(self.notes):
+                if not len(beat) == len(self.notedict):
                     raise IndexError(f'Length of boolean index ({len(beat)}) '
-                                     f"does not match number of notes ({len(self.notes)}).")
+                                     f"does not match number of notes ({len(self.notedict)}).")
                 if not type(value) in _notetypes_:
                     raise IndexError('Can only set with single note using '
                                      'boolean index.')
-                for k, b in zip(self.notes.keys(), beat):
+                for k, b in zip(self.notedict.keys(), beat):
                     if b:
-                        self.notes[k] = prep(value, t)
+                        self.notedict[k] = prep(value, t)
             else:
                 if type(value) in _notetypes_:
                     value = [value] * len(beat)
@@ -138,7 +138,7 @@ class Track(metaclass=ABCMeta):
                                      'does not equal length of indexer '
                                      f'({len(beat)}).')
                 for b, v in zip(beat, value):
-                    self.notes[b] = prep(v, t)
+                    self.notedict[b] = prep(v, t)
 
         else:
             raise WubWubError('Index wubwub.Track with [beat], '
@@ -146,10 +146,10 @@ class Track(metaclass=ABCMeta):
                               f'not {type(beat)}')
 
     def slicedict(self):
-        return SliceableDict(self.notes)
+        return SliceableDict(self.notedict)
 
     def sd(self):
-        return SliceableDict(self.notes)
+        return SliceableDict(self.notedict)
 
     @property
     def sequencer(self):
@@ -222,10 +222,10 @@ class Track(metaclass=ABCMeta):
 
         if copy:
             element = element.copy()
-        existing = self.notes.get(beat, None)
+        existing = self.notedict.get(beat, None)
         if existing and merge:
             element = existing + element
-        self.notes[beat] = element
+        self.notedict[beat] = element
 
     def add_fromdict(self, d, offset=0, outsiders=None, merge=False, copy=True):
         for beat, element in d.items():
@@ -234,7 +234,7 @@ class Track(metaclass=ABCMeta):
                      copy=copy, outsiders=outsiders)
 
     def array_of_beats(self):
-        return np.array(self.notes.keys())
+        return np.array(self.notedict.keys())
 
     def copypaste(self, start, stop, newstart, outsiders=None, merge=False,
                   copy=True):
@@ -256,8 +256,8 @@ class Track(metaclass=ABCMeta):
     def shift(self, beats, by, merge=False):
         beats = self._handle_beats_dict_boolarray(beats)
         newkeys = [k + by if k in beats else k
-                   for k in self.notes.keys()]
-        oldnotes = self.notes.values()
+                   for k in self.notedict.keys()]
+        oldnotes = self.notedict.values()
         self.delete_all_notes()
         for newbeat, note in zip(newkeys, oldnotes):
             self.add(newbeat, note, merge=merge, copy=False)
@@ -269,28 +269,28 @@ class Track(metaclass=ABCMeta):
         return self.sequencer.beats
 
     def pprint_notedict(self):
-        pprint.pprint(self.notes)
+        pprint.pprint(self.notedict)
 
     def clean(self):
         maxi = self.get_beats()
-        self.notes = SortedDict({b:note for b, note in self.notes.items()
-                                 if b < maxi +1})
+        self.notedict = SortedDict({b:note for b, note in self.notedict.items()
+                                    if b < maxi +1})
 
     def delete_all(self):
-        self.notes = SortedDict({})
+        self.notedict = SortedDict({})
 
     def delete(self, beats):
         beats = self._handle_beats_dict_boolarray(beats)
         for beat in beats:
-            del self.notes[beat]
+            del self.notedict[beat]
 
     def delete_fromrange(self, lo, hi):
-        self.notes = SortedDict({b:note for b, note in self.notes.items()
-                                 if not lo <= b < hi})
+        self.notedict = SortedDict({b:note for b, note in self.notedict.items()
+                                    if not lo <= b < hi})
 
     def unpack_notes(self):
         unpacked = []
-        for b, element in self.notes.items():
+        for b, element in self.notedict.items():
             if isinstance(element, Note):
                 unpacked.append((b, element))
             elif type(element) in [Chord, ArpChord]:
@@ -417,7 +417,7 @@ class Sampler(Track):
         sample = self.sample
         basepitch = self.basepitch
         next_position = np.inf
-        for beat, value in sorted(self.notes.items(), reverse=True):
+        for beat, value in sorted(self.notedict.items(), reverse=True):
             position = (beat-1) * b
             if isinstance(value, Note):
                 note = value
@@ -484,7 +484,7 @@ class Arpeggiator(Track):
         sample = self.sample
         basepitch = self.basepitch
         next_beat = np.inf
-        for beat, chord in sorted(self.notes.items(), reverse=True):
+        for beat, chord in sorted(self.notedict.items(), reverse=True):
             try:
                 length = chord.length
             except AttributeError:
