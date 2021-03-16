@@ -17,7 +17,10 @@ from wubwub.resources import MINUTE
 
 prop_cycle = plt.rcParams['axes.prop_cycle']
 colors = prop_cycle.by_key()['color']
-plt.rcParams["font.family"] = "monospace"
+
+# def set_plot_style():
+#     plt.rcParams["font.family"] = "monospace"
+
 
 def sequencerplot(sequencer, timesig=4, grid=True, ax=None, scatter_kwds=None,
                   plot_kwds=None):
@@ -187,6 +190,8 @@ def draw_pianoroll(ax, lo, hi, notenames=True):
         fontsize = 8
     if num_notes >= 20:
         notenames = False
+    else:
+        fontsize = 10
 
     ax.set_xlim(0, 1)
     ax.set_ylim(lo_num, hi_num+1)
@@ -200,7 +205,7 @@ def draw_pianoroll(ax, lo, hi, notenames=True):
         if notenames:
             note = pitch_from_semitones('C1', i)
             textcolor = {'white':'black', 'black':'white'}[facecolor]
-            ax.text(0.1, i + 0.5, note, color=textcolor, va='center', fontsize=10)
+            ax.text(0.1, i + 0.5, note, color=textcolor, va='center', fontsize=fontsize)
 
 
 
@@ -214,6 +219,8 @@ def pianoroll(track, timesig=4, grid=True,):
 
     ax0 = fig.add_subplot(gs[:, 1])
     ax1 = fig.add_subplot(gs[:, 2:], sharey=ax0)
+    ax1.set_xlabel('beats')
+    ax0.set_ylabel('pitch')
 
     beats = []
     notes = []
@@ -226,37 +233,43 @@ def pianoroll(track, timesig=4, grid=True,):
 
         if clss == "Note":
             beats.append(beat)
-            notes.append(_convert_semitones_str_yaxis('semitones', element, track))
+            notes.append(_convert_semitones_str_yaxis('pitch', element, track))
             lengths.append(_actual_soundlength(element.length, track.sample, mpb))
 
         if clss == 'Chord':
             for note in element.notes:
                 beats.append(beat)
-                notes.append(_convert_semitones_str_yaxis('semitones', note, track))
+                notes.append(_convert_semitones_str_yaxis('pitch', note, track))
                 lengths.append(_actual_soundlength(note.length, track.sample, mpb))
 
         if clss == 'ArpChord':
             for note in element.notes:
                 beats.append(beat)
-                notes.append(_convert_semitones_str_yaxis('semitones', note, track))
+                notes.append(_convert_semitones_str_yaxis('pitch', note, track))
                 lengths.append(element.length)
 
-    lo = pitch_from_semitones('C1', min(notes))
-    hi = pitch_from_semitones('C1', max(notes))
+    semitones = [relative_pitch_to_int('C1', n) for n in notes]
+    lo = notes[semitones.index(min(semitones))]
+    hi = notes[semitones.index(max(semitones))]
     draw_pianoroll(ax0, lo, hi)
     ax1.set_xlim(1, track.get_beats() + 1)
 
-    for b, n, l in zip(beats, notes, lengths):
+    for b, n, l in zip(beats, semitones, lengths):
         rect = mpl.patches.Rectangle((b, n), width=l, height=1, color='firebrick', alpha=.7)
         ax1.add_patch(rect)
 
     ax0.set_xticks([])
+    ax1.set_yticklabels([])
+    for tic in ax0.yaxis.get_major_ticks():
+            tic.tick1line.set_visible(False)
+    for tic in ax1.yaxis.get_major_ticks():
+        tic.tick1line.set_visible(False)
     if grid:
-        ax1.set_yticks(range(min(notes)-2, max(notes)+3))
+        ax1.set_yticks(range(min(semitones)-2, max(semitones)+3))
         ax1.yaxis.grid(True, which='major', alpha=.3)
         ax1.xaxis.grid(True, which='major', alpha=.3)
         ax1.xaxis.grid(which='minor', alpha=.3)
-    ax1.set_xlabel('beats')
+
 
 
 

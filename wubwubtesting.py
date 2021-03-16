@@ -33,4 +33,12 @@ hihat.plotting['color'] = 'slateblue'
 # wb.trackplot(synth, 'pitch')
 # seq.play()
 
-wb.pianoroll(synth)
+wb.pianoroll(synth, grid=True)
+# wb.trackplot(synth, yaxis='pitch')
+
+
+#%%
+
+test = wb.Sequencer(bpm=100, beats=4)
+a = test.add_sampler('samples/trumpet.WAV')
+b = test.add_sampler('samples/trumpet.WAV')

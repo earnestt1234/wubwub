@@ -178,6 +178,29 @@ def stitch(sequencers, internal_overhang=0, end_overhang=0, overhang_type='beats
 
     return stitched
 
+def _join_match(oldseq, newtrack, on='name'):
+    ons = ['name', 'sample', 'index']
+    if on == 'name':
+        for track in oldseq.tracks():
+            if track.name == newtrack.name:
+                return track
+
+def _join_2_sequencers(a, b, on='name'):
+    beats = a.beats + b.beats
+
+
+def join(sequencers, on='name'):
+    beats = sum(seq.beats for seq in sequencers)
+    out = Sequencer(bpm=sequencers[0].bpm, beats=beats)
+    lastadded = -1
+    for i, seq in enumerate(sequencers):
+        for track in seq.tracks():
+            matched = _join_match(out, track, on)
+            if matched:
+                lastadded = i
+
+
+
 def loop(sequencer, times=4, internal_overhang=0, end_overhang=0, overhang_type='beats'):
     return stitch([sequencer] * times, internal_overhang, end_overhang,
                   overhang_type)
