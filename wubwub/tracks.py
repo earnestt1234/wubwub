@@ -8,6 +8,8 @@ Created on Tue Feb  9 10:10:34 2021
 
 from abc import ABCMeta, abstractmethod
 from collections.abc import Iterable
+from collections import defaultdict
+import copy
 import itertools
 from numbers import Number
 import os
@@ -157,6 +159,10 @@ class Track(metaclass=ABCMeta):
 
     @sequencer.setter
     def sequencer(self, sequencer):
+        if sequencer == None:
+            self._sequencer = None
+            return
+
         if self._name in sequencer.tracknames():
             raise WubWubError(f'name "{self._name}" already in use by new sequencer')
 
@@ -173,7 +179,7 @@ class Track(metaclass=ABCMeta):
 
     @name.setter
     def name(self, new):
-        if new in self.sequencer.tracknames():
+        if self.sequencer and new in self.sequencer.tracknames():
             raise WubWubError(f'track name "{new}" already in use.')
         self._name = new
 
@@ -193,6 +199,13 @@ class Track(metaclass=ABCMeta):
             self._sample = sample
         else:
             raise WubWubError('sample must be a path or pydub.AudioSegment')
+
+    def copy(self, with_notes = True):
+        c = copy.deepcopy(self)
+        c.sequencer = None
+        if not with_notes:
+            c.notedict = SortedDict()
+        return c
 
     def add(self, beat, element, merge=False, copy=True, outsiders=None):
 
@@ -267,6 +280,14 @@ class Track(metaclass=ABCMeta):
 
     def get_beats(self):
         return self.sequencer.beats
+
+    def count_by_beat(self):
+        out = defaultdict(int)
+        for beat in self.array_of_beats():
+            out[int(beat // 1)] += 1
+
+        return dict(out)
+
 
     def pprint_notedict(self):
         pprint.pprint(self.notedict)

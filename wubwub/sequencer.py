@@ -178,26 +178,47 @@ def stitch(sequencers, internal_overhang=0, end_overhang=0, overhang_type='beats
 
     return stitched
 
-def _join_match(oldseq, newtrack, on='name'):
-    ons = ['name', 'sample', 'index']
+def _matchesforjoin(oldtracks, newtrack, on='name'):
+    ons = ['name', 'sample', 'sample+type']
+    if on not in ons:
+        raise WubWubError(f'`on` must be selected from {ons}')
+
     if on == 'name':
-        for track in oldseq.tracks():
-            if track.name == newtrack.name:
-                return track
-
-def _join_2_sequencers(a, b, on='name'):
-    beats = a.beats + b.beats
-
+        return [track for track in oldtracks if track.name == newtrack.name]
+    if on == 'sample':
+        return [track for track in oldtracks if track.sample == newtrack.sample]
+    if on == 'sample+type':
+        return [track for track in oldtracks if track.sample == newtrack.sample
+                and type(track) == type(newtrack)]
+    return []
 
 def join(sequencers, on='name'):
     beats = sum(seq.beats for seq in sequencers)
     out = Sequencer(bpm=sequencers[0].bpm, beats=beats)
-    lastadded = -1
+    offset = 0
     for i, seq in enumerate(sequencers):
+        oldtracks = out.tracks()
+        available = list(oldtracks)
+
         for track in seq.tracks():
-            matched = _join_match(out, track, on)
-            if matched:
-                lastadded = i
+            match = None
+            matches = _matchesforjoin(available, track, on=on)
+            if matches:
+                match = matches[0]
+                available.remove(match)
+
+            if match:
+                match.add_fromdict(track.notedict, offset=offset)
+
+            else:
+                new = track.copy(with_notes=False)
+                new.sequencer = out
+                new.add_fromdict(track.notedict, offset=offset)
+
+
+        offset = seq.beats
+    return out
+
 
 
 
