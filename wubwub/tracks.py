@@ -281,13 +281,13 @@ class Track(metaclass=ABCMeta):
     def get_beats(self):
         return self.sequencer.beats
 
-    def count_by_beat(self):
+    def count_by_beat(self, res=1):
         out = defaultdict(int)
+        res = 1/res
         for beat in self.array_of_beats():
-            out[int(beat // 1)] += 1
+            out[np.floor(beat * res) / res] += 1
 
         return dict(out)
-
 
     def pprint_notedict(self):
         pprint.pprint(self.notedict)

@@ -6,7 +6,7 @@ Created on Tue Mar 16 22:50:31 2021
 @author: earnestt1234
 """
 
-def seqstring(sequencer, name_cutoff=None, singlenote='X', multinote='M', empty=' '):
+def seqstring(sequencer, name_cutoff=None, singlenote='■', multinote='■', empty='□'):
     tracknames = []
     namelengths = []
     for track in sequencer.tracks():
@@ -40,3 +40,15 @@ def seqstring(sequencer, name_cutoff=None, singlenote='X', multinote='M', empty=
         s += '\n'
 
     return s
+
+def seqstring2(sequencer, name_cutoff=None, resolution=1, singlenote='■',
+               multinote='■', empty='□', wrap=16):
+    tracknames = []
+    namelengths = []
+    for track in sequencer.tracks():
+        n = track.name
+        if name_cutoff and len(track.name) > name_cutoff:
+            n = track.name[:-4] + '...'
+
+        tracknames.append(n)
+        namelengths.append(len(n))
