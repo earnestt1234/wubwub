@@ -147,10 +147,10 @@ class Track(metaclass=ABCMeta):
                               '[start:stop], or boolean index, '
                               f'not {type(beat)}')
 
-    def slicedict(self):
+    def noteslicer(self):
         return SliceableDict(self.notedict)
 
-    def sd(self):
+    def ns(self):
         return SliceableDict(self.notedict)
 
     @property
@@ -251,7 +251,7 @@ class Track(metaclass=ABCMeta):
 
     def copypaste(self, start, stop, newstart, outsiders=None, merge=False,
                   copy=True):
-        section = self.sd()[start:stop]
+        section = self.ns()[start:stop]
         if section:
             offset = start - 1
             at_one = {k-offset:v for k, v in section.items()}

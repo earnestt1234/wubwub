@@ -104,9 +104,9 @@ class Sequencer:
         b.beats = b2 - b1
 
         for selftrack, atrack, btrack in zip(self.tracks(), a.tracks(), b.tracks()):
-            anotes = selftrack.sd()[a1:a2]
+            anotes = selftrack.ns()[a1:a2]
             atrack.add_fromdict(anotes)
-            bnotes = selftrack.sd()[b1:b2]
+            bnotes = selftrack.ns()[b1:b2]
             btrack.add_fromdict(bnotes, offset=-b.beats)
 
         return a, b
