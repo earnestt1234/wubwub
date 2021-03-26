@@ -10,6 +10,7 @@ from abc import ABCMeta, abstractmethod
 from collections.abc import Iterable
 from collections import defaultdict
 import copy
+from fractions import Fraction
 import itertools
 from numbers import Number
 import os
@@ -266,6 +267,24 @@ class Track(metaclass=ABCMeta):
             return [beats]
         return beats
 
+    def quantize(self, resolution=1/4):
+        bts = self.get_beats()
+        targets = np.empty(0)
+        if isinstance(resolution, Number):
+            resolution = [resolution]
+        for r in resolution:
+            steps = int(bts * (1 / r))
+            beats = np.linspace(1, bts + 1, steps, endpoint=False)
+            targets = np.append(targets, beats)
+        targets = np.unique(targets)
+        for b, note in self.notedict.copy().items():
+            diffs = np.abs(targets - b)
+            argmin = np.argmin(diffs)
+            closest = targets[argmin]
+            if b != closest:
+                del self.notedict[b]
+                self.notedict[closest] = note
+
     def shift(self, beats, by, merge=False):
         beats = self._handle_beats_dict_boolarray(beats)
         newkeys = [k + by if k in beats else k
@@ -375,16 +394,19 @@ class Sampler(Track):
                          start=1, end=None, pitch_select='cycle',
                          length_select='cycle', volume_select='cycle', merge=False):
 
+        freq = Fraction(freq).limit_denominator()
+
         pitches = self._convert_select_arg(pitches, pitch_select)
         lengths = self._convert_select_arg(lengths, length_select)
         volumes = self._convert_select_arg(volumes, volume_select)
 
-        b = start + offset
+        b = Fraction(start + offset).limit_denominator()
         if end is None:
             end = self.get_beats() + 1
         d = {}
         while b < end:
-            d[b] = Note(next(pitches), next(lengths), next(volumes))
+            pos = b.numerator / b.denominator
+            d[pos] = Note(next(pitches), next(lengths), next(volumes))
             b += freq
 
         self.add_fromdict(d, merge=merge, copy=False)
@@ -395,13 +417,17 @@ class Sampler(Track):
 
     def make_chord_every(self, freq, offset=0, pitches=0, lengths=1, volumes=0,
                          start=1, end=None, merge=False):
+
+        freq = Fraction(freq).limit_denominator()
+
         chord = self._make_chord_assemble(pitches, lengths, volumes)
-        b = start + offset
+        b = Fraction(start + offset).limit_denominator()
         if end is None:
             end = self.get_beats() + 1
         d = {}
         while b < end:
-            d[b] = chord.copy()
+            pos = b.numerator / b.denominator
+            d[pos] = chord.copy()
             b += freq
         self.add_fromdict(d, merge=merge, copy=False)
 

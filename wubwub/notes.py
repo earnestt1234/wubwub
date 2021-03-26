@@ -8,6 +8,7 @@ Created on Tue Feb  9 10:13:53 2021
 
 from collections.abc import Iterable
 from copy import copy
+from fractions import Fraction
 from itertools import cycle, chain
 from numbers import Number
 
@@ -188,8 +189,9 @@ def arpeggiate(chord, beat, length=None, freq=0.5, method='up', auto_chord_lengt
 
     while current < end:
         note = next(gen)
-        length = freq if current + freq <= end else end-current
-        arpeggiated[current] = Note(pitch=note.pitch, length=length, volume=note.volume)
+        notelength = freq if current + freq <= end else end-current
+        arpeggiated[current] = Note(pitch=note.pitch, length=notelength,
+                                    volume=note.volume)
         current += freq
 
     return arpeggiated
