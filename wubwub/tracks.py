@@ -273,6 +273,8 @@ class Track(metaclass=ABCMeta):
         if isinstance(resolution, Number):
             resolution = [resolution]
         for r in resolution:
+            if (1 / r) * r != 1:
+                raise WubWubError('`resolution` must evenly divide 1')
             steps = int(bts * (1 / r))
             beats = np.linspace(1, bts + 1, steps, endpoint=False)
             targets = np.append(targets, beats)

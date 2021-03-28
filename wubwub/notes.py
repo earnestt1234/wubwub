@@ -182,7 +182,8 @@ def arpeggiate(chord, beat, length=None, freq=0.5, method='up', auto_chord_lengt
         else:
             raise WubWubError('chord must be wubwub.Chord or wubwub.ArpChord')
 
-    current = beat
+    freq = Fraction(freq).limit_denominator()
+    current = Fraction(beat).limit_denominator()
     end = beat + length
     arpeggiated = {}
     gen = arpeggio_generator(notes, method)
@@ -190,7 +191,9 @@ def arpeggiate(chord, beat, length=None, freq=0.5, method='up', auto_chord_lengt
     while current < end:
         note = next(gen)
         notelength = freq if current + freq <= end else end-current
-        arpeggiated[current] = Note(pitch=note.pitch, length=notelength,
+        pos = current.numerator / current.denominator
+        notelength = notelength.numerator / notelength.denominator
+        arpeggiated[pos] = Note(pitch=note.pitch, length=notelength,
                                     volume=note.volume)
         current += freq
 

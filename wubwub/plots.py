@@ -62,11 +62,13 @@ def sequencerplot(sequencer, timesig=4, grid=True, ax=None, scatter_kwds=None,
         ylabs.append(track.name)
 
         for b, n in zip(beats, notes):
+            clss = n.__class__.__name__
             l = getattr(n, 'length', False)
             if l is False:
                 l = max(note.length for note in n.notes)
-            samplelength = len(track.sample) / mpb
-            l = min(l, samplelength)
+            if clss != 'ArpChord':
+                samplelength = len(track.sample) / mpb
+                l = min(l, samplelength)
             ax.plot([b, b+l], [-y, -y], color=color, **plot_kwds)
 
     max_beats = sequencer.beats + 1
@@ -207,10 +209,6 @@ def draw_pianoroll(ax, lo, hi, notenames=True):
             textcolor = {'white':'black', 'black':'white'}[facecolor]
             ax.text(0.1, i + 0.5, note, color=textcolor, va='center', fontsize=fontsize)
 
-
-
-
-
 def pianoroll(track, timesig=4, grid=True,):
 
     fig = plt.figure()
@@ -270,28 +268,25 @@ def pianoroll(track, timesig=4, grid=True,):
         ax1.xaxis.grid(True, which='major', alpha=.3)
         ax1.xaxis.grid(which='minor', alpha=.3)
 
+def binned_waveform(sequencer, bins=50, ax=None, **kwargs):
+    a = sequencer.build().get_array_of_samples()
+
+    perbin = len(a) // bins
+    binned = [a[i:i+perbin] for i in range(0, len(a), perbin)]
+
+    mini_maxi = [(min(i), max(i)) for i in binned]
+    h = [i[1]-i[0] for i in mini_maxi]
+    bottom = [-i/2 for i in h]
+
+    fig, ax = plt.subplots()
+    ax.bar(x=range(len(h)), height=h, bottom=bottom, width=0.5)
+    lo, hi = ax.get_ylim()
+    biggest = max(abs(lo), abs(hi))
+    ax.set_ylim(-biggest, biggest)
+
+
+def librosa_waveform(sequencer):
+    pass
 
 
 
-
-
-
-
-#%%
-# a = x.build().get_array_of_samples()
-
-
-
-# bins = 125
-# perbin = len(a) // bins
-# binned = [a[i:i+perbin] for i in range(0, len(a), perbin)]
-
-# mini_maxi = [(min(i), max(i)) for i in binned]
-# h = [i[1]-i[0] for i in mini_maxi]
-# bottom = [-i/2 for i in h]
-
-# fig, ax = plt.subplots(figsize=(30,10))
-# ax.bar(x=range(len(h)), height=h, bottom=bottom, width=0.5)
-# lo, hi = ax.get_ylim()
-# biggest = max(abs(lo), abs(hi))
-# ax.set_ylim(-biggest, biggest)

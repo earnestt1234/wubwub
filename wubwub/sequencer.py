@@ -74,6 +74,13 @@ class Sequencer:
                           sequencer=self)
         return new
 
+    def add_samplers(self, samples, names=None, overlap=False, basepitch='C4'):
+        if names is None:
+            names = [None] * len(samples)
+        for sample, name in zip(samples, names):
+            self.add_sampler(sample=sample, name=name, overlap=overlap,
+                             basepitch=basepitch)
+
     def duplicate_track(self, track, newname=None):
         if newname is None:
             newname = unique_name('Track', self.tracknames())
