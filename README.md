@@ -1,2 +1,3 @@
-# wubwub
-Create sequencer-based music with Python
+![logo](img/logo.png)
+
+Create sequencer-based music with Python.
