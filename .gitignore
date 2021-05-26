@@ -1,5 +1,6 @@
-# Remove samples folder for testing
-/samples
+# Remove samples folder if downloaded
+/wubwub/SAMPLES
+/wubwub/__MACOSX
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

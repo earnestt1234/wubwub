@@ -28,3 +28,7 @@ hihat = seq.add_sampler('samples/808/hi hat (1).wav', name='hi-hat')
 hihat.make_notes_every(1/3)
 
 wb.binned_waveform(seq)
+
+#%%
+
+import wubwub.sounds as snd
