@@ -21,6 +21,7 @@ EXTENSIONS = {'.wav'}
 DOWNLOADID = '1vc7DVckk8iK_0KrOHUrI-ZufWqyBJ194'
 PREFIX = 'https://drive.google.com/uc?id='
 FULLLINK = PREFIX + DOWNLOADID
+VIEWLINK = f'https://drive.google.com/file/d/{DOWNLOADID}/view'
 
 SAMPLES = []
 SAMPLEFOLDERDICT = {}
@@ -55,6 +56,12 @@ def available():
     return tuple(SAMPLEFOLDERDICT.keys())
 
 def download():
+
+    yes = input(f'Download wubwub samples (~85 MB) from {VIEWLINK}? [y/n]\n')
+
+    if yes.lower() in ['n', 'no']:
+        return
+
     outpath = os.path.join(CURRENTDIR, 'SAMPLES.zip')
     gdown.download(FULLLINK, outpath)
 
@@ -63,19 +70,24 @@ def download():
 
     os.remove(outpath)
 
+    print(f'Downloaded samples to {SAMPLESDIR}.\n')
+
+    print('Refreshing...\n')
     refresh()
+    print('Done; use `wubwub.sounds.available()` to find valid keys and '
+          '`wubwub.sounds.load()` to load them.\n')
 
 def load(key):
 
     if not os.path.exists(SAMPLESDIR):
         raise OSError('Cannot find samples directory; please try to '
-                      'download them with `wubwubsounds.download()`.')
+                      'download them with `wubwub.sounds.download()`.')
 
     try:
         folder = SAMPLEFOLDERDICT[key]
     except KeyError:
         raise KeyError(f'Cannot find sample collection "{key}"; '
-                       'use `wubwubsounds.available()` to find valid keys')
+                       'use `wubwub.sounds.available()` to find valid keys')
 
     samples = {}
 
