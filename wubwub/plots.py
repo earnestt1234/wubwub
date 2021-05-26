@@ -18,14 +18,10 @@ from wubwub.resources import MINUTE
 prop_cycle = plt.rcParams['axes.prop_cycle']
 colors = prop_cycle.by_key()['color']
 
-# def set_plot_style():
-#     plt.rcParams["font.family"] = "monospace"
-
-
 def sequencerplot(sequencer, timesig=4, grid=True, ax=None, scatter_kwds=None,
                   plot_kwds=None):
     if ax is None:
-        fig, ax = plt.subplots()
+        ax = plt.gca()
     if scatter_kwds is None:
         scatter_kwds = {}
     if plot_kwds is None:
@@ -88,6 +84,8 @@ def sequencerplot(sequencer, timesig=4, grid=True, ax=None, scatter_kwds=None,
     minor_locator = AutoMinorLocator(2)
     ax.xaxis.set_minor_locator(minor_locator)
 
+    return ax.figure
+
 def _convert_semitones_str_yaxis(plottype, note, track):
     if plottype == 'semitones' and isinstance(note.pitch, str):
         return relative_pitch_to_int(track.basepitch, note.pitch)
@@ -116,7 +114,7 @@ def trackplot(track, yaxis='semitones', timesig=4, grid=True, ax=None):
     if yaxis not in ['pitch', 'semitones']:
         raise WubWubError('yaxis must be "pitch" or "semitones".')
     if ax is None:
-        fig, ax = plt.subplots()
+        ax = plt.gca()
     if grid:
         ax.yaxis.grid(True, which='major', alpha=.3)
         ax.xaxis.grid(True, which='major', alpha=.3)
@@ -183,6 +181,8 @@ def trackplot(track, yaxis='semitones', timesig=4, grid=True, ax=None):
     ax.set_xticks(xticks)
     minor_locator = AutoMinorLocator(2)
     ax.xaxis.set_minor_locator(minor_locator)
+
+    return ax.figure
 
 def draw_pianoroll(ax, lo, hi, notenames=True):
     lo_num = relative_pitch_to_int('C1', lo) - 2
@@ -268,25 +268,4 @@ def pianoroll(track, timesig=4, grid=True,):
         ax1.xaxis.grid(True, which='major', alpha=.3)
         ax1.xaxis.grid(which='minor', alpha=.3)
 
-def binned_waveform(sequencer, bins=50, ax=None, **kwargs):
-    a = sequencer.build().get_array_of_samples()
-
-    perbin = len(a) // bins
-    binned = [a[i:i+perbin] for i in range(0, len(a), perbin)]
-
-    mini_maxi = [(min(i), max(i)) for i in binned]
-    h = [i[1]-i[0] for i in mini_maxi]
-    bottom = [-i/2 for i in h]
-
-    fig, ax = plt.subplots()
-    ax.bar(x=range(len(h)), height=h, bottom=bottom, width=0.5)
-    lo, hi = ax.get_ylim()
-    biggest = max(abs(lo), abs(hi))
-    ax.set_ylim(-biggest, biggest)
-
-
-def librosa_waveform(sequencer):
-    pass
-
-
-
+    return fig

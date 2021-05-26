@@ -267,7 +267,7 @@ class Track(metaclass=ABCMeta):
             return [beats]
         return beats
 
-    def quantize(self, resolution=1/4):
+    def quantize(self, resolution=1/4, merge=False):
         bts = self.get_beats()
         targets = np.empty(0)
         if isinstance(resolution, Number):
@@ -285,7 +285,7 @@ class Track(metaclass=ABCMeta):
             closest = targets[argmin]
             if b != closest:
                 del self.notedict[b]
-                self.notedict[closest] = note
+                self.add(closest, note, merge=merge)
 
     def shift(self, beats, by, merge=False):
         beats = self._handle_beats_dict_boolarray(beats)
