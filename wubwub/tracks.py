@@ -25,7 +25,7 @@ from sortedcontainers import SortedDict
 from wubwub.audio import add_note_to_audio, add_effects, _overhang_to_milli
 from wubwub.errors import WubWubError, WubWubWarning
 from wubwub.notes import ArpChord, Chord, Note, arpeggiate, _notetypes_
-from wubwub.resources import random_choice_generator, MINUTE
+from wubwub.resources import random_choice_generator, MINUTE, SECOND
 
 class SliceableDict:
     def __init__(self, d):
@@ -362,11 +362,15 @@ class Track(metaclass=ABCMeta):
         build = self.build(overhang, overhang_type)
         play(build[start:end])
 
-    def soundtest(self, postprocess=True):
+    def soundtest(self, duration=None, postprocess=True,):
         test = self.sample
         if postprocess:
             test = self.postprocess(test)
-        play(test)
+        if duration is None:
+            duration = len(test)
+        else:
+            duration = duration * SECOND
+        play(test[:duration])
 
 class Sampler(Track):
     def __init__(self, name, sample, sequencer, basepitch='C4', overlap=True):
@@ -543,6 +547,7 @@ class Arpeggiator(Track):
             next_beat = beat
             arpeggiated = arpeggiate(chord, beat=beat, length=length,
                                      freq=self.freq, method=self.method)
+            print(arpeggiated)
             for arpbeat, note in arpeggiated.items():
                 position = (arpbeat-1) * b
                 duration = note.length * b

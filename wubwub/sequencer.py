@@ -6,6 +6,7 @@ Music sequencer for WubWub.
 @author: earnestt1234
 """
 from copy import deepcopy
+import os
 import time
 
 import pydub
@@ -165,6 +166,11 @@ class Sequencer:
             time.sleep(.25)
             track.soundtest(postprocess=postprocess)
             time.sleep(gap)
+
+    def export(self, path, overhang=0, overhang_type='beats'):
+        _, fmt = os.path.splitext(path)
+        build = self.build(overhang, overhang_type)
+        build.export(path, format=fmt)
 
 def stitch(sequencers, internal_overhang=0, end_overhang=0, overhang_type='beats'):
     total_length = 0

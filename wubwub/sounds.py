@@ -66,7 +66,7 @@ def download():
     gdown.download(FULLLINK, outpath)
 
     with zipfile.ZipFile(outpath, 'r') as zip_ref:
-        zip_ref.extractall(CURRENTDIR)
+        zip_ref.extractall(SAMPLESDIR)
 
     os.remove(outpath)
 
@@ -99,7 +99,10 @@ def load(key):
 
         fullpath = os.path.join(folder, file)
 
-        samples[name] = pydub.AudioSegment.from_file(fullpath, format=ext)
+        r = 44100
+        audio = (pydub.AudioSegment.from_file(fullpath, format=ext).
+                 set_frame_rate(r))
+        samples[name] = audio
 
     return samples
 
