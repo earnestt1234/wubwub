@@ -547,7 +547,6 @@ class Arpeggiator(Track):
             next_beat = beat
             arpeggiated = arpeggiate(chord, beat=beat, length=length,
                                      freq=self.freq, method=self.method)
-            print(arpeggiated)
             for arpbeat, note in arpeggiated.items():
                 position = (arpbeat-1) * b
                 duration = note.length * b
