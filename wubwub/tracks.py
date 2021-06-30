@@ -59,8 +59,7 @@ class Track(metaclass=ABCMeta):
     handle_new_notes = 'skip'
     setitem_copy = True
 
-    def __init__(self, name, sample, sequencer, basepitch='C4'):
-        self.basepitch = basepitch
+    def __init__(self, name, sample, sequencer,):
         self.notedict = SortedDict()
         self.samplepath = None
 
@@ -79,7 +78,8 @@ class Track(metaclass=ABCMeta):
         self.plotting = {}
 
     def __repr__(self):
-        return f'GenericTrack(name="{self.name}", sample="{self.samplepath}")'
+        samplename = self.sample if self.samplepath is None else self.samplepath
+        return f'GenericTrack(name="{self.name}", sample="{samplename}")'
 
     def __getitem__(self, beat):
         if isinstance(beat, Number):
@@ -374,7 +374,8 @@ class Track(metaclass=ABCMeta):
 
 class Sampler(Track):
     def __init__(self, name, sample, sequencer, basepitch='C4', overlap=True):
-        super().__init__(name, sample, sequencer, basepitch)
+        super().__init__(name, sample, sequencer,)
+        self.basepitch = basepitch
         self.overlap = overlap
 
     def __repr__(self):
@@ -500,10 +501,24 @@ class Sampler(Track):
 
         return self.postprocess(audio)
 
+class MultiSampler(Sampler):
+    def __init__(self, name, sequencer, overlap=True):
+        super().__init__(name=name, sequencer=sequencer, overlap=overlap, sample=None)
+
+    @property
+    def sample(self):
+        return self._sample
+
+    @sample.setter
+    def sample(self, sample):
+        print('WORKING')
+        self._sample = sample
+
 class Arpeggiator(Track):
     def __init__(self, name, sample, sequencer, basepitch='C4', freq=.5,
                  method='up'):
-        super().__init__(name, sample, sequencer, basepitch)
+        super().__init__(name, sample, sequencer,)
+        self.basepitch = basepitch
         self.freq = freq
         self.method = method
 

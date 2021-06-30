@@ -15,7 +15,7 @@ from pydub.playback import play
 from wubwub.audio import add_effects, _overhang_to_milli
 from wubwub.errors import WubWubError
 from wubwub.resources import MINUTE, unique_name
-from wubwub.tracks import TrackManager, Sampler, Arpeggiator
+from wubwub.tracks import TrackManager, Sampler, Arpeggiator, MultiSampler
 
 class Sequencer:
 
@@ -73,6 +73,12 @@ class Sequencer:
         new = Arpeggiator(name=name, sample=sample, freq=freq,
                           method=method, basepitch=basepitch,
                           sequencer=self)
+        return new
+
+    def add_multisampler(self, name=None, overlap=False):
+        if name is None:
+            name = unique_name('Track', self.tracknames())
+        new = MultiSampler(name=name, overlap=overlap, sequencer=self)
         return new
 
     def add_samplers(self, samples, names=None, overlap=False, basepitch='C4'):
