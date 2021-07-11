@@ -54,12 +54,12 @@ class SliceableDict:
             raise IndexError('Could not interpret input as int, '
                              'slice, iterable, or boolean index.')
 
-class Track(metaclass=ABCMeta):
+class _GenericTrack(metaclass=ABCMeta):
 
     handle_new_notes = 'skip'
     setitem_copy = True
 
-    def __init__(self, name, sample, sequencer,):
+    def __init__(self, name, sequencer,):
         self.notedict = SortedDict()
         self.samplepath = None
 
@@ -73,13 +73,8 @@ class Track(metaclass=ABCMeta):
         self._sequencer = None
         self.sequencer = sequencer
         self.name = name
-        self.sample = sample
 
         self.plotting = {}
-
-    def __repr__(self):
-        samplename = self.sample if self.samplepath is None else self.samplepath
-        return f'GenericTrack(name="{self.name}", sample="{samplename}")'
 
     def __getitem__(self, beat):
         if isinstance(beat, Number):
@@ -183,23 +178,6 @@ class Track(metaclass=ABCMeta):
         if self.sequencer and new in self.sequencer.tracknames():
             raise WubWubError(f'track name "{new}" already in use.')
         self._name = new
-
-    @property
-    def sample(self):
-        return self._sample
-
-    @sample.setter
-    def sample(self, sample):
-        if isinstance(sample, str):
-            _, ext = os.path.splitext(sample)
-            ext = ext.lower().strip('.')
-            self._sample = pydub.AudioSegment.from_file(sample,
-                                                        format=ext)
-            self.samplepath = os.path.abspath(sample)
-        elif isinstance(sample, pydub.AudioSegment):
-            self._sample = sample
-        else:
-            raise WubWubError('sample must be a path or pydub.AudioSegment')
 
     def copy(self, with_notes = True):
         c = copy.deepcopy(self)
@@ -362,24 +340,13 @@ class Track(metaclass=ABCMeta):
         build = self.build(overhang, overhang_type)
         play(build[start:end])
 
+    @abstractmethod
     def soundtest(self, duration=None, postprocess=True,):
-        test = self.sample
-        if postprocess:
-            test = self.postprocess(test)
-        if duration is None:
-            duration = len(test)
-        else:
-            duration = duration * SECOND
-        play(test[:duration])
+        pass
 
-class Sampler(Track):
-    def __init__(self, name, sample, sequencer, basepitch='C4', overlap=True):
-        super().__init__(name, sample, sequencer,)
-        self.basepitch = basepitch
-        self.overlap = overlap
-
-    def __repr__(self):
-        return f'Sampler(name="{self.name}", sample="{self.samplepath}")'
+class _SamplerLikeTrack(_GenericTrack):
+    def __init__(self, name, sequencer, **kwargs):
+        super().__init__(name=name, sequencer=sequencer)
 
     def make_notes(self, beats, pitches=0, lengths=1, volumes=0,
                    pitch_select='cycle', length_select='cycle',
@@ -463,6 +430,44 @@ class Sampler(Track):
             raise WubWubError('pitch, length, and volume select must be ',
                               '"cycle" or "random".')
 
+class _SingleSampleTrack(_GenericTrack):
+    def __init__(self, name, sample, sequencer, **kwargs):
+        super().__init__(name=name, sequencer=sequencer, **kwargs)
+        self._sample = None
+        self.sample = sample
+
+    @property
+    def sample(self):
+        return self._sample
+
+    @sample.setter
+    def sample(self, sample):
+        if isinstance(sample, str):
+            _, ext = os.path.splitext(sample)
+            ext = ext.lower().strip('.')
+            self._sample = pydub.AudioSegment.from_file(sample,
+                                                        format=ext)
+            self.samplepath = os.path.abspath(sample)
+        elif isinstance(sample, pydub.AudioSegment):
+            self._sample = sample
+        else:
+            raise WubWubError('sample must be a path or pydub.AudioSegment')
+
+class _MultiSampleTrack(_GenericTrack):
+    def __init__(self, name, sequencer, **kwargs):
+        super().__init__(name=name, sequencer=sequencer, **kwargs)
+        self.samples = {}
+
+class Sampler(_SingleSampleTrack, _SamplerLikeTrack):
+    def __init__(self, name, sample, sequencer, basepitch='C4', overlap=True):
+        super().__init__(name=name, sample=sample, sequencer=sequencer,
+                         basepitch=basepitch, overlap=overlap)
+        self.overlap = overlap
+        self.basepitch = basepitch
+
+    def __repr__(self):
+        return f'Sampler(name="{self.name}")'
+
     def build(self, overhang=0, overhang_type='beats'):
         b = (1/self.get_bpm()) * MINUTE
         overhang = _overhang_to_milli(overhang, overhang_type, b)
@@ -501,29 +506,79 @@ class Sampler(Track):
 
         return self.postprocess(audio)
 
-class MultiSampler(Sampler):
+    def soundtest(self, duration=None, postprocess=True,):
+        test = self.sample
+        if postprocess:
+            test = self.postprocess(test)
+        if duration is None:
+            duration = len(test)
+        else:
+            duration = duration * SECOND
+        play(test[:duration])
+
+class MultiSampler(_MultiSampleTrack, _SamplerLikeTrack):
     def __init__(self, name, sequencer, overlap=True):
-        super().__init__(name=name, sequencer=sequencer, overlap=overlap, sample=None)
-
-    @property
-    def sample(self):
-        return self._sample
-
-    @sample.setter
-    def sample(self, sample):
-        print('WORKING')
-        self._sample = sample
-
-class Arpeggiator(Track):
-    def __init__(self, name, sample, sequencer, basepitch='C4', freq=.5,
-                 method='up'):
-        super().__init__(name, sample, sequencer,)
-        self.basepitch = basepitch
-        self.freq = freq
-        self.method = method
+        super().__init__(name=name, sequencer=sequencer)
+        self.overlap = overlap
 
     def __repr__(self):
-        return (f'Arpeggiator(name="{self.name}", sample="{self.samplepath}", ' +
+        return f'MultiSampler(name="{self.name}")'
+
+    def build(self, overhang=0, overhang_type='beats'):
+        b = (1/self.get_bpm()) * MINUTE
+        overhang = _overhang_to_milli(overhang, overhang_type, b)
+        tracklength = self.get_beats() * b + overhang
+        audio = pydub.AudioSegment.silent(duration=tracklength)
+        next_position = np.inf
+        for beat, value in sorted(self.notedict.items(), reverse=True):
+            position = (beat-1) * b
+            if isinstance(value, Note):
+                note = value
+                duration = note.length * b
+                if (position + duration) > next_position and not self.overlap:
+                    duration = next_position - position
+                next_position = position
+                audio = add_note_to_audio(note=note,
+                                          audio=audio,
+                                          sample=self.samples[note.pitch],
+                                          position=position,
+                                          duration=duration,)
+            elif isinstance(value, Chord):
+                chord = value
+                for note in chord.notes:
+                    duration = note.length * b
+                    if (position + duration) > next_position and not self.overlap:
+                        duration = next_position - position
+                    audio = add_note_to_audio(note=note,
+                                              audio=audio,
+                                              sample=self.samples[note.pitch],
+                                              position=position,
+                                              duration=duration,)
+                next_position = position
+
+        return self.postprocess(audio)
+
+    def soundtest(self, duration=None, postprocess=True,):
+        for k, v in self.samples:
+            test = v
+            if postprocess:
+                test = self.postprocess(test)
+            if duration is None:
+                duration = len(test)
+            else:
+                duration = duration * SECOND
+            play(test[:duration])
+
+class Arpeggiator(_SingleSampleTrack):
+    def __init__(self, name, sample, sequencer, basepitch='C4', freq=.5,
+                 method='up'):
+        super().__init__(name=name, sample=sample, sequencer=sequencer,)
+        self.freq = freq
+        self.method = method
+        self.basepitch = basepitch
+
+    def __repr__(self):
+        return (f'Arpeggiator(name="{self.name}", '
                 f'freq={self.freq}, method="{self.method}")')
 
     def make_chord(self, beat, pitches, length=1, merge=False):
@@ -573,6 +628,16 @@ class Arpeggiator(Track):
                                           basepitch=basepitch)
 
         return self.postprocess(audio)
+
+    def soundtest(self, duration=None, postprocess=True,):
+        test = self.sample
+        if postprocess:
+            test = self.postprocess(test)
+        if duration is None:
+            duration = len(test)
+        else:
+            duration = duration * SECOND
+        play(test[:duration])
 
 class TrackManager:
     def __init__(self, sequencer):
