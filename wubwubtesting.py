@@ -48,3 +48,5 @@ hi2.pan = -.75
 hi2.volume = -7
 
 seq.build(overhang=8)
+print(wb.seqstring(seq,))
+print(wb.seqstring2(seq,))

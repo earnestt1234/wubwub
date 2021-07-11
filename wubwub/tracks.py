@@ -251,7 +251,7 @@ class _GenericTrack(metaclass=ABCMeta):
         if isinstance(resolution, Number):
             resolution = [resolution]
         for r in resolution:
-            if (1 / r) * r != 1:
+            if ((1 / r) % 1) != 0:
                 raise WubWubError('`resolution` must evenly divide 1')
             steps = int(bts * (1 / r))
             beats = np.linspace(1, bts + 1, steps, endpoint=False)
@@ -308,9 +308,11 @@ class _GenericTrack(metaclass=ABCMeta):
         self.notedict = SortedDict({b:note for b, note in self.notedict.items()
                                     if not lo <= b < hi})
 
-    def unpack_notes(self):
+    def unpack_notes(self, start=0, stop=np.inf,):
         unpacked = []
         for b, element in self.notedict.items():
+            if not start <= b < stop:
+                continue
             if isinstance(element, Note):
                 unpacked.append((b, element))
             elif type(element) in [Chord, ArpChord]:
@@ -638,6 +640,21 @@ class Arpeggiator(_SingleSampleTrack):
         else:
             duration = duration * SECOND
         play(test[:duration])
+
+    def unpack_notes(self, start=0, stop=np.inf,):
+        unpacked = []
+        for b, element in self.notedict.items():
+            if not start <= b < stop:
+                continue
+            if isinstance(element, Note):
+                unpacked.append((b, element))
+            elif type(element) in [Chord, ArpChord]:
+                arpeggiated = arpeggiate(element, beat=b,
+                                         freq=self.freq, method=self.method)
+                for k, v in arpeggiated.items():
+                    unpacked.append((k, v))
+
+        return unpacked
 
 class TrackManager:
     def __init__(self, sequencer):
