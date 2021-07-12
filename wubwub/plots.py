@@ -110,9 +110,10 @@ def _actual_soundlength(beatlength, sample, mpb):
     samplelength = len(sample) / mpb
     return min(beatlength, samplelength)
 
-def trackplot(track, yaxis='semitones', timesig=4, grid=True, ax=None):
-    if yaxis not in ['pitch', 'semitones']:
-        raise WubWubError('yaxis must be "pitch" or "semitones".')
+def trackplot(track, yaxis='semitones', timesig=4, grid=True, ax=None,
+              scatter_kwds=None, plot_kwds=None):
+    if yaxis not in ['pitch', 'semitones', 'names']:
+        raise WubWubError('yaxis must be "pitch", "semitones", or "names".')
     if ax is None:
         ax = plt.gca()
     if grid:
@@ -121,6 +122,10 @@ def trackplot(track, yaxis='semitones', timesig=4, grid=True, ax=None):
         ax.xaxis.grid(which='minor', alpha=.3)
     ax.set_ylabel(yaxis)
     ax.set_xlabel('beats')
+    if scatter_kwds is None:
+        scatter_kwds = {}
+    if plot_kwds is None:
+        plot_kwds = {}
 
     mpb = 1 / track.get_bpm() * MINUTE
     pitchnums = set()
@@ -158,17 +163,29 @@ def trackplot(track, yaxis='semitones', timesig=4, grid=True, ax=None):
                 notes.append(note)
                 lengths.append(element.length)
 
-    for b, n, l in zip(beats, notes, lengths):
-        p = _convert_semitones_str_yaxis(yaxis, n, track)
-        if isinstance(p, str):
-            p = relative_pitch_to_int('C1', p)
-            pitchnums.add(p)
-        ax.scatter(b, p, color=color)
+    if yaxis in ['pitch', 'semitones']:
+        for b, n, l in zip(beats, notes, lengths):
+            p = _convert_semitones_str_yaxis(yaxis, n, track)
+            if isinstance(p, str):
+                p = relative_pitch_to_int('C1', p)
+                pitchnums.add(p)
+            ax.scatter(b, p, color=color, **scatter_kwds)
 
-        ax.plot([b, b+l], [p, p], color=color)
+            ax.plot([b, b+l], [p, p], color=color, **plot_kwds)
 
-    if yaxis == 'pitch':
-        _format_pitch_yaxis(ax, pitchnums)
+        if yaxis == 'pitch':
+            _format_pitch_yaxis(ax, pitchnums)
+
+    elif yaxis == 'names':
+        labels = tuple(set(n.pitch for n in notes))
+        positions_dict = dict(zip(labels, range(len(labels))))
+        print(labels, positions_dict)
+        for b, n, l in zip(beats, notes, lengths):
+            p = positions_dict[n.pitch]
+            ax.scatter(b, p, color=color, **scatter_kwds)
+            ax.plot([b, b+l], [p, p], color=color, **plot_kwds)
+        ax.set_yticks(range(len(labels)))
+        ax.set_yticklabels(labels)
 
     max_beats = track.get_beats() + 1
     step = 1

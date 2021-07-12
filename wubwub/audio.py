@@ -15,13 +15,15 @@ from wubwub.errors import WubWubError
 from wubwub.pitch import relative_pitch_to_int, shift_pitch
 
 def add_note_to_audio(note, audio, sample, position, duration, basepitch=None,
-                      fade=10):
-    pitch = note.pitch
-    if pitch is None:
-        return audio
-    if isinstance(pitch, str):
-        pitch = relative_pitch_to_int(basepitch, pitch)
-    sound = sample if pitch == 0 else shift_pitch(sample, pitch)
+                      fade=10, shift_pitch=True):
+    if shift_pitch:
+        pitch = note.pitch
+        if pitch is None:
+            return audio
+        if isinstance(pitch, str) and pitch != 0:
+            pitch = relative_pitch_to_int(basepitch, pitch)
+        sample = shift_pitch(sample, pitch)
+    sound = sample
     sound += note.volume
     sound = sound[:duration]
     sound = sound.fade_out(fade)

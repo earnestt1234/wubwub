@@ -14,7 +14,9 @@ from pydub.playback import play
 
 from wubwub.audio import add_effects, _overhang_to_milli
 from wubwub.errors import WubWubError
+from wubwub.plots import sequencerplot
 from wubwub.resources import MINUTE, unique_name
+from wubwub.seqstring import seqstring
 from wubwub.tracks import TrackManager, Sampler, Arpeggiator, MultiSampler
 
 class Sequencer:
@@ -177,6 +179,30 @@ class Sequencer:
         _, fmt = os.path.splitext(path)
         build = self.build(overhang, overhang_type)
         build.export(path, format=fmt)
+
+    def show(self, printout=True, name_cutoff=None, resolution=1,
+             singlenote='■', multinote='■', empty='□', wrap=32):
+        s = seqstring(self,
+                      name_cutoff=name_cutoff,
+                      resolution=resolution,
+                      singlenote=singlenote,
+                      multinote=multinote,
+                      empty=empty,
+                      wrap=wrap)
+        if printout:
+            print(s)
+        else:
+            return s
+
+    def plot(self, timesig=4, grid=True, ax=None, scatter_kwds=None,
+             plot_kwds=None):
+        sequencerplot(self,
+                      timesig=timesig,
+                      grid=grid,
+                      ax=ax,
+                      scatter_kwds=scatter_kwds,
+                      plot_kwds=plot_kwds)
+
 
 def stitch(sequencers, internal_overhang=0, end_overhang=0, overhang_type='beats'):
     total_length = 0

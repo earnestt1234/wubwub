@@ -6,6 +6,7 @@ Created on Fri May 14 09:49:09 2021
 """
 
 import os
+import shutil
 import zipfile
 
 import gdown
@@ -59,7 +60,7 @@ def download():
 
     yes = input(f'Download wubwub samples (~85 MB) from {VIEWLINK}? [y/n]\n')
 
-    if yes.lower() in ['n', 'no']:
+    if yes.lower() not in ['y', 'yes']:
         return
 
     outpath = os.path.join(CURRENTDIR, 'SAMPLES.zip')
@@ -105,6 +106,17 @@ def load(key):
         samples[name] = audio
 
     return samples
+
+def REMOVE():
+    yes = input(f'Remove samples folder ("{SAMPLESDIR}") all its contents?\n')
+
+    if yes.lower() not in ['y', 'yes']:
+        return
+
+    shutil.rmtree(SAMPLESDIR)
+    print('Finished, refreshing...\n')
+    refresh()
+    print('Done.\n')
 
 def listall():
     return tuple(SAMPLES)

@@ -25,6 +25,7 @@ from sortedcontainers import SortedDict
 from wubwub.audio import add_note_to_audio, add_effects, _overhang_to_milli
 from wubwub.errors import WubWubError, WubWubWarning
 from wubwub.notes import ArpChord, Chord, Note, arpeggiate, _notetypes_
+from wubwub.plots import trackplot, pianoroll
 from wubwub.resources import random_choice_generator, MINUTE, SECOND
 
 class SliceableDict:
@@ -346,6 +347,16 @@ class _GenericTrack(metaclass=ABCMeta):
     def soundtest(self, duration=None, postprocess=True,):
         pass
 
+    def plot(self, yaxis='semitones', timesig=4, grid=True, ax=None,
+             plot_kwds=None, scatter_kwds=None):
+        trackplot(track=self,
+                  yaxis=yaxis,
+                  timesig=timesig,
+                  grid=grid,
+                  ax=ax,
+                  plot_kwds=plot_kwds,
+                  scatter_kwds=scatter_kwds)
+
 class _SamplerLikeTrack(_GenericTrack):
     def __init__(self, name, sequencer, **kwargs):
         super().__init__(name=name, sequencer=sequencer)
@@ -522,6 +533,7 @@ class MultiSampler(_MultiSampleTrack, _SamplerLikeTrack):
     def __init__(self, name, sequencer, overlap=True):
         super().__init__(name=name, sequencer=sequencer)
         self.overlap = overlap
+        self.default_sample = pydub.AudioSegment.empty()
 
     def __repr__(self):
         return f'MultiSampler(name="{self.name}")'
@@ -542,9 +554,10 @@ class MultiSampler(_MultiSampleTrack, _SamplerLikeTrack):
                 next_position = position
                 audio = add_note_to_audio(note=note,
                                           audio=audio,
-                                          sample=self.samples[note.pitch],
+                                          sample=self.get_sample(note.pitch),
                                           position=position,
-                                          duration=duration,)
+                                          duration=duration,
+                                          shift_pitch=False)
             elif isinstance(value, Chord):
                 chord = value
                 for note in chord.notes:
@@ -553,15 +566,16 @@ class MultiSampler(_MultiSampleTrack, _SamplerLikeTrack):
                         duration = next_position - position
                     audio = add_note_to_audio(note=note,
                                               audio=audio,
-                                              sample=self.samples[note.pitch],
+                                              sample=self.get_sample(note.pitch),
                                               position=position,
-                                              duration=duration,)
+                                              duration=duration,
+                                              shift_pitch=False)
                 next_position = position
 
         return self.postprocess(audio)
 
     def soundtest(self, duration=None, postprocess=True,):
-        for k, v in self.samples:
+        for k, v in self.samples.items():
             test = v
             if postprocess:
                 test = self.postprocess(test)
@@ -570,6 +584,20 @@ class MultiSampler(_MultiSampleTrack, _SamplerLikeTrack):
             else:
                 duration = duration * SECOND
             play(test[:duration])
+
+    def add_sample(self, key, sample):
+        if isinstance(sample, str):
+            _, ext = os.path.splitext(sample)
+            ext = ext.lower().strip('.')
+            self.samples[key] = pydub.AudioSegment.from_file(sample,
+                                                             format=ext)
+        elif isinstance(sample, pydub.AudioSegment):
+            self.samples[key] = sample
+        else:
+            raise WubWubError('sample must be a path or pydub.AudioSegment')
+
+    def get_sample(self, key):
+        return self.samples.get(key, self.default_sample)
 
 class Arpeggiator(_SingleSampleTrack):
     def __init__(self, name, sample, sequencer, basepitch='C4', freq=.5,
