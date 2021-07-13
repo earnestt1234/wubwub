@@ -356,6 +356,9 @@ class _GenericTrack(metaclass=ABCMeta):
                   plot_kwds=plot_kwds,
                   scatter_kwds=scatter_kwds)
 
+    def pianoroll(self, timesig=4, grid=True,):
+        pianoroll(track=self, timesig=timesig, grid=grid)
+
 class _SamplerLikeTrack(_GenericTrack):
     def __init__(self, name, sequencer, **kwargs):
         super().__init__(name=name, sequencer=sequencer)

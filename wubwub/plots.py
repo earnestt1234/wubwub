@@ -18,6 +18,25 @@ from wubwub.resources import MINUTE
 prop_cycle = plt.rcParams['axes.prop_cycle']
 colors = prop_cycle.by_key()['color']
 
+def _actual_soundlength(track, element):
+    mpb = 1 / track.get_bpm() * MINUTE
+    clss = element.__class__.__name__
+
+    if clss == 'ArpChord':
+        return element.length
+
+    elif hasattr(element, 'length'):
+        l = element.length
+    else:
+        l = max(n.length for n in element.notes)
+
+    if hasattr(track, 'get_sample'):
+        samplelen = len(track.get_sample(element.pitch)) / mpb
+    else:
+        samplelen = len(track.sample) / mpb
+
+    return min(l, samplelen)
+
 def sequencerplot(sequencer, timesig=4, grid=True, ax=None, scatter_kwds=None,
                   plot_kwds=None):
     if ax is None:
@@ -58,13 +77,7 @@ def sequencerplot(sequencer, timesig=4, grid=True, ax=None, scatter_kwds=None,
         ylabs.append(track.name)
 
         for b, n in zip(beats, notes):
-            clss = n.__class__.__name__
-            l = getattr(n, 'length', False)
-            if l is False:
-                l = max(note.length for note in n.notes)
-            if clss != 'ArpChord':
-                samplelength = len(track.sample) / mpb
-                l = min(l, samplelength)
+            l = _actual_soundlength(track, n)
             ax.plot([b, b+l], [-y, -y], color=color, **plot_kwds)
 
     max_beats = sequencer.beats + 1
@@ -106,10 +119,6 @@ def _format_pitch_yaxis(ax, pitchnums, max_range=24, max_pitches=12):
     ax.set_yticks(yticks)
     ax.set_yticklabels(labels)
 
-def _actual_soundlength(beatlength, sample, mpb):
-    samplelength = len(sample) / mpb
-    return min(beatlength, samplelength)
-
 def trackplot(track, yaxis='semitones', timesig=4, grid=True, ax=None,
               scatter_kwds=None, plot_kwds=None):
     if yaxis not in ['pitch', 'semitones', 'names']:
@@ -149,19 +158,13 @@ def trackplot(track, yaxis='semitones', timesig=4, grid=True, ax=None,
         if clss == "Note":
             beats.append(beat)
             notes.append(element)
-            lengths.append(_actual_soundlength(element.length, track.sample, mpb))
+            lengths.append(_actual_soundlength(track, element))
 
-        if clss == 'Chord':
+        else:
             for note in element.notes:
                 beats.append(beat)
                 notes.append(note)
-                lengths.append(_actual_soundlength(note.length, track.sample, mpb))
-
-        if clss == 'ArpChord':
-            for note in element.notes:
-                beats.append(beat)
-                notes.append(note)
-                lengths.append(element.length)
+                lengths.append(_actual_soundlength(track, element))
 
     if yaxis in ['pitch', 'semitones']:
         for b, n, l in zip(beats, notes, lengths):
@@ -179,7 +182,6 @@ def trackplot(track, yaxis='semitones', timesig=4, grid=True, ax=None,
     elif yaxis == 'names':
         labels = tuple(set(n.pitch for n in notes))
         positions_dict = dict(zip(labels, range(len(labels))))
-        print(labels, positions_dict)
         for b, n, l in zip(beats, notes, lengths):
             p = positions_dict[n.pitch]
             ax.scatter(b, p, color=color, **scatter_kwds)
@@ -249,19 +251,13 @@ def pianoroll(track, timesig=4, grid=True,):
         if clss == "Note":
             beats.append(beat)
             notes.append(_convert_semitones_str_yaxis('pitch', element, track))
-            lengths.append(_actual_soundlength(element.length, track.sample, mpb))
+            lengths.append(_actual_soundlength(track, element))
 
-        if clss == 'Chord':
+        else:
             for note in element.notes:
                 beats.append(beat)
                 notes.append(_convert_semitones_str_yaxis('pitch', note, track))
-                lengths.append(_actual_soundlength(note.length, track.sample, mpb))
-
-        if clss == 'ArpChord':
-            for note in element.notes:
-                beats.append(beat)
-                notes.append(_convert_semitones_str_yaxis('pitch', note, track))
-                lengths.append(element.length)
+                lengths.append(_actual_soundlength(track, element))
 
     semitones = [relative_pitch_to_int('C1', n) for n in notes]
     lo = notes[semitones.index(min(semitones))]
