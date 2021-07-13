@@ -58,16 +58,16 @@ def available():
 
 def download():
 
-    yes = input(f'Download wubwub samples (~85 MB) from {VIEWLINK}? [y/n]\n')
+    yes = input(f'Download wubwub samples (~65 MB) from {VIEWLINK}? [y/n]\n')
 
     if yes.lower() not in ['y', 'yes']:
         return
 
-    outpath = os.path.join(CURRENTDIR, 'SAMPLES.zip')
+    outpath = os.path.join(CURRENTDIR, SAMPLESDIRNAME + '.zip')
     gdown.download(FULLLINK, outpath)
 
     with zipfile.ZipFile(outpath, 'r') as zip_ref:
-        zip_ref.extractall(SAMPLESDIR)
+        zip_ref.extractall(CURRENTDIR)
 
     os.remove(outpath)
 

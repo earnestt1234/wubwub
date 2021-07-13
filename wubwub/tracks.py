@@ -19,10 +19,9 @@ import warnings
 import numpy as np
 import pprint
 import pydub
-from pydub.playback import play
 from sortedcontainers import SortedDict
 
-from wubwub.audio import add_note_to_audio, add_effects, _overhang_to_milli
+from wubwub.audio import add_note_to_audio, add_effects, play, _overhang_to_milli
 from wubwub.errors import WubWubError, WubWubWarning
 from wubwub.notes import ArpChord, Chord, Note, arpeggiate, _notetypes_
 from wubwub.plots import trackplot, pianoroll
@@ -557,7 +556,7 @@ class MultiSampler(_MultiSampleTrack, _SamplerLikeTrack):
                                           sample=self.get_sample(note.pitch),
                                           position=position,
                                           duration=duration,
-                                          shift_pitch=False)
+                                          shift=False)
             elif isinstance(value, Chord):
                 chord = value
                 for note in chord.notes:
@@ -569,7 +568,7 @@ class MultiSampler(_MultiSampleTrack, _SamplerLikeTrack):
                                               sample=self.get_sample(note.pitch),
                                               position=position,
                                               duration=duration,
-                                              shift_pitch=False)
+                                              shift=False)
                 next_position = position
 
         return self.postprocess(audio)

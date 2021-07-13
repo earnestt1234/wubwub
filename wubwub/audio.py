@@ -48,5 +48,12 @@ def _overhang_to_milli(overhang, overhang_type, b=600):
         raise WubWubError('overhang must be "beats" or "seconds"')
     return overhang
 
-def play(audiosegment):
+def play(audiosegment, convert=True):
+    if audiosegment.sample_width != 2:
+        if convert:
+            audiosegment = audiosegment.set_sample_width(2).set_frame_rate(44100)
+        else:
+            raise WubWubError('wubwub can only play 16-bit sounds, '
+                              'either use the `convert` parameter '
+                              'or otherwise convert the sound to be 16-bit.')
     _play(audiosegment)

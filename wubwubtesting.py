@@ -1,13 +1,10 @@
-import os
+import wubwub as wb
+import wubwub.sounds as snd
 
 import pydub
 
-path = '/Users/earnestt1234/Desktop/SAMPLES'
+p1 = '/Users/earnestt1234/Desktop/test.wav'
+p2 = '/Users/earnestt1234/Desktop/test2.wav'
 
-for root, folders, files in os.walk(path):
-    for file in files:
-        if not file.endswith('wav'): continue;
-        full = os.path.join(root, file)
-        print(file)
-        snd = pydub.AudioSegment.from_file(full)
-        print(snd.frame_rate, snd.sample_width)
+a = pydub.AudioSegment.from_file(p1)
+b = pydub.AudioSegment.from_file(p2)

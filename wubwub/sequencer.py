@@ -10,9 +10,8 @@ import os
 import time
 
 import pydub
-from pydub.playback import play
 
-from wubwub.audio import add_effects, _overhang_to_milli
+from wubwub.audio import add_effects, play, _overhang_to_milli
 from wubwub.errors import WubWubError
 from wubwub.plots import sequencerplot
 from wubwub.resources import MINUTE, unique_name
@@ -90,12 +89,14 @@ class Sequencer:
             self.add_sampler(sample=sample, name=name, overlap=overlap,
                              basepitch=basepitch)
 
-    def duplicate_track(self, track, newname=None):
+    def duplicate_track(self, track, newname=None, with_notes=True):
         if newname is None:
             newname = unique_name('Track', self.tracknames())
         copy = deepcopy(self.get_track(track))
         copy.name = newname
         self._trackmanager.add_track(copy)
+        if not with_notes:
+            copy.delete_all()
         return copy
 
     def copy(self, with_notes=True):
@@ -160,8 +161,12 @@ class Sequencer:
     def loop(self, times=4, internal_overhang=0, end_overhang=0, overhang_type='beats'):
         looped = loop(self, times=times, internal_overhang=internal_overhang,
                       end_overhang=end_overhang, overhang_type=overhang_type)
-        play(looped)
+        return looped
 
+    def loopplay(self, times=4, internal_overhang=0, end_overhang=0, overhang_type='beats'):
+        looped = loop(self, times=times, internal_overhang=internal_overhang,
+                      end_overhang=end_overhang, overhang_type=overhang_type)
+        play(looped)
 
     def soundtest(self, selection=None, postprocess=True, gap=.5):
         if selection is None:
