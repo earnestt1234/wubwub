@@ -108,7 +108,7 @@ def load(key):
     return samples
 
 def REMOVE():
-    yes = input(f'Remove samples folder ("{SAMPLESDIR}") all its contents?\n')
+    yes = input(f'Remove samples folder ("{SAMPLESDIR}") all its contents? [y/n]\n')
 
     if yes.lower() not in ['y', 'yes']:
         return

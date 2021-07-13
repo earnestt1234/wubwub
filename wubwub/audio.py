@@ -15,8 +15,8 @@ from wubwub.errors import WubWubError
 from wubwub.pitch import relative_pitch_to_int, shift_pitch
 
 def add_note_to_audio(note, audio, sample, position, duration, basepitch=None,
-                      fade=10, shift_pitch=True):
-    if shift_pitch:
+                      fade=10, shift=True):
+    if shift:
         pitch = note.pitch
         if pitch is None:
             return audio
