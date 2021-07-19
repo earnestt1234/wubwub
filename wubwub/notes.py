@@ -7,20 +7,19 @@ Created on Tue Feb  9 10:13:53 2021
 """
 
 from collections.abc import Iterable
-from copy import copy
 from fractions import Fraction
 from itertools import cycle, chain
 from numbers import Number
 from sortedcontainers import SortedList
 
 from wubwub.errors import WubWubError
-from wubwub.pitch import named_chords, pitch_from_semitones
+from wubwub.pitch import named_chords, pitch_from_semitones, relative_pitch_to_int
 from wubwub.resources import random_choice_generator
 
 class Note(object):
     __slots__ = ('pitch', 'length', 'volume')
 
-    def __init__(self, pitch, length, volume):
+    def __init__(self, pitch=0, length=1, volume=0):
         object.__setattr__(self, "pitch", pitch)
         object.__setattr__(self, "length", length)
         object.__setattr__(self, "volume", volume)
@@ -33,14 +32,58 @@ class Note(object):
         name = self.__class__.__name__
         raise AttributeError(f"'{name}' object doesn't support item deletion")
 
-    def __str__(self):
-        attribs = ', '.join([str(k)+'='+str(v) for k, v in vars(self).items()])
-        return f'Note({attribs})'
+    def __repr__(self):
+        attribs = ('pitch', 'length', 'volume')
+        output = ', '.join([a + '=' + str(getattr(self, a)) for a in attribs])
+        return f'Note({output})'
+
+    def __eq__(self, other):
+        return all((self.pitch == other.pitch,
+                    self.length == other.length,
+                    self.volume == other.volume))
+
+    def __add__(self, other):
+        if hasattr(other, 'notes'):
+            other = other.notes
+        else:
+            other = [other]
+        return Chord([self] + other)
+
+    def __radd__(self, other):
+        if other == 0:
+            return self
+        else:
+            return self.__add__(other)
+
+    def replace(self, pitch=None, length=None, volume=None):
+        pitch = self.pitch if pitch is None else pitch
+        length = self.length if length is None else length
+        volume = self.volume if volume is None else volume
+        return Note(pitch, length, volume)
 
 class Chord(object):
     __slots__ = ('notes')
     def __init__(self, notes):
-        object.__setattr__(self, "notes", SortedList(notes))
+        def keyfunc(note):
+            if isinstance(note.pitch, str):
+                val = relative_pitch_to_int('C4', note.pitch)
+            else:
+                val = note.pitch
+            return val
+        object.__setattr__(self, "notes", SortedList(notes, key=keyfunc))
+
+    def __repr__(self):
+        pitches = []
+        lengths = []
+        volumes = []
+
+        for note in self.notes:
+            pitches.append(note.pitch)
+            lengths.append(note.length)
+            volumes.append(note.volume)
+
+        s = f'Chord(pitches={pitches}, lengths={lengths}, volumes={volumes})'
+        return s
 
     def __setattr__(self, *args):
         name = self.__class__.__name__
@@ -50,133 +93,65 @@ class Chord(object):
         name = self.__class__.__name__
         raise AttributeError(f"'{name}' object doesn't support item deletion")
 
+    def __getitem__(self, index):
+        return self.notes[index]
 
-# class Note:
-#     def __init__(self, pitch=0, length=1, volume=0):
-#         self.pitch = pitch
-#         self.length = length
-#         self.volume = volume
+    def __len__(self):
+        return len(self.notes)
 
-#     def __repr__(self):
-#         attribs = ', '.join([str(k)+'='+str(v) for k, v in vars(self).items()])
-#         return f'Note({attribs})'
+    def __eq__(self, other):
+        return (len(self) == len(other) and
+                all((a == b for a, b in zip(self.notes, other.notes))))
 
-#     def __add__(self, other):
-#         other = other.copy()
-#         if hasattr(other, 'notes'):
-#             other = list(other.notes)
-#         else:
-#             other = [other]
-#         return Chord([self.copy()] + other)
+    def __add__(self, other):
+        if hasattr(other, 'notes'):
+            other = other.notes
+        else:
+            other = [other]
+        return Chord(self.notes + other)
 
-#     def __radd__(self, other):
-#         if other == 0:
-#             return self.copy()
-#         else:
-#             return self.__add__(other)
+    def __radd__(self, other):
+        if other == 0:
+            return self
+        else:
+            return self.__add__(other)
 
-#     def copy(self):
-#         return Note(pitch=copy(self.pitch),
-#                     length=copy(self.length),
-#                     volume=copy(self.volume))
+    def pitches(self):
+        return [note.pitch for note in self.notes]
 
-# class Chord:
-#     def __init__(self, notes):
-#         self.notes = notes
+    def lengths(self):
+        return [note.length for note in self.notes]
 
-#     def __repr__(self):
-#         pitches = []
-#         lengths = []
-#         volumes = []
+    def volumes(self):
+        return [note.volume for note in self.notes]
 
-#         for note in self.notes:
-#             pitches.append(note.pitch)
-#             lengths.append(note.length)
-#             volumes.append(note.volume)
+class ArpChord(Chord):
+    __slots__ = ('notes', 'length')
+    def __init__(self, notes, length):
+        super().__init__(notes)
+        object.__setattr__(self, "length", length)
 
-#         s = f'Chord(pitches={pitches}, lengths={lengths}, volumes={volumes})'
-#         return s
+    def __repr__(self):
+        pitches = [note.pitch for note in self.notes]
+        s = f'ArpChord(pitches={pitches}, length={self.length})'
+        return s
 
-#     def __getitem__(self, index):
-#         return self.notes[index]
+    def __add__(self, other):
+        newl = self.length
+        if hasattr(other, 'notes'):
+            other = other.notes
+            if hasattr(other, 'length'):
+                newl = max(newl, other.length)
+        else:
+            other = [other]
+        return ArpChord(self.notes + other, newl)
 
-#     def __add__(self, other):
-#         other = other.copy()
-#         if hasattr(other, 'notes'):
-#             other = list(other.notes)
-#         else:
-#             other = [other]
-#         return Chord(list(self.copy().notes) + other)
+    def __radd__(self, other):
+        if other == 0:
+            return self
+        else:
+            return self.__add__(other)
 
-#     def __radd__(self, other):
-#         if other == 0:
-#             return self.copy()
-#         else:
-#             return self.__add__(other)
-
-#     def __len__(self):
-#         return len(self.notes)
-
-#     def add(self, note, copy=True):
-#         if copy:
-#             note = note.copy()
-#         self.notes.append(note)
-
-#     def copy(self):
-#         return Chord([note.copy() for note in self.notes])
-
-#     def pitches(self):
-#         return [note.pitch for note in self.notes]
-
-#     def lengths(self):
-#         return [note.length for note in self.notes]
-
-#     def volumes(self):
-#         return [note.volume for note in self.notes]
-
-#     def alternotes(self, pitches=None, lengths=None, volumes=None):
-#         order = ['pitch', 'length', 'volume']
-#         for val, s in zip([pitches, lengths, volumes], order):
-#             if not val:
-#                 continue
-
-#             if isinstance(val, Number) or isinstance(pitches, str):
-#                 val = [val] * len(self.notes)
-
-#             if len(val) != len(self.notes):
-#                 raise WubWubError(f'Length of new values {len(val)} '
-#                                   f'does not equal notes in chord ({len(self.notes)}).')
-
-#             for note, v in zip(self.notes, val):
-#                 setattr(note, s, v)
-
-# class ArpChord(Chord):
-#     def __init__(self, notes, length):
-#         super().__init__(notes)
-#         self.length = length
-
-#     def __repr__(self):
-#         pitches = [note.pitch for note in self.notes]
-
-#         s = f'ArpChord(pitches={pitches}, length={self.length})'
-#         return s
-
-#     def __add__(self, other):
-#         other = other.copy()
-#         if hasattr(other, 'notes'):
-#             other = list(other.notes)
-#         else:
-#             other = [other]
-#         return ArpChord([self.copy().notes] + other)
-
-#     def __radd__(self, other):
-#         if other == 0:
-#             return self.copy()
-#         else:
-#             return self.__add__(other)
-
-#     def copy(self):
-#         return ArpChord([note.copy() for note in self.notes], self.length)
 
 _notetypes_ = [Note, Chord, ArpChord]
 

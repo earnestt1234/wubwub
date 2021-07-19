@@ -3,8 +3,8 @@ import wubwub.sounds as snd
 
 import pydub
 
-p1 = '/Users/earnestt1234/Desktop/test.wav'
-p2 = '/Users/earnestt1234/Desktop/test2.wav'
+a = wb.Note()
+b = wb.Note(pitch='A3', length=2, volume=1)
+c = a + b
 
-a = pydub.AudioSegment.from_file(p1)
-b = pydub.AudioSegment.from_file(p2)
+arp = wb.ArpChord([a,b], length=1)
