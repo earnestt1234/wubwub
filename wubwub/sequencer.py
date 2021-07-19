@@ -16,19 +16,19 @@ from wubwub.errors import WubWubError
 from wubwub.plots import sequencerplot
 from wubwub.resources import MINUTE, unique_name
 from wubwub.seqstring import seqstring
-from wubwub.tracks import TrackManager, Sampler, Arpeggiator, MultiSampler
+from wubwub.tracks import Sampler, Arpeggiator, MultiSampler
 
 class Sequencer:
 
     def __init__(self, bpm, beats):
         self.bpm = bpm
         self.beats = beats
-        self._trackmanager = TrackManager(self)
 
         self.effects = None
         self.volume = 0
         self.pan = 0
         self.postprocess_steps = ['effects', 'volume', 'pan']
+        self._tracks = []
 
     def __repr__(self):
         l = len(self.tracks())
@@ -38,7 +38,15 @@ class Sequencer:
         if not isinstance(name, str):
             e = f'Can only index Sequencer with str, not {type(name)}'
             raise WubWubError(e)
-        return self._trackmanager.get_track(name)
+        return self.get_track(name)
+
+    def _add_track(self, track):
+        if track.name in self.tracknames():
+            raise WubWubError(f'Track name "{track.name}" already in use.')
+        if track.sequencer != self:
+            track.sequencer = self
+        if track not in self._tracks:
+            self._tracks.append(track)
 
     def copypaste_section(self, start, stop, newstart):
         for track in self.tracks():
@@ -50,13 +58,21 @@ class Sequencer:
             track.clean()
 
     def get_track(self, track):
-        return self._trackmanager.get_track(track)
+        if isinstance(track, str):
+            try:
+                return next(t for t in self._tracks if t.name == track)
+            except:
+                raise StopIteration(f'no track with name {track}')
+        elif track in self._tracks:
+            return track
+        else:
+            raise ValueError('Requested track is not part of sequencer.')
 
     def tracks(self):
-        return tuple(self._trackmanager.tracks)
+        return tuple(self._tracks)
 
     def tracknames(self):
-        return self._trackmanager.get_tracknames()
+        return [t.name for t in self._tracks]
 
     def add_sampler(self, sample, name=None, overlap=False, basepitch='C4'):
         if name is None:
@@ -90,11 +106,7 @@ class Sequencer:
     def duplicate_track(self, track, newname=None, with_notes=True):
         if newname is None:
             newname = unique_name('Track', self.tracknames())
-        dup = copy(self.get_track(track))
-        dup.name = newname
-        self._trackmanager.add_track(dup)
-        if not with_notes:
-            dup.delete_all()
+        dup = self.get_track(track).copy(newname=newname, with_notes=with_notes)
         return dup
 
     def copy(self, with_notes=True):
@@ -127,7 +139,9 @@ class Sequencer:
         return a, b
 
     def delete_track(self, track):
-        self._trackmanager.delete_track(track)
+        t = self.get_track(track)
+        t.sequencer = None
+        self._tracks.remove(t)
 
     def build(self, overhang=0, overhang_type='beats'):
         b = (1/self.bpm) * MINUTE
@@ -170,7 +184,7 @@ class Sequencer:
         if selection is None:
             selection = self.tracks()
         else:
-            selection = [self._trackmanager.get_track(i) for i in selection]
+            selection = [self.get_track(i) for i in selection]
 
         for track in selection:
             print(f'Playing sample(s) for "{track.name}"...')

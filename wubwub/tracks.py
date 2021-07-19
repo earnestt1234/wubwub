@@ -9,6 +9,7 @@ Created on Tue Feb  9 10:10:34 2021
 from abc import ABCMeta, abstractmethod
 from collections.abc import Iterable
 from collections import defaultdict
+import copy
 from fractions import Fraction
 import itertools
 from numbers import Number
@@ -98,7 +99,6 @@ class _GenericTrack(metaclass=ABCMeta):
                               f'not {type(beat)}')
 
     def __setitem__(self, beat, value):
-
         if isinstance(beat, Number):
             self.notedict[beat] = value
         elif isinstance(beat, slice):
@@ -130,7 +130,7 @@ class _GenericTrack(metaclass=ABCMeta):
                                      'does not equal length of indexer '
                                      f'({len(beat)}).')
                 for b, v in zip(beat, value):
-                    self.notedict[b] = value
+                    self.notedict[b] = v
 
         else:
             raise WubWubError('Index wubwub.Track with [beat], '
@@ -158,8 +158,9 @@ class _GenericTrack(metaclass=ABCMeta):
 
         if self._sequencer is not None:
             self._sequencer.delete_track(self)
+
         self._sequencer = sequencer
-        self._sequencer._trackmanager.add_track(self)
+        self._sequencer._add_track(self)
 
     @property
     def name(self):
@@ -209,6 +210,24 @@ class _GenericTrack(metaclass=ABCMeta):
 
     def array_of_beats(self):
         return np.array(self.notedict.keys())
+
+    def copy(self, newname, newseq=False, with_notes=True,):
+        if newseq is False:
+            newseq = self.sequencer
+        new = copy.copy(self)
+        for k, v in vars(new).items():
+            if k == 'notedict':
+                setattr(new, k, v.copy())
+            elif k == '_name':
+                setattr(new, k, newname)
+            elif k == '_sequencer':
+                setattr(new, k, None)
+            else:
+                setattr(new, k, copy.deepcopy(v))
+        new.sequencer = newseq
+        if not with_notes:
+            new.delete_all()
+        return new
 
     def copypaste(self, start, stop, newstart, outsiders=None, merge=False,):
         section = self.ns()[start:stop]
@@ -666,26 +685,3 @@ class Arpeggiator(_SingleSampleTrack):
                     unpacked.append((k, v))
 
         return unpacked
-
-class TrackManager:
-    def __init__(self, sequencer):
-        self._sequencer = sequencer
-        self.tracks = []
-
-    def get_track(self, track):
-        if track in self.tracks:
-            return track
-        try:
-            return next(t for t in self.tracks if t.name == track)
-        except:
-            raise StopIteration(f'no track with name {track}')
-
-    def get_tracknames(self):
-        return [t.name for t in self.tracks]
-
-    def add_track(self, track):
-        if track not in self.tracks:
-            self.tracks.append(track)
-
-    def delete_track(self, track):
-        self.tracks.remove(self.get_track(track))

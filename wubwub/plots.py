@@ -53,8 +53,6 @@ def sequencerplot(sequencer, timesig=4, grid=True, ax=None, scatter_kwds=None,
     ax.set_ylabel('tracks')
     ax.set_xlabel('beats')
 
-    mpb = 1 / sequencer.bpm * MINUTE
-
     yticks = []
     ylabs = []
     c = 0
@@ -101,8 +99,12 @@ def sequencerplot(sequencer, timesig=4, grid=True, ax=None, scatter_kwds=None,
 
 def _convert_semitones_str_yaxis(plottype, note, track):
     if plottype == 'semitones' and isinstance(note.pitch, str):
+        if not hasattr(track, 'basepitch'):
+            raise WubWubError('Cannot convert pitch to semitoes with no `basepitch` attribute.')
         return relative_pitch_to_int(track.basepitch, note.pitch)
     elif plottype == 'pitch' and isinstance(note.pitch, Number):
+        if not hasattr(track, 'basepitch'):
+            raise WubWubError('Cannot convert semitones to pitch with no `basepitch` attribute.')
         return pitch_from_semitones(track.basepitch, note.pitch)
     else:
         return note.pitch
@@ -136,7 +138,6 @@ def trackplot(track, yaxis='semitones', timesig=4, grid=True, ax=None,
     if plot_kwds is None:
         plot_kwds = {}
 
-    mpb = 1 / track.get_bpm() * MINUTE
     pitchnums = set()
 
     color = track.plotting.get('color')
@@ -242,7 +243,6 @@ def pianoroll(track, timesig=4, grid=True,):
     beats = []
     notes = []
     lengths = []
-    mpb = 1 / track.get_bpm() * MINUTE
 
     for beat, element in track.notedict.items():
 
