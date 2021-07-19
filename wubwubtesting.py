@@ -1,10 +1,12 @@
+from pysndfx import AudioEffectsChain
 import wubwub as wb
 import wubwub.sounds as snd
 
-import pydub
+GUITAR = snd.load('guitar.acoustic')
+DRUMS = snd.load('drums.606')
+DRUMS2 = snd.load('drums.esoul')
+BASS = snd.load('bass.acoustic')
+RHODES = snd.load('keys.rhodes')
 
-a = wb.Note()
-b = wb.Note(pitch='A3', length=2, volume=1)
-c = a + b
-
-arp = wb.ArpChord([a,b], length=1)
+seq = wb.Sequencer(bpm=60, beats=8)
+a = seq.add_sampler(name='a', sample=DRUMS['kick1'])

@@ -9,7 +9,6 @@ Created on Tue Feb  9 10:10:34 2021
 from abc import ABCMeta, abstractmethod
 from collections.abc import Iterable
 from collections import defaultdict
-import copy
 from fractions import Fraction
 import itertools
 from numbers import Number
@@ -56,8 +55,7 @@ class SliceableDict:
 
 class _GenericTrack(metaclass=ABCMeta):
 
-    handle_new_notes = 'skip'
-    setitem_copy = True
+    handle_outside_notes = 'skip'
 
     def __init__(self, name, sequencer,):
         self.notedict = SortedDict()
@@ -101,12 +99,8 @@ class _GenericTrack(metaclass=ABCMeta):
 
     def __setitem__(self, beat, value):
 
-        def prep(value, copy=True):
-            return value.copy() if copy else value
-        t = self.setitem_copy
-
         if isinstance(beat, Number):
-            self.notedict[beat] = prep(value, t)
+            self.notedict[beat] = value
         elif isinstance(beat, slice):
             start, stop = (beat.start, beat.stop)
             start = 0 if start is None else start
@@ -116,7 +110,7 @@ class _GenericTrack(metaclass=ABCMeta):
                     continue
                 if k >= stop:
                     break
-                self.notedict[k] = prep(value, t)
+                self.notedict[k] = value
         elif isinstance(beat, Iterable):
             if getattr(beat, 'dtype', False) == bool:
                 if not len(beat) == len(self.notedict):
@@ -127,7 +121,7 @@ class _GenericTrack(metaclass=ABCMeta):
                                      'boolean index.')
                 for k, b in zip(self.notedict.keys(), beat):
                     if b:
-                        self.notedict[k] = prep(value, t)
+                        self.notedict[k] = value
             else:
                 if type(value) in _notetypes_:
                     value = [value] * len(beat)
@@ -136,7 +130,7 @@ class _GenericTrack(metaclass=ABCMeta):
                                      'does not equal length of indexer '
                                      f'({len(beat)}).')
                 for b, v in zip(beat, value):
-                    self.notedict[b] = prep(v, t)
+                    self.notedict[b] = value
 
         else:
             raise WubWubError('Index wubwub.Track with [beat], '
@@ -166,8 +160,6 @@ class _GenericTrack(metaclass=ABCMeta):
             self._sequencer.delete_track(self)
         self._sequencer = sequencer
         self._sequencer._trackmanager.add_track(self)
-        if sequencer.handle_new_track_notes == 'clean':
-            self.clean()
 
     @property
     def name(self):
@@ -179,17 +171,10 @@ class _GenericTrack(metaclass=ABCMeta):
             raise WubWubError(f'track name "{new}" already in use.')
         self._name = new
 
-    def copy(self, with_notes = True):
-        c = copy.deepcopy(self)
-        c.sequencer = None
-        if not with_notes:
-            c.notedict = SortedDict()
-        return c
-
-    def add(self, beat, element, merge=False, copy=True, outsiders=None):
+    def add(self, beat, element, merge=False, outsiders=None):
 
         if beat >= self.get_beats() + 1:
-            method = self.handle_new_notes if outsiders is None else outsiders
+            method = self.handle_outside_notes if outsiders is None else outsiders
             options = ['skip', 'add', 'warn', 'raise']
             if method not in options:
                 w = ('`method` not recognized, '
@@ -200,36 +185,32 @@ class _GenericTrack(metaclass=ABCMeta):
                 return
             if method == 'warn':
                 s = ("Adding note on beat beyond the "
-                     "sequencer's length.  See `handle_new_notes` "
+                     "sequencer's length.  See `handle_outside_notes` "
                      "in class docstring for `wb.Track` to toggle "
                      "this behavior.")
                 warnings.warn(s, WubWubWarning)
 
             elif method == 'raise':
                 s = ("Tried to add note on beat beyond the "
-                     "sequencer's length.  See `handle_new_notes` "
+                     "sequencer's length.  See `handle_outside_notes` "
                      "in class docstring for `wb.Track` to toggle "
                      "this behavior.")
                 raise WubWubError(s)
-
-        if copy:
-            element = element.copy()
         existing = self.notedict.get(beat, None)
         if existing and merge:
             element = existing + element
         self.notedict[beat] = element
 
-    def add_fromdict(self, d, offset=0, outsiders=None, merge=False, copy=True):
+    def add_fromdict(self, d, offset=0, outsiders=None, merge=False):
         for beat, element in d.items():
 
             self.add(beat=beat + offset, element=element, merge=merge,
-                     copy=copy, outsiders=outsiders)
+                     outsiders=outsiders)
 
     def array_of_beats(self):
         return np.array(self.notedict.keys())
 
-    def copypaste(self, start, stop, newstart, outsiders=None, merge=False,
-                  copy=True):
+    def copypaste(self, start, stop, newstart, outsiders=None, merge=False,):
         section = self.ns()[start:stop]
         if section:
             offset = start - 1
@@ -272,7 +253,7 @@ class _GenericTrack(metaclass=ABCMeta):
         oldnotes = self.notedict.values()
         self.delete_all_notes()
         for newbeat, note in zip(newkeys, oldnotes):
-            self.add(newbeat, note, merge=merge, copy=False)
+            self.add(newbeat, note, merge=merge)
 
     def get_bpm(self):
         return self.sequencer.bpm
@@ -377,7 +358,7 @@ class _SamplerLikeTrack(_GenericTrack):
         d = {b : Note(next(pitches), next(lengths), next(volumes))
              for b in beats}
 
-        self.add_fromdict(d, merge=merge, copy=False)
+        self.add_fromdict(d, merge=merge)
 
     def make_notes_every(self, freq, offset=0, pitches=0, lengths=1, volumes=0,
                          start=1, end=None, pitch_select='cycle',
@@ -398,11 +379,11 @@ class _SamplerLikeTrack(_GenericTrack):
             d[pos] = Note(next(pitches), next(lengths), next(volumes))
             b += freq
 
-        self.add_fromdict(d, merge=merge, copy=False)
+        self.add_fromdict(d, merge=merge)
 
     def make_chord(self, beat, pitches, lengths=1, volumes=0, merge=False):
         chord = self._make_chord_assemble(pitches, lengths, volumes)
-        self.add(beat, chord, merge=merge, copy=False)
+        self.add(beat, chord, merge=merge)
 
     def make_chord_every(self, freq, offset=0, pitches=0, lengths=1, volumes=0,
                          start=1, end=None, merge=False):
@@ -416,9 +397,9 @@ class _SamplerLikeTrack(_GenericTrack):
         d = {}
         while b < end:
             pos = b.numerator / b.denominator
-            d[pos] = chord.copy()
+            d[pos] = chord
             b += freq
-        self.add_fromdict(d, merge=merge, copy=False)
+        self.add_fromdict(d, merge=merge)
 
     def _make_chord_assemble(self, pitches, lengths, volumes):
         if not isinstance(pitches, Iterable) or isinstance(pitches, str):
@@ -616,7 +597,7 @@ class Arpeggiator(_SingleSampleTrack):
     def make_chord(self, beat, pitches, length=1, merge=False):
         notes = [Note(p) for p in pitches]
         chord = ArpChord(notes, length)
-        self.add(beat, chord, merge=merge, copy=False)
+        self.add(beat, chord, merge=merge,)
 
     def make_chord_every(self, freq, offset=0, pitches=0, length=1,
                          start=1, end=None, merge=False):
@@ -627,9 +608,9 @@ class Arpeggiator(_SingleSampleTrack):
             end = self.get_beats() + 1
         d = {}
         while b < end:
-            d[b] = chord.copy()
+            d[b] = chord
             b += freq
-        self.add_fromdict(d, merge=merge, copy=False)
+        self.add_fromdict(d, merge=merge)
 
     def build(self, overhang=0, overhang_type='beats'):
         b = (1/self.get_bpm()) * MINUTE

@@ -38,9 +38,12 @@ class Note(object):
         return f'Note({output})'
 
     def __eq__(self, other):
-        return all((self.pitch == other.pitch,
-                    self.length == other.length,
-                    self.volume == other.volume))
+        try:
+            return all((self.pitch == other.pitch,
+                        self.length == other.length,
+                        self.volume == other.volume))
+        except:
+            return False
 
     def __add__(self, other):
         if hasattr(other, 'notes'):
@@ -55,10 +58,10 @@ class Note(object):
         else:
             return self.__add__(other)
 
-    def replace(self, pitch=None, length=None, volume=None):
-        pitch = self.pitch if pitch is None else pitch
-        length = self.length if length is None else length
-        volume = self.volume if volume is None else volume
+    def replace(self, pitch=False, length=False, volume=False):
+        pitch = self.pitch if pitch is False else pitch
+        length = self.length if length is False else length
+        volume = self.volume if volume is False else volume
         return Note(pitch, length, volume)
 
 class Chord(object):
@@ -100,8 +103,11 @@ class Chord(object):
         return len(self.notes)
 
     def __eq__(self, other):
-        return (len(self) == len(other) and
-                all((a == b for a, b in zip(self.notes, other.notes))))
+        try:
+            return (len(self) == len(other) and
+                    all((a == b for a, b in zip(self.notes, other.notes))))
+        except:
+            return False
 
     def __add__(self, other):
         if hasattr(other, 'notes'):
@@ -116,12 +122,15 @@ class Chord(object):
         else:
             return self.__add__(other)
 
+    @property
     def pitches(self):
         return [note.pitch for note in self.notes]
 
+    @property
     def lengths(self):
         return [note.length for note in self.notes]
 
+    @property
     def volumes(self):
         return [note.volume for note in self.notes]
 
@@ -135,6 +144,14 @@ class ArpChord(Chord):
         pitches = [note.pitch for note in self.notes]
         s = f'ArpChord(pitches={pitches}, length={self.length})'
         return s
+
+    def __eq__(self, other):
+        try:
+            return (len(self) == len(other) and
+                    all((a == b for a, b in zip(self.notes, other.notes))) and
+                    self.length == other.length)
+        except:
+            return False
 
     def __add__(self, other):
         newl = self.length
@@ -151,6 +168,9 @@ class ArpChord(Chord):
             return self
         else:
             return self.__add__(other)
+
+    def changelength(self, newlength):
+        return ArpChord(self.notes, newlength)
 
 
 _notetypes_ = [Note, Chord, ArpChord]
@@ -204,21 +224,10 @@ def arpeggiate(chord, beat, length=None, freq=0.5, method='up', auto_chord_lengt
         pos = current.numerator / current.denominator
         notelength = notelength.numerator / notelength.denominator
         arpeggiated[pos] = Note(pitch=note.pitch, length=notelength,
-                                    volume=note.volume)
+                                volume=note.volume)
         current += freq
 
     return arpeggiated
-
-def replace_note(note, newpitch=False, newlength=False, newvolume=False):
-    new = note.copy()
-    if newpitch is not False: # allow for None pitch value
-        new.pitch = newpitch
-    if newlength:
-        new.length = newlength
-    if newvolume:
-        new.volume = newvolume
-
-    return new
 
 def new_chord(pitches, lengths=1, volumes=0):
     size = len(pitches)

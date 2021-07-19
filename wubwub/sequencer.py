@@ -5,7 +5,7 @@ Music sequencer for WubWub.
 
 @author: earnestt1234
 """
-from copy import deepcopy
+from copy import copy
 import os
 import time
 
@@ -19,8 +19,6 @@ from wubwub.seqstring import seqstring
 from wubwub.tracks import TrackManager, Sampler, Arpeggiator, MultiSampler
 
 class Sequencer:
-
-    handle_new_track_notes = 'clean'
 
     def __init__(self, bpm, beats):
         self.bpm = bpm
@@ -92,21 +90,21 @@ class Sequencer:
     def duplicate_track(self, track, newname=None, with_notes=True):
         if newname is None:
             newname = unique_name('Track', self.tracknames())
-        copy = deepcopy(self.get_track(track))
-        copy.name = newname
-        self._trackmanager.add_track(copy)
+        dup = copy(self.get_track(track))
+        dup.name = newname
+        self._trackmanager.add_track(dup)
         if not with_notes:
-            copy.delete_all()
-        return copy
+            dup.delete_all()
+        return dup
 
     def copy(self, with_notes=True):
         if with_notes:
-            return deepcopy(self)
+            return copy(self)
         else:
-            d = deepcopy(self)
-            for track in d.tracks():
+            c = copy(self)
+            for track in c.tracks():
                 track.delete_all()
-            return d
+            return c
 
     def split(self, beat):
         if not isinstance(beat, int):
