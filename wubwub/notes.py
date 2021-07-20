@@ -58,7 +58,7 @@ class Note(object):
         else:
             return self.__add__(other)
 
-    def replace(self, pitch=False, length=False, volume=False):
+    def alter(self, pitch=False, length=False, volume=False):
         pitch = self.pitch if pitch is False else pitch
         length = self.length if length is False else length
         volume = self.volume if volume is False else volume
@@ -231,6 +231,9 @@ def arpeggiate(chord, beat, length=None, freq=0.5, method='up', auto_chord_lengt
         current += freq
 
     return arpeggiated
+
+def alter_notes(array, pitch=False, length=False, volume=False):
+    return [n.alter(pitch, length, volume) for n in array]
 
 def new_chord(pitches, lengths=1, volumes=0):
     size = len(pitches)

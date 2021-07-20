@@ -137,10 +137,8 @@ class _GenericTrack(metaclass=ABCMeta):
                               '[start:stop], or boolean index, '
                               f'not {type(beat)}')
 
-    def noteslicer(self):
-        return SliceableDict(self.notedict)
-
-    def ns(self):
+    @property
+    def slice(self):
         return SliceableDict(self.notedict)
 
     @property
@@ -211,7 +209,9 @@ class _GenericTrack(metaclass=ABCMeta):
     def array_of_beats(self):
         return np.array(self.notedict.keys())
 
-    def copy(self, newname, newseq=False, with_notes=True,):
+    def copy(self, newname=None, newseq=False, with_notes=True,):
+        if newname is None:
+            newname = self.name
         if newseq is False:
             newseq = self.sequencer
         new = copy.copy(self)

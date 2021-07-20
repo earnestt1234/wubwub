@@ -110,13 +110,10 @@ class Sequencer:
         return dup
 
     def copy(self, with_notes=True):
-        if with_notes:
-            return copy(self)
-        else:
-            c = copy(self)
-            for track in c.tracks():
-                track.delete_all()
-            return c
+        new = Sequencer(beats=self.beats, bpm=self.bpm)
+        for track in self.tracks():
+            t = track.copy(with_notes=with_notes, newseq=new)
+        return new
 
     def split(self, beat):
         if not isinstance(beat, int):
@@ -273,8 +270,7 @@ def join(sequencers, on='name'):
                 match.add_fromdict(track.notedict, offset=offset)
 
             else:
-                new = track.copy(with_notes=False)
-                new.sequencer = out
+                new = track.copy(with_notes=False, newseq=out)
                 new.add_fromdict(track.notedict, offset=offset)
 
 
