@@ -4,6 +4,7 @@
 from .audio import *
 from .errors import *
 from .notes import *
+from .pattern import *
 from .pitch import *
 from .plots import *
 from .resources import *
