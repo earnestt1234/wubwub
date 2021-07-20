@@ -19,6 +19,9 @@ class Pattern:
     def __eq__(self, other):
         return self.pattern == other.pattern and self.length == other.length
 
+    def __iter__(self):
+        return iter(self.pattern)
+
     def __add__(self, other):
         if not isinstance(other, Pattern):
             raise TypeError(f'Can only add Pattern with Pattern, not {type(other)}.')

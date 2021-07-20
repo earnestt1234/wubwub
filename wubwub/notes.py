@@ -96,6 +96,9 @@ class Chord(object):
         name = self.__class__.__name__
         raise AttributeError(f"'{name}' object doesn't support item deletion")
 
+    def __iter__(self):
+        return iter(self.notes)
+
     def __getitem__(self, index):
         return self.notes[index]
 
