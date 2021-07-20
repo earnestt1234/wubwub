@@ -281,14 +281,9 @@ def join(sequencers, on='name'):
         offset = seq.beats
     return out
 
-
-
-
 def loop(sequencer, times=4, internal_overhang=0, end_overhang=0, overhang_type='beats'):
 
     return stitch([sequencer] * times,
                   internal_overhang,
                   end_overhang,
                   overhang_type)
-
-
