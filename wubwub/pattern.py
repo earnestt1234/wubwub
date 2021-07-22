@@ -74,10 +74,12 @@ class Pattern:
         return Pattern(newp, newl)
 
     def on(self, beat):
-        return [(beat-1) + p for p in self.pattern]
+        return Pattern([(beat-1) + p for p in self.pattern], self.length)
 
-    def onmeasure(self, measure):
-        return self.on(beat = 1 + (measure - 1) * self.length)
+    def onmeasure(self, measure, measurelen=None):
+        if measurelen == None:
+            measurelen = self.length
+        return self.on(beat = 1 + (measure - 1) * measurelen)
 
     def chop(self, beat):
         newp = [p for p in self.pattern if p < beat]
@@ -89,6 +91,5 @@ class Pattern:
 
     def until(self, beat):
         repeats, extra = divmod(beat, self.length)
-        temp = self.copy() * repeats + self.copy().chop(extra)
-        return list(temp.pattern)
+        return self.copy() * repeats + self.copy().chop(extra)
 
