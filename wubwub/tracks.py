@@ -294,7 +294,7 @@ class _GenericTrack(metaclass=ABCMeta):
     def clean(self):
         maxi = self.get_beats()
         self.notedict = SortedDict({b:note for b, note in self.notedict.items()
-                                    if b < maxi +1})
+                                    if 1 <= b < maxi +1})
 
     def delete_all(self):
         self.notedict = SortedDict({})
