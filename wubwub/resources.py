@@ -25,13 +25,3 @@ def unique_name(base, others):
         name = base + str(c)
         c += 1
     return name
-
-def repeated_measures(beats, measurelen=4, measures=2):
-    beats = np.array(beats)
-    output = np.empty(0)
-    while measures:
-        output = np.append(output, beats)
-        beats += measurelen
-        measures -= 1
-
-    return list(output)

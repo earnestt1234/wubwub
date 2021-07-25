@@ -102,15 +102,24 @@ class _GenericTrack(metaclass=ABCMeta):
         if isinstance(beat, Number):
             self.notedict[beat] = value
         elif isinstance(beat, slice):
-            start, stop = (beat.start, beat.stop)
-            start = 0 if start is None else start
-            stop = np.inf if stop is None else stop
-            for k, v in self.notedict.items():
-                if k < start:
-                    continue
-                if k >= stop:
-                    break
-                self.notedict[k] = value
+            start, stop, step = (beat.start, beat.stop, beat.step)
+            if step is None:
+                # replace all notes in the range
+                start = 0 if start is None else start
+                stop = np.inf if stop is None else stop
+                for k, v in self.notedict.items():
+                    if k < start:
+                        continue
+                    if k >= stop:
+                        break
+                    self.notedict[k] = value
+            else:
+                # fill notes from start to stop every step
+                start = 1 if start is None else start
+                stop = self.get_beats() + 1 if stop is None else stop
+                while start < stop:
+                    self.notedict[start] = value
+                    start += step
         elif isinstance(beat, Iterable):
             if getattr(beat, 'dtype', False) == bool:
                 if not len(beat) == len(self.notedict):
