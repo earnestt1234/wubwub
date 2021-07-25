@@ -14,7 +14,7 @@ seq = wb.Sequencer(bpm=120, beats=8)
 
 Samples can be loaded into the sequencer in different tracks (with a name provided for easier access):
 
-```
+```python
 kick = seq.add_sampler('sounds/kick1.wav', name='kick')
 hihat = seq.add_sampler('sounds/hihat.wav', name='hihat')
 snare = seq.add_sampler('sounds/snare1.wav', name='snare')
@@ -22,7 +22,7 @@ snare = seq.add_sampler('sounds/snare1.wav', name='snare')
 
 There are multiple ways of adding musical elements (like MIDI information) to each track:
 
-```
+```python
 # use helper methods to create notes
 kick.make_notes(beats=[1, 3, 5, 7])
 
@@ -35,7 +35,7 @@ snare[8.5] = wb.Note()
 
 Individual notes can be modified by specifying the pitch, length, and volume.  Pitches can be specified in [scientific pitch notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation) or in semitones:
 
-```
+```python
 bass = seq.add_sampler('sounds/bass_C4.wav', name='bass', basepitch='C4')
 bass.make_notes(beats=[1, 2.5, 5, 7.5], pitches=['C3', 'Ab2', 'Eb3', 'Bb2'])
 
@@ -46,7 +46,7 @@ synth.make_notes_every(freq=.5, pitches=[3, 2, 3, -2], lengths=[.25, .25, .25, .
 
 Add effects to tracks using [pysndfx](https://github.com/carlthome/python-audio-effects):
 
-```
+```python
 from pysndfx import AudioEffectsChain
 
 synth.effects = AudioEffectsChain().reverb(reverberance=65, wet_gain=2)
@@ -54,13 +54,13 @@ synth.effects = AudioEffectsChain().reverb(reverberance=65, wet_gain=2)
 
 Playback your creation:
 
-```
+```python
 seq.play()
 ```
 
 Or export it:
 
-```
+```python
 seq.export('my_beat.wav')
 ```
 
