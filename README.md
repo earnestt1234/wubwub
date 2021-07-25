@@ -1,8 +1,8 @@
 ![logo](img/logo.svg)
 
-wubwub is a novelty music production package for Python.
+**wubwub** is a novelty music production package for Python.
 
-### Overview
+## Overview
 
 wubwub is mainly built around the easy audio manipulation provided by [pydub](https://github.com/jiaaro/pydub).  Tools in wubwub allow you to place sounds in musical arrangements.  To start, you need to create a Sequencer with a tempo and a length:
 
@@ -23,7 +23,7 @@ snare = seq.add_sampler('sounds/snare1.wav', name='snare')
 
 
 
-### Gallery
+## Gallery
 
 - Electro
 - LoFi
@@ -32,7 +32,7 @@ snare = seq.add_sampler('sounds/snare1.wav', name='snare')
 
 The above examples are all created with samples from `wubwub.sounds`.  This module allows you to download and access a collection of musical samples collected from [SampleSwap](https://sampleswap.org/).  
 
-### Installation
+## Installation
 
 You can install wubwub with pip:
 
@@ -45,7 +45,7 @@ You may also want to install other software to make full use of wubwub:
 - [ffmpeg](http://www.ffmpeg.org/) will allow for importing/exporting of more file types (rather than WAV).   On Mac, ffmpeg can be easily installed with brew (`brew install ffmpeg`).  On Windows, you will need to download the binaries and add them to your PATH.  [This tutorial](https://www.youtube.com/watch?v=r1AtmY-RMyQ) provides a nice demonstration of how to do so.
 - [pysndfx](https://github.com/carlthome/python-audio-effects) can be used to add audio effects to tracks in wubwub.  This is not automatically installed with wubwub, but it can be pip installed (`pip install pysndfx`).  To use these effects, you will also need to have [Sox](http://sox.sourceforge.net/) installed.  This can be installed [with conda](https://anaconda.org/groakat/sox), but there are other options listed on the Sox website
 
-### Contributing
+## Contributing
 
 There are a few ways you can help improve wubwub:
 
