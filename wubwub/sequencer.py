@@ -27,14 +27,17 @@ class Sequencer:
 
     Parameters
     ----------
-    bpm : TYPE
-        DESCRIPTION.
-    beats : TYPE
-        DESCRIPTION.
+    bpm : int or float
+        Tempo of the sequencer (beats per minute).  The tempo can be changed
+        after initialization by setting this attribute.
+    beats : int
+        The length of the sequence, in beats.  This can be viewed as the
+        bottom number in a time signature.
 
-    Returns
-    -------
-    None.
+    Examples
+    --------
+    Initialize a Sequencer:
+
 
     '''
     def __init__(self, bpm, beats):
