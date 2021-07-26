@@ -1,4 +1,4 @@
-![logo](img/logo.svg)
+![logo](img/logo.png)
 
 **wubwub** is a novelty music production package for Python.  Using the easy audio manipulation of [pydub](https://github.com/jiaaro/pydub), wubwub allows you to place and edit sounds to make musical arrangements.  
 
