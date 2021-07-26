@@ -6,7 +6,7 @@
    version="1.1"
    id="svg103"
    sodipodi:docname="logo.svg"
-   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
+   inkscape:version="1.1 (c4e8f9e, 2021-05-24)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -24,13 +24,13 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:zoom="0.83671875"
-     inkscape:cx="363.92157"
-     inkscape:cy="216.3212"
+     inkscape:zoom="1.5003368"
+     inkscape:cx="124.63868"
+     inkscape:cy="132.97014"
      inkscape:window-width="1284"
-     inkscape:window-height="1040"
+     inkscape:window-height="1005"
      inkscape:window-x="426"
-     inkscape:window-y="13"
+     inkscape:window-y="23"
      inkscape:window-maximized="0"
      inkscape:current-layer="svg103" />
   <defs
@@ -70,7 +70,10 @@
   <g
      clip-path="url(#clipPath549)"
      id="g101"
-     transform="matrix(0.6209012,0,0,0.6209012,-140.25063,-98.694887)">
+     transform="matrix(0.6209012,0,0,0.6209012,-140.25063,-98.694887)"
+     inkscape:export-filename="/Users/earnestt1234/Documents/GitHub/wubwub/img/logo.png"
+     inkscape:export-xdpi="85.674446"
+     inkscape:export-ydpi="85.674446">
     <rect
        x="0"
        y="0"
