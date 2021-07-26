@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="448.20834"
+   height="238.94551"
+   overflow="hidden"
+   version="1.1"
+   id="svg103"
+   sodipodi:docname="logo.svg"
+   inkscape:version="1.1 (c4e8f9e, 2021-05-24)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview105"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:zoom="1.5003368"
+     inkscape:cx="124.63868"
+     inkscape:cy="132.97014"
+     inkscape:window-width="1284"
+     inkscape:window-height="1005"
+     inkscape:window-x="426"
+     inkscape:window-y="23"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg103" />
+  <defs
+     id="defs61">
+    <clipPath
+       id="clip0">
+      <rect
+         x="0"
+         y="0"
+         width="1280"
+         height="720"
+         id="rect58" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath441">
+      <rect
+         style="fill:#0000ff;fill-rule:evenodd"
+         id="rect443"
+         width="810.30811"
+         height="439.81326"
+         x="168.51541"
+         y="141.02708" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath549">
+      <rect
+         style="fill:#0000ff;fill-rule:evenodd"
+         id="rect551"
+         width="721.86743"
+         height="384.83661"
+         x="225.88235"
+         y="158.95425" />
+    </clipPath>
+  </defs>
+  <g
+     clip-path="url(#clipPath549)"
+     id="g101"
+     transform="matrix(0.6209012,0,0,0.6209012,-140.25063,-98.694887)"
+     inkscape:export-filename="/Users/earnestt1234/Documents/GitHub/wubwub/img/logo.png"
+     inkscape:export-xdpi="128.51166"
+     inkscape:export-ydpi="128.51166">
+    <rect
+       x="0"
+       y="0"
+       width="1280"
+       height="720"
+       fill="#ffffff"
+       id="rect63" />
+    <path
+       d="M 239,224.167 C 239,209.163 251.163,197 266.167,197 H 374.833 C 389.837,197 402,209.163 402,224.167 V 332.833 C 402,347.837 389.837,360 374.833,360 H 266.167 C 251.163,360 239,347.837 239,332.833 Z"
+       stroke="#000000"
+       stroke-width="6"
+       stroke-miterlimit="8"
+       fill="#4b8bbe"
+       fill-rule="evenodd"
+       id="path65" />
+    <text
+       fill="#ffffff"
+       font-family="Minecraft, Minecraft_MSFontService, sans-serif"
+       font-weight="500"
+       font-size="80px"
+       transform="translate(290.764,303)"
+       id="text67">w</text>
+    <path
+       d="M 418,224.167 C 418,209.163 430.163,197 445.167,197 H 553.833 C 568.837,197 581,209.163 581,224.167 V 332.833 C 581,347.837 568.837,360 553.833,360 H 445.167 C 430.163,360 418,347.837 418,332.833 Z"
+       stroke="#000000"
+       stroke-width="6"
+       stroke-miterlimit="8"
+       fill="#ffe873"
+       fill-rule="evenodd"
+       id="path69" />
+    <text
+       font-family="Minecraft, Minecraft_MSFontService, sans-serif"
+       font-weight="500"
+       font-size="80px"
+       transform="translate(476.871,303)"
+       id="text71">u</text>
+    <path
+       d="M 597,224.001 C 597,209.089 609.089,197 624.001,197 H 731.999 C 746.911,197 759,209.089 759,224.001 V 332.999 C 759,347.911 746.911,360 731.999,360 H 624.001 C 609.089,360 597,347.911 597,332.999 Z"
+       stroke="#000000"
+       stroke-width="6"
+       stroke-miterlimit="8"
+       fill="#4b8bbe"
+       fill-rule="evenodd"
+       id="path73" />
+    <text
+       fill="#ffffff"
+       font-family="Minecraft, Minecraft_MSFontService, sans-serif"
+       font-weight="500"
+       font-size="80px"
+       transform="translate(650.478,303)"
+       id="text75">b</text>
+    <path
+       d="M 775,224.167 C 775,209.163 787.163,197 802.167,197 H 910.833 C 925.837,197 938,209.163 938,224.167 V 332.833 C 938,347.837 925.837,360 910.833,360 H 802.167 C 787.163,360 775,347.837 775,332.833 Z"
+       stroke="#000000"
+       stroke-width="6"
+       stroke-miterlimit="8"
+       fill="#4b8bbe"
+       fill-rule="evenodd"
+       id="path77" />
+    <path
+       d="M 240,402.167 C 240,387.163 252.163,375 267.167,375 H 375.833 C 390.837,375 403,387.163 403,402.167 V 510.833 C 403,525.837 390.837,538 375.833,538 H 267.167 C 252.163,538 240,525.837 240,510.833 Z"
+       stroke="#000000"
+       stroke-width="6"
+       stroke-miterlimit="8"
+       fill="#4b8bbe"
+       fill-rule="evenodd"
+       id="path79" />
+    <text
+       font-family="Minecraft, Minecraft_MSFontService, sans-serif"
+       font-weight="500"
+       font-size="24px"
+       transform="translate(315.514,182)"
+       id="text87">1<tspan
+   font-size="24px"
+   x="177.10699"
+   y="0"
+   id="tspan81">2</tspan><tspan
+   font-size="24px"
+   x="355.71301"
+   y="0"
+   id="tspan83">3</tspan><tspan
+   font-size="24px"
+   x="533.57001"
+   y="0"
+   id="tspan85">4</tspan></text>
+    <path
+       d="M 418,402.167 C 418,387.163 430.163,375 445.167,375 H 553.833 C 568.837,375 581,387.163 581,402.167 V 510.833 C 581,525.837 568.837,538 553.833,538 H 445.167 C 430.163,538 418,525.837 418,510.833 Z"
+       stroke="#000000"
+       stroke-width="6"
+       stroke-miterlimit="8"
+       fill="#4b8bbe"
+       fill-rule="evenodd"
+       id="path89" />
+    <text
+       fill="#ffffff"
+       font-family="Minecraft, Minecraft_MSFontService, sans-serif"
+       font-weight="500"
+       font-size="80px"
+       transform="translate(469.371,480)"
+       id="text91">w</text>
+    <path
+       d="M 597,402.001 C 597,387.089 609.089,375 624.001,375 H 731.999 C 746.911,375 759,387.089 759,402.001 V 510.999 C 759,525.911 746.911,538 731.999,538 H 624.001 C 609.089,538 597,525.911 597,510.999 Z"
+       stroke="#000000"
+       stroke-width="6"
+       stroke-miterlimit="8"
+       fill="#4b8bbe"
+       fill-rule="evenodd"
+       id="path93" />
+    <text
+       fill="#ffffff"
+       font-family="Minecraft, Minecraft_MSFontService, sans-serif"
+       font-weight="500"
+       font-size="80px"
+       transform="translate(655.478,480)"
+       id="text95">u</text>
+    <path
+       d="M 775,402.167 C 775,387.163 787.163,375 802.167,375 H 910.833 C 925.837,375 938,387.163 938,402.167 V 510.833 C 938,525.837 925.837,538 910.833,538 H 802.167 C 787.163,538 775,525.837 775,510.833 Z"
+       stroke="#000000"
+       stroke-width="6"
+       stroke-miterlimit="8"
+       fill="#4b8bbe"
+       fill-rule="evenodd"
+       id="path97" />
+    <text
+       fill="#ffffff"
+       font-family="Minecraft, Minecraft_MSFontService, sans-serif"
+       font-weight="500"
+       font-size="80px"
+       transform="translate(829.084,480)"
+       id="text99">b</text>
+  </g>
+</svg>
