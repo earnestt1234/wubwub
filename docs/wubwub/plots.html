@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.1" />
+<title>wubwub.plots API documentation</title>
+<meta name="description" content="Created on Thu Feb 11 14:34:36 2021 …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>wubwub.plots</code></h1>
+</header>
+<section id="section-intro">
+<p>Created on Thu Feb 11 14:34:36 2021</p>
+<p>@author: earnestt1234</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+&#34;&#34;&#34;
+Created on Thu Feb 11 14:34:36 2021
+
+@author: earnestt1234
+&#34;&#34;&#34;
+from numbers import Number
+
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+from matplotlib.ticker import AutoMinorLocator
+
+from wubwub.errors import WubWubError
+from wubwub.pitch import pitch_from_semitones, relative_pitch_to_int
+from wubwub.resources import MINUTE
+
+prop_cycle = plt.rcParams[&#39;axes.prop_cycle&#39;]
+colors = prop_cycle.by_key()[&#39;color&#39;]
+
+def _actual_soundlength(track, element):
+    mpb = 1 / track.get_bpm() * MINUTE
+    clss = element.__class__.__name__
+
+    if clss == &#39;ArpChord&#39;:
+        return element.length
+
+    elif hasattr(element, &#39;length&#39;):
+        l = element.length
+    else:
+        l = max(n.length for n in element.notes)
+
+    if hasattr(track, &#39;get_sample&#39;):
+        samplelen = len(track.get_sample(element.pitch)) / mpb
+    else:
+        samplelen = len(track.sample) / mpb
+
+    return min(l, samplelen)
+
+def sequencerplot(sequencer, timesig=4, grid=True, ax=None, scatter_kwds=None,
+                  plot_kwds=None):
+    if ax is None:
+        ax = plt.gca()
+    if scatter_kwds is None:
+        scatter_kwds = {}
+    if plot_kwds is None:
+        plot_kwds = {}
+
+    if grid:
+        ax.yaxis.grid(True, which=&#39;major&#39;, alpha=.3)
+        ax.xaxis.grid(True, which=&#39;major&#39;, alpha=.3)
+        ax.xaxis.grid(which=&#39;minor&#39;, alpha=.3)
+    ax.set_ylabel(&#39;tracks&#39;)
+    ax.set_xlabel(&#39;beats&#39;)
+
+    yticks = []
+    ylabs = []
+    c = 0
+    for y, track in enumerate(sequencer.tracks()):
+        color = track.plotting.get(&#39;color&#39;)
+        marker =  track.plotting.get(&#39;marker&#39;)
+
+        if not color:
+            color = colors[c]
+            c += 1
+        if not marker:
+            marker = &#39;o&#39;
+
+        beats = track.array_of_beats()
+        notes = track.notedict.values()
+
+        ax.scatter(beats, [-y] * len(beats), color=color, marker=marker,
+                   zorder=5, **scatter_kwds)
+        yticks.append(-y)
+        ylabs.append(track.name)
+
+        for b, n in zip(beats, notes):
+            l = _actual_soundlength(track, n)
+            ax.plot([b, b+l], [-y, -y], color=color, **plot_kwds)
+
+    max_beats = sequencer.beats + 1
+    ax.set_yticks(yticks)
+    ax.set_yticklabels(ylabs)
+    beat_range = max_beats
+    ax.set_xlim(0.5, beat_range + 0.5)
+
+    step = 1
+    xticks = range(1, max_beats+1, step)
+    c = 1
+    while len(xticks) &gt; 10:
+        step = timesig * c
+        xticks = range(1, max_beats+1, step)
+        c += 1
+    ax.set_xticks(xticks)
+    minor_locator = AutoMinorLocator(2)
+    ax.xaxis.set_minor_locator(minor_locator)
+
+    return ax.figure
+
+def _convert_semitones_str_yaxis(plottype, note, track):
+    if plottype == &#39;semitones&#39; and isinstance(note.pitch, str):
+        if not hasattr(track, &#39;basepitch&#39;):
+            raise WubWubError(&#39;Cannot convert pitch to semitoes with no `basepitch` attribute.&#39;)
+        return relative_pitch_to_int(track.basepitch, note.pitch)
+    elif plottype == &#39;pitch&#39; and isinstance(note.pitch, Number):
+        if not hasattr(track, &#39;basepitch&#39;):
+            raise WubWubError(&#39;Cannot convert semitones to pitch with no `basepitch` attribute.&#39;)
+        return pitch_from_semitones(track.basepitch, note.pitch)
+    else:
+        return note.pitch
+
+def _format_pitch_yaxis(ax, pitchnums, max_range=24, max_pitches=12):
+    lo = min(pitchnums)
+    hi = max(pitchnums)
+    pitchrange = hi - lo
+    if pitchrange &gt; max_range or len(pitchnums) &gt; max_pitches:
+        yticks = [i for i in range(lo, hi) if i % 12 == 0]
+    else:
+        yticks = list(pitchnums)
+    labels = [pitch_from_semitones(&#39;C1&#39;, y) for y in yticks]
+    ax.set_yticks(yticks)
+    ax.set_yticklabels(labels)
+
+def trackplot(track, yaxis=&#39;semitones&#39;, timesig=4, grid=True, ax=None,
+              scatter_kwds=None, plot_kwds=None):
+    if yaxis not in [&#39;pitch&#39;, &#39;semitones&#39;, &#39;names&#39;]:
+        raise WubWubError(&#39;yaxis must be &#34;pitch&#34;, &#34;semitones&#34;, or &#34;names&#34;.&#39;)
+    if ax is None:
+        ax = plt.gca()
+    if grid:
+        ax.yaxis.grid(True, which=&#39;major&#39;, alpha=.3)
+        ax.xaxis.grid(True, which=&#39;major&#39;, alpha=.3)
+        ax.xaxis.grid(which=&#39;minor&#39;, alpha=.3)
+    ax.set_ylabel(yaxis)
+    ax.set_xlabel(&#39;beats&#39;)
+    if scatter_kwds is None:
+        scatter_kwds = {}
+    if plot_kwds is None:
+        plot_kwds = {}
+
+    pitchnums = set()
+
+    color = track.plotting.get(&#39;color&#39;)
+    marker =  track.plotting.get(&#39;marker&#39;)
+
+    if not color:
+        color = &#39;blue&#39;
+    if not marker:
+        marker = &#39;o&#39;
+
+    beats = []
+    notes = []
+    lengths = []
+
+    for beat, element in track.notedict.items():
+
+        clss = element.__class__.__name__
+
+        if clss == &#34;Note&#34;:
+            beats.append(beat)
+            notes.append(element)
+            lengths.append(_actual_soundlength(track, element))
+
+        else:
+            for note in element.notes:
+                beats.append(beat)
+                notes.append(note)
+                lengths.append(_actual_soundlength(track, element))
+
+    if yaxis in [&#39;pitch&#39;, &#39;semitones&#39;]:
+        for b, n, l in zip(beats, notes, lengths):
+            p = _convert_semitones_str_yaxis(yaxis, n, track)
+            if isinstance(p, str):
+                p = relative_pitch_to_int(&#39;C1&#39;, p)
+                pitchnums.add(p)
+            ax.scatter(b, p, color=color, **scatter_kwds)
+
+            ax.plot([b, b+l], [p, p], color=color, **plot_kwds)
+
+        if yaxis == &#39;pitch&#39;:
+            _format_pitch_yaxis(ax, pitchnums)
+
+    elif yaxis == &#39;names&#39;:
+        labels = tuple(set(n.pitch for n in notes))
+        positions_dict = dict(zip(labels, range(len(labels))))
+        for b, n, l in zip(beats, notes, lengths):
+            p = positions_dict[n.pitch]
+            ax.scatter(b, p, color=color, **scatter_kwds)
+            ax.plot([b, b+l], [p, p], color=color, **plot_kwds)
+        ax.set_yticks(range(len(labels)))
+        ax.set_yticklabels(labels)
+
+    max_beats = track.get_beats() + 1
+    step = 1
+    xticks = range(1, max_beats+1, step)
+    c = 1
+    while len(xticks) &gt; 10:
+        step = timesig * c
+        xticks = range(1, max_beats+1, step)
+        c += 1
+    ax.set_xticks(xticks)
+    minor_locator = AutoMinorLocator(2)
+    ax.xaxis.set_minor_locator(minor_locator)
+
+    return ax.figure
+
+def draw_pianoroll(ax, lo, hi, notenames=True):
+    lo_num = relative_pitch_to_int(&#39;C1&#39;, lo) - 2
+    hi_num = relative_pitch_to_int(&#39;C1&#39;, hi) + 2
+    num_notes = hi_num - lo_num
+    if 14 &lt; num_notes &lt; 20:
+        fontsize = 8
+    if num_notes &gt;= 20:
+        notenames = False
+    else:
+        fontsize = 10
+
+    ax.set_xlim(0, 1)
+    ax.set_ylim(lo_num, hi_num+1)
+
+    black = [1, 3, 6, 8, 10]
+    for i in range(lo_num, hi_num+1):
+        facecolor = &#39;black&#39; if i % 12 in black else &#39;white&#39;
+        rect = mpl.patches.Rectangle((0, i), width=1, height=1, facecolor=facecolor,
+                                     edgecolor=&#39;black&#39;)
+        ax.add_patch(rect)
+        if notenames:
+            note = pitch_from_semitones(&#39;C1&#39;, i)
+            textcolor = {&#39;white&#39;:&#39;black&#39;, &#39;black&#39;:&#39;white&#39;}[facecolor]
+            ax.text(0.1, i + 0.5, note, color=textcolor, va=&#39;center&#39;, fontsize=fontsize)
+
+def pianoroll(track, timesig=4, grid=True,):
+
+    fig = plt.figure()
+    gs = fig.add_gridspec(1, 10)
+    plt.subplots_adjust(wspace=0)
+
+    ax0 = fig.add_subplot(gs[:, 1])
+    ax1 = fig.add_subplot(gs[:, 2:], sharey=ax0)
+    ax1.set_xlabel(&#39;beats&#39;)
+    ax0.set_ylabel(&#39;pitch&#39;)
+
+    beats = []
+    notes = []
+    lengths = []
+
+    for beat, element in track.notedict.items():
+
+        clss = element.__class__.__name__
+
+        if clss == &#34;Note&#34;:
+            beats.append(beat)
+            notes.append(_convert_semitones_str_yaxis(&#39;pitch&#39;, element, track))
+            lengths.append(_actual_soundlength(track, element))
+
+        else:
+            for note in element.notes:
+                beats.append(beat)
+                notes.append(_convert_semitones_str_yaxis(&#39;pitch&#39;, note, track))
+                lengths.append(_actual_soundlength(track, element))
+
+    semitones = [relative_pitch_to_int(&#39;C1&#39;, n) for n in notes]
+    lo = notes[semitones.index(min(semitones))]
+    hi = notes[semitones.index(max(semitones))]
+    draw_pianoroll(ax0, lo, hi)
+    ax1.set_xlim(1, track.get_beats() + 1)
+
+    for b, n, l in zip(beats, semitones, lengths):
+        rect = mpl.patches.Rectangle((b, n), width=l, height=1, color=&#39;firebrick&#39;, alpha=.7)
+        ax1.add_patch(rect)
+
+    ax0.set_xticks([])
+    ax1.set_yticklabels([])
+    for tic in ax0.yaxis.get_major_ticks():
+            tic.tick1line.set_visible(False)
+    for tic in ax1.yaxis.get_major_ticks():
+        tic.tick1line.set_visible(False)
+    if grid:
+        ax1.set_yticks(range(min(semitones)-2, max(semitones)+3))
+        ax1.yaxis.grid(True, which=&#39;major&#39;, alpha=.3)
+        ax1.xaxis.grid(True, which=&#39;major&#39;, alpha=.3)
+        ax1.xaxis.grid(which=&#39;minor&#39;, alpha=.3)
+
+    return fig</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="wubwub.plots.draw_pianoroll"><code class="name flex">
+<span>def <span class="ident">draw_pianoroll</span></span>(<span>ax, lo, hi, notenames=True)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def draw_pianoroll(ax, lo, hi, notenames=True):
+    lo_num = relative_pitch_to_int(&#39;C1&#39;, lo) - 2
+    hi_num = relative_pitch_to_int(&#39;C1&#39;, hi) + 2
+    num_notes = hi_num - lo_num
+    if 14 &lt; num_notes &lt; 20:
+        fontsize = 8
+    if num_notes &gt;= 20:
+        notenames = False
+    else:
+        fontsize = 10
+
+    ax.set_xlim(0, 1)
+    ax.set_ylim(lo_num, hi_num+1)
+
+    black = [1, 3, 6, 8, 10]
+    for i in range(lo_num, hi_num+1):
+        facecolor = &#39;black&#39; if i % 12 in black else &#39;white&#39;
+        rect = mpl.patches.Rectangle((0, i), width=1, height=1, facecolor=facecolor,
+                                     edgecolor=&#39;black&#39;)
+        ax.add_patch(rect)
+        if notenames:
+            note = pitch_from_semitones(&#39;C1&#39;, i)
+            textcolor = {&#39;white&#39;:&#39;black&#39;, &#39;black&#39;:&#39;white&#39;}[facecolor]
+            ax.text(0.1, i + 0.5, note, color=textcolor, va=&#39;center&#39;, fontsize=fontsize)</code></pre>
+</details>
+</dd>
+<dt id="wubwub.plots.pianoroll"><code class="name flex">
+<span>def <span class="ident">pianoroll</span></span>(<span>track, timesig=4, grid=True)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def pianoroll(track, timesig=4, grid=True,):
+
+    fig = plt.figure()
+    gs = fig.add_gridspec(1, 10)
+    plt.subplots_adjust(wspace=0)
+
+    ax0 = fig.add_subplot(gs[:, 1])
+    ax1 = fig.add_subplot(gs[:, 2:], sharey=ax0)
+    ax1.set_xlabel(&#39;beats&#39;)
+    ax0.set_ylabel(&#39;pitch&#39;)
+
+    beats = []
+    notes = []
+    lengths = []
+
+    for beat, element in track.notedict.items():
+
+        clss = element.__class__.__name__
+
+        if clss == &#34;Note&#34;:
+            beats.append(beat)
+            notes.append(_convert_semitones_str_yaxis(&#39;pitch&#39;, element, track))
+            lengths.append(_actual_soundlength(track, element))
+
+        else:
+            for note in element.notes:
+                beats.append(beat)
+                notes.append(_convert_semitones_str_yaxis(&#39;pitch&#39;, note, track))
+                lengths.append(_actual_soundlength(track, element))
+
+    semitones = [relative_pitch_to_int(&#39;C1&#39;, n) for n in notes]
+    lo = notes[semitones.index(min(semitones))]
+    hi = notes[semitones.index(max(semitones))]
+    draw_pianoroll(ax0, lo, hi)
+    ax1.set_xlim(1, track.get_beats() + 1)
+
+    for b, n, l in zip(beats, semitones, lengths):
+        rect = mpl.patches.Rectangle((b, n), width=l, height=1, color=&#39;firebrick&#39;, alpha=.7)
+        ax1.add_patch(rect)
+
+    ax0.set_xticks([])
+    ax1.set_yticklabels([])
+    for tic in ax0.yaxis.get_major_ticks():
+            tic.tick1line.set_visible(False)
+    for tic in ax1.yaxis.get_major_ticks():
+        tic.tick1line.set_visible(False)
+    if grid:
+        ax1.set_yticks(range(min(semitones)-2, max(semitones)+3))
+        ax1.yaxis.grid(True, which=&#39;major&#39;, alpha=.3)
+        ax1.xaxis.grid(True, which=&#39;major&#39;, alpha=.3)
+        ax1.xaxis.grid(which=&#39;minor&#39;, alpha=.3)
+
+    return fig</code></pre>
+</details>
+</dd>
+<dt id="wubwub.plots.sequencerplot"><code class="name flex">
+<span>def <span class="ident">sequencerplot</span></span>(<span>sequencer, timesig=4, grid=True, ax=None, scatter_kwds=None, plot_kwds=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sequencerplot(sequencer, timesig=4, grid=True, ax=None, scatter_kwds=None,
+                  plot_kwds=None):
+    if ax is None:
+        ax = plt.gca()
+    if scatter_kwds is None:
+        scatter_kwds = {}
+    if plot_kwds is None:
+        plot_kwds = {}
+
+    if grid:
+        ax.yaxis.grid(True, which=&#39;major&#39;, alpha=.3)
+        ax.xaxis.grid(True, which=&#39;major&#39;, alpha=.3)
+        ax.xaxis.grid(which=&#39;minor&#39;, alpha=.3)
+    ax.set_ylabel(&#39;tracks&#39;)
+    ax.set_xlabel(&#39;beats&#39;)
+
+    yticks = []
+    ylabs = []
+    c = 0
+    for y, track in enumerate(sequencer.tracks()):
+        color = track.plotting.get(&#39;color&#39;)
+        marker =  track.plotting.get(&#39;marker&#39;)
+
+        if not color:
+            color = colors[c]
+            c += 1
+        if not marker:
+            marker = &#39;o&#39;
+
+        beats = track.array_of_beats()
+        notes = track.notedict.values()
+
+        ax.scatter(beats, [-y] * len(beats), color=color, marker=marker,
+                   zorder=5, **scatter_kwds)
+        yticks.append(-y)
+        ylabs.append(track.name)
+
+        for b, n in zip(beats, notes):
+            l = _actual_soundlength(track, n)
+            ax.plot([b, b+l], [-y, -y], color=color, **plot_kwds)
+
+    max_beats = sequencer.beats + 1
+    ax.set_yticks(yticks)
+    ax.set_yticklabels(ylabs)
+    beat_range = max_beats
+    ax.set_xlim(0.5, beat_range + 0.5)
+
+    step = 1
+    xticks = range(1, max_beats+1, step)
+    c = 1
+    while len(xticks) &gt; 10:
+        step = timesig * c
+        xticks = range(1, max_beats+1, step)
+        c += 1
+    ax.set_xticks(xticks)
+    minor_locator = AutoMinorLocator(2)
+    ax.xaxis.set_minor_locator(minor_locator)
+
+    return ax.figure</code></pre>
+</details>
+</dd>
+<dt id="wubwub.plots.trackplot"><code class="name flex">
+<span>def <span class="ident">trackplot</span></span>(<span>track, yaxis='semitones', timesig=4, grid=True, ax=None, scatter_kwds=None, plot_kwds=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def trackplot(track, yaxis=&#39;semitones&#39;, timesig=4, grid=True, ax=None,
+              scatter_kwds=None, plot_kwds=None):
+    if yaxis not in [&#39;pitch&#39;, &#39;semitones&#39;, &#39;names&#39;]:
+        raise WubWubError(&#39;yaxis must be &#34;pitch&#34;, &#34;semitones&#34;, or &#34;names&#34;.&#39;)
+    if ax is None:
+        ax = plt.gca()
+    if grid:
+        ax.yaxis.grid(True, which=&#39;major&#39;, alpha=.3)
+        ax.xaxis.grid(True, which=&#39;major&#39;, alpha=.3)
+        ax.xaxis.grid(which=&#39;minor&#39;, alpha=.3)
+    ax.set_ylabel(yaxis)
+    ax.set_xlabel(&#39;beats&#39;)
+    if scatter_kwds is None:
+        scatter_kwds = {}
+    if plot_kwds is None:
+        plot_kwds = {}
+
+    pitchnums = set()
+
+    color = track.plotting.get(&#39;color&#39;)
+    marker =  track.plotting.get(&#39;marker&#39;)
+
+    if not color:
+        color = &#39;blue&#39;
+    if not marker:
+        marker = &#39;o&#39;
+
+    beats = []
+    notes = []
+    lengths = []
+
+    for beat, element in track.notedict.items():
+
+        clss = element.__class__.__name__
+
+        if clss == &#34;Note&#34;:
+            beats.append(beat)
+            notes.append(element)
+            lengths.append(_actual_soundlength(track, element))
+
+        else:
+            for note in element.notes:
+                beats.append(beat)
+                notes.append(note)
+                lengths.append(_actual_soundlength(track, element))
+
+    if yaxis in [&#39;pitch&#39;, &#39;semitones&#39;]:
+        for b, n, l in zip(beats, notes, lengths):
+            p = _convert_semitones_str_yaxis(yaxis, n, track)
+            if isinstance(p, str):
+                p = relative_pitch_to_int(&#39;C1&#39;, p)
+                pitchnums.add(p)
+            ax.scatter(b, p, color=color, **scatter_kwds)
+
+            ax.plot([b, b+l], [p, p], color=color, **plot_kwds)
+
+        if yaxis == &#39;pitch&#39;:
+            _format_pitch_yaxis(ax, pitchnums)
+
+    elif yaxis == &#39;names&#39;:
+        labels = tuple(set(n.pitch for n in notes))
+        positions_dict = dict(zip(labels, range(len(labels))))
+        for b, n, l in zip(beats, notes, lengths):
+            p = positions_dict[n.pitch]
+            ax.scatter(b, p, color=color, **scatter_kwds)
+            ax.plot([b, b+l], [p, p], color=color, **plot_kwds)
+        ax.set_yticks(range(len(labels)))
+        ax.set_yticklabels(labels)
+
+    max_beats = track.get_beats() + 1
+    step = 1
+    xticks = range(1, max_beats+1, step)
+    c = 1
+    while len(xticks) &gt; 10:
+        step = timesig * c
+        xticks = range(1, max_beats+1, step)
+        c += 1
+    ax.set_xticks(xticks)
+    minor_locator = AutoMinorLocator(2)
+    ax.xaxis.set_minor_locator(minor_locator)
+
+    return ax.figure</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="wubwub" href="index.html">wubwub</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="wubwub.plots.draw_pianoroll" href="#wubwub.plots.draw_pianoroll">draw_pianoroll</a></code></li>
+<li><code><a title="wubwub.plots.pianoroll" href="#wubwub.plots.pianoroll">pianoroll</a></code></li>
+<li><code><a title="wubwub.plots.sequencerplot" href="#wubwub.plots.sequencerplot">sequencerplot</a></code></li>
+<li><code><a title="wubwub.plots.trackplot" href="#wubwub.plots.trackplot">trackplot</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.1</a>.</p>
+</footer>
+</body>
+</html>

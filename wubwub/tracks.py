@@ -239,7 +239,7 @@ class _GenericTrack(metaclass=ABCMeta):
         return new
 
     def copypaste(self, start, stop, newstart, outsiders=None, merge=False,):
-        section = self.ns()[start:stop]
+        section = self.slice[start:stop]
         if section:
             offset = start - 1
             at_one = {k-offset:v for k, v in section.items()}

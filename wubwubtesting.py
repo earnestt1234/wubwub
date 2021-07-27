@@ -1,8 +1,10 @@
 import wubwub as wb
 import wubwub.sounds as snd
 
-BASS = snd.load('bass.synth')
-
 seq = wb.Sequencer(bpm=120, beats=8)
 
-bass = seq.add_sampler(BASS['pluck'], name='bass')
+DRUMS = snd.load('drums.808')
+
+kick = seq.add_sampler(sample=DRUMS['kick1'], name='kick')
+snare = seq.add_sampler(sample=DRUMS['snare'], name='snare')
+seq.duplicate_track('snare', newname='snare2')
