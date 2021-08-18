@@ -1,6 +1,6 @@
 ![logo](img/logo.png)
 
-**wubwub** is a novelty music production package for Python.  Using the easy audio manipulation of [pydub](https://github.com/jiaaro/pydub), wubwub allows you to place and edit sounds to make musical arrangements.  
+**wubwub** is a novelty music production package for Python.  Using the easy audio manipulation of [pydub](https://github.com/jiaaro/pydub), wubwub allows you to place and edit sounds to make musical arrangements.
 
 ## Quick Start
 
@@ -84,10 +84,12 @@ The above examples are all created with samples from `wubwub.sounds`.  This modu
 
 ## Installation
 
-You can install wubwub with pip:
+wubwub is not yet on PyPi, but it will be soon.  For now, you can clone this repo and `pip` install:
 
 ```
-pip install wubwub
+git clone https://github.com/earnestt1234/wubwub
+cd wubwub
+pip install .
 ```
 
 You may also want to install other software to make full use of wubwub:
