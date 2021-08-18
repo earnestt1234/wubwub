@@ -1,3 +1,0 @@
-install ffmpeg windows: https://www.youtube.com/watch?v=r1AtmY-RMyQ
-install sox windows: https://anaconda.org/groakat/sox
-pip install simpleaudio 

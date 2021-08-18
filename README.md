@@ -97,7 +97,7 @@ You may also want to install other software to make full use of wubwub:
 
 ## Documentation
 
-Documentation for the API and more markdown description of wubwub can be found ADD LINK HERE.
+Full docstrings and example usage for wubwub are in the making.  For now, refer to the examples in the Gallery above if you would like to try playing around with wubwub.  Feel free to share any questions on the issues page.
 
 ## Contributing
 

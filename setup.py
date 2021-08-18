@@ -7,18 +7,25 @@ Setup for seedir.
 """
 
 from os import path
-
 from setuptools import setup
 
-# read the contents of your README file
+# read the contents of the README file
 this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-requirements = []
+# read version
+with open(path.join(this_directory, 'wubwub', '_version.py'), encoding='utf-8') as f:
+    version = f.read().split('=')[1].strip('\'"')
+
+requirements = ['gdown',
+                'matplotlib',
+                'numpy',
+                'pydub',
+                'sortedcontainers']
 
 setup(name='wubwub',
-      version='0.1.0',
+      version=version,
       description='Create sequencer-based music with Python.',
       url='https://github.com/earnestt1234/wubwub',
       author='Tom Earnest',
