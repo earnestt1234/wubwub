@@ -108,3 +108,9 @@ There are a few ways you can help improve wubwub:
 - Use it and share any bugs or problems on the [issues page](https://github.com/earnestt1234/wubwub/issues).
 - Create something with wubwub (e.g. a small loop or musical vignette) that could be added to the example gallery.  Preferably, your example would only use sounds from `wubwub.sounds` so that others could reproduce it.  But if not, I may still want to share it.  There is an "example" issue label where you can share your example.
 - I would be thrilled about others also improving the code base; I am not very familiar with handling pull requests from others, but would be certainly interested in trying to incorporate them.
+
+Immediate goals for wubwub in the future are to:
+
+- Add full function docstrings
+- Create HTML for the documentation, with more examples (likely using `pdoc`)
+- Add unit tests
