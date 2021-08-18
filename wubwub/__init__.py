@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from ._version import v
+__version__ = v
+del v
 
 from .audio import *
 from .errors import *

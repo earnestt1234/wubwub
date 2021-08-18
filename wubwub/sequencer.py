@@ -19,8 +19,36 @@ from wubwub.seqstring import seqstring
 from wubwub.tracks import Sampler, Arpeggiator, MultiSampler
 
 class Sequencer:
+    '''
+    The Sequencer is the main tool for creating beats in wubwub.  Sequencers
+    hold and organize individual instrument tracks which can be filled
+    with musical elements.  Sequencers have a defined length (and tempo), but
+    multiple can be combined to create longer/varied arrangements.
+
+    Parameters
+    ----------
+    bpm : int or float
+        Tempo of the sequencer (beats per minute).  The tempo can be changed
+        after initialization by setting this attribute.
+    beats : int
+        The length of the sequence, in beats.  This can be viewed as the
+        bottom number in a time signature.
+
+    Examples
+    --------
+    Initialize a Sequencer with a tempo and length:
+
+    ```python
+    >>> import wubwub as wb
+    >>> seq = wb.Sequencer(bpm=120, beats=8)
+    >>> seq
+    Sequencer(bpm=120, beats=8, tracks=0)
+
+    ```
+    '''
 
     def __init__(self, bpm, beats):
+
         self.bpm = bpm
         self.beats = beats
 
@@ -128,9 +156,9 @@ class Sequencer:
         b.beats = b2 - b1
 
         for selftrack, atrack, btrack in zip(self.tracks(), a.tracks(), b.tracks()):
-            anotes = selftrack.ns()[a1:a2]
+            anotes = selftrack.slice[a1:a2]
             atrack.add_fromdict(anotes)
-            bnotes = selftrack.ns()[b1:b2]
+            bnotes = selftrack.slice[b1:b2]
             btrack.add_fromdict(bnotes, offset=-b.beats)
 
         return a, b
