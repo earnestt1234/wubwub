@@ -75,10 +75,10 @@ seq.export('my_beat.wav')
 
 ## Gallery
 
-- Electro
-- LoFi
-- Arpeggio
-- Ten
+- [Electro](https://htmlpreview.github.io/?https://github.com/earnestt1234/wubwub/blob/main/examples/electro.html)
+- [LoFi](https://htmlpreview.github.io/?https://github.com/earnestt1234/wubwub/blob/main/examples/lofi.html)
+- [Arpeggio](https://htmlpreview.github.io/?https://github.com/earnestt1234/wubwub/blob/main/examples/arpeggio.html)
+- [Ten](https://htmlpreview.github.io/?https://github.com/earnestt1234/wubwub/blob/main/examples/ten.html)
 
 The above examples are all created with samples from `wubwub.sounds`.  This module allows you to download and access a collection of musical samples collected from [SampleSwap](https://sampleswap.org/).  
 
