@@ -27,6 +27,8 @@ from wubwub.notes import ArpChord, Chord, Note, arpeggiate, _notetypes_
 from wubwub.plots import trackplot, pianoroll
 from wubwub.resources import random_choice_generator, MINUTE, SECOND
 
+__pdoc__ = {'_GenericTrack':True}
+
 class SliceableDict:
     def __init__(self, d):
         self.d = d

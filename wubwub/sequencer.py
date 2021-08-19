@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Music sequencer for WubWub.
-
-@author: earnestt1234
+This module contains the Sequencer class, and associated functions for
+working with Sequencers in wubwub.
 """
+
 from copy import copy
 import os
 import time
@@ -18,21 +18,25 @@ from wubwub.resources import MINUTE, unique_name
 from wubwub.seqstring import seqstring
 from wubwub.tracks import Sampler, Arpeggiator, MultiSampler
 
+__all__ = ('Sequencer', 'stitch', 'join', 'loop')
+
 class Sequencer:
     '''
     The Sequencer is the main tool for creating beats in wubwub.  Sequencers
-    hold and organize individual instrument tracks which can be filled
+    hold and organize individual instrument Tracks which can be filled
     with musical elements.  Sequencers have a defined length (and tempo), but
     multiple can be combined to create longer/varied arrangements.
+
+    Both parameters for initialization (BPM and length) can be tweaked
+    after creation by setting the value of the <code>bpm</code> or
+    <code>beats</code> attributes.
 
     Parameters
     ----------
     bpm : int or float
-        Tempo of the sequencer (beats per minute).  The tempo can be changed
-        after initialization by setting this attribute.
+        Tempo of the sequencer (beats per minute).
     beats : int
-        The length of the sequence, in beats.  This can be viewed as the
-        bottom number in a time signature.
+        The length of the sequence, in beats.
 
     Examples
     --------
@@ -48,6 +52,9 @@ class Sequencer:
     '''
 
     def __init__(self, bpm, beats):
+        """Initialization function for the Sequencer.  Sets the BPM and beats
+        based on user input, also defaults attributes related to post-processing
+        the output audio and creates a container for subsidiary tracks."""
 
         self.bpm = bpm
         self.beats = beats
@@ -56,19 +63,25 @@ class Sequencer:
         self.volume = 0
         self.pan = 0
         self.postprocess_steps = ['effects', 'volume', 'pan']
+
         self._tracks = []
 
     def __repr__(self):
+        """String representation of self."""
         l = len(self.tracks())
         return f"Sequencer(bpm={self.bpm}, beats={self.beats}, tracks={l})"
 
     def __getitem__(self, name):
+        """Allows for retrieval of Track objects by their string name."""
         if not isinstance(name, str):
             e = f'Can only index Sequencer with str, not {type(name)}'
             raise WubWubError(e)
         return self.get_track(name)
 
     def _add_track(self, track):
+        """Helper function called when adding a new track to self.  Checks for
+        duplicate names, and tries to ensure non-duplicate entries of items
+        in different Sequencers."""
         if track.name in self.tracknames():
             raise WubWubError(f'Track name "{track.name}" already in use.')
         if track.sequencer != self:
@@ -77,32 +90,130 @@ class Sequencer:
             self._tracks.append(track)
 
     def copypaste_section(self, start, stop, newstart):
+        '''
+        For all tracks of the Sequencer, take a section of notes and replicate
+        them on a new beat (keeping the same relative spacing between notes).
+        Simply, this method calls `wubwub.tracks._GenericTrack.copypaste()`
+        for all tracks within the Sequencer.
+
+        Parameters
+        ----------
+        start : int or float
+            Beat to start copying notes (inclusive).
+        stop : int or float
+            Beat to stop copying notes (exlcusive).
+        newstart : int or float
+            Beat to paste the copied section.
+
+        Returns
+        -------
+        None.
+
+        '''
         for track in self.tracks():
             track.copypaste(start, stop, newstart)
 
     def set_beats_and_clean(self, new):
+        """
+        Modifies the Sequencer length while simultaneously removing notes
+        that are outside of the sequence after the change.  I.e., sets
+        <code>beats</code> and calls `wubwub.tracks._GenericTrack.clean()` for
+        all tracks.  This is a convenience method which is only useful when
+        shortening the sequence length.
+
+        Parameters
+        ----------
+        new : int
+            New value for the length of the Sequencer.
+
+        Returns
+        -------
+        None.
+
+        """
         self.beats = new
         for track in self.tracks():
             track.clean()
 
     def get_track(self, track):
+        '''
+        Return a Track, keyed by either its name or the Track
+        itself (provided the Track is part of the current Sequencer).
+
+        Parameters
+        ----------
+        track : str or Track
+            Handle for a Track to retrieve.
+
+        Raises
+        ------
+        ValueError
+            Track not found.
+
+        Returns
+        -------
+        Track
+            A track that is part of this Sequencer.
+
+        '''
         if isinstance(track, str):
             try:
                 return next(t for t in self._tracks if t.name == track)
             except:
-                raise StopIteration(f'no track with name {track}')
+                raise ValueError(f'no track with name {track}')
         elif track in self._tracks:
             return track
         else:
             raise ValueError('Requested track is not part of sequencer.')
 
     def tracks(self):
+        """Returns a tuple of the Track objects currently part of this Sequencer."""
         return tuple(self._tracks)
 
     def tracknames(self):
+        """Returns a list of the names of each Track currenlty part of this Sequencer."""
         return [t.name for t in self._tracks]
 
     def add_sampler(self, sample, name=None, overlap=False, basepitch='C4'):
+        """
+        Create a new `wubwub.tracks.Sampler` Track and add to the Sequencer.
+        Parameters here are initialization values for `wubwub.tracks.Sampler`;
+        see there for more detailed documentation.
+
+        Parameters
+        ----------
+        sample : path or pydub.AudioSegment
+            Sample for Sampler initialization.
+        name : str, optional
+            Name for the new Sampler.
+        overlap : bool, optional
+            Set the overlap behavior of the new Sampler. The default is False.
+        basepitch : int or str, optional
+            Set the base pitch for the new Sampler. The default is 'C4'.
+
+        Examples
+        --------
+        ```python
+        import wubwub as wb
+
+        seq = wb.Sequencer(bpm=100, beats=16)
+
+        # path to sound
+        seq.add_sampler('my_kick.wav', name='kick')
+
+        # using a pydub.AudioSegment
+        import wubwub.sounds as snd
+
+        clap = snd.load('drums.808')['handclap']
+        seq.add_sampler(clap, name='clap')
+        ```
+
+        Returns
+        -------
+        new : Track
+            The new Track.
+
+        """
         if name is None:
             name = unique_name('Track', self.tracknames())
         new = Sampler(name=name, sample=sample, overlap=overlap,
