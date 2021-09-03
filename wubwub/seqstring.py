@@ -28,7 +28,7 @@ def seqstring(sequencer, name_cutoff=None, resolution=1, singlenote='■',
     steps = int(sequencer.beats * (1 / resolution))
     beats = np.linspace(1, sequencer.beats + 1, steps, endpoint=False)
 
-    namespacing = max(namelengths) + 1
+    namespacing = max(namelengths)
     beatspacing = len(str(sequencer.beats)) + 1
 
     chunks = [beats[i:i + wrap] for i in range(0, len(beats), wrap)]

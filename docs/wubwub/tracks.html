@@ -59,8 +59,6 @@ from wubwub.notes import ArpChord, Chord, Note, arpeggiate, _notetypes_
 from wubwub.plots import trackplot, pianoroll
 from wubwub.resources import random_choice_generator, MINUTE, SECOND
 
-__pdoc__ = {&#39;_GenericTrack&#39;:True}
-
 class SliceableDict:
     def __init__(self, d):
         self.d = d
@@ -88,7 +86,7 @@ class SliceableDict:
             raise IndexError(&#39;Could not interpret input as int, &#39;
                              &#39;slice, iterable, or boolean index.&#39;)
 
-class _GenericTrack(metaclass=ABCMeta):
+class Track(metaclass=ABCMeta):
 
     handle_outside_notes = &#39;skip&#39;
 
@@ -402,7 +400,7 @@ class _GenericTrack(metaclass=ABCMeta):
     def pianoroll(self, timesig=4, grid=True,):
         pianoroll(track=self, timesig=timesig, grid=grid)
 
-class _SamplerLikeTrack(_GenericTrack):
+class SamplerLikeTrack(Track):
     def __init__(self, name, sequencer, **kwargs):
         super().__init__(name=name, sequencer=sequencer)
 
@@ -488,7 +486,7 @@ class _SamplerLikeTrack(_GenericTrack):
             raise WubWubError(&#39;pitch, length, and volume select must be &#39;,
                               &#39;&#34;cycle&#34; or &#34;random&#34;.&#39;)
 
-class _SingleSampleTrack(_GenericTrack):
+class SingleSampleTrack(Track):
     def __init__(self, name, sample, sequencer, **kwargs):
         super().__init__(name=name, sequencer=sequencer, **kwargs)
         self._sample = None
@@ -511,12 +509,12 @@ class _SingleSampleTrack(_GenericTrack):
         else:
             raise WubWubError(&#39;sample must be a path or pydub.AudioSegment&#39;)
 
-class _MultiSampleTrack(_GenericTrack):
+class MultiSampleTrack(Track):
     def __init__(self, name, sequencer, **kwargs):
         super().__init__(name=name, sequencer=sequencer, **kwargs)
         self.samples = {}
 
-class Sampler(_SingleSampleTrack, _SamplerLikeTrack):
+class Sampler(SingleSampleTrack, SamplerLikeTrack):
     def __init__(self, name, sample, sequencer, basepitch=&#39;C4&#39;, overlap=True):
         super().__init__(name=name, sample=sample, sequencer=sequencer,
                          basepitch=basepitch, overlap=overlap)
@@ -574,7 +572,7 @@ class Sampler(_SingleSampleTrack, _SamplerLikeTrack):
             duration = duration * SECOND
         play(test[:duration])
 
-class MultiSampler(_MultiSampleTrack, _SamplerLikeTrack):
+class MultiSampler(MultiSampleTrack, SamplerLikeTrack):
     def __init__(self, name, sequencer, overlap=True):
         super().__init__(name=name, sequencer=sequencer)
         self.overlap = overlap
@@ -644,7 +642,7 @@ class MultiSampler(_MultiSampleTrack, _SamplerLikeTrack):
     def get_sample(self, key):
         return self.samples.get(key, self.default_sample)
 
-class Arpeggiator(_SingleSampleTrack):
+class Arpeggiator(SingleSampleTrack):
     def __init__(self, name, sample, sequencer, basepitch=&#39;C4&#39;, freq=.5,
                  method=&#39;up&#39;):
         super().__init__(name=name, sample=sample, sequencer=sequencer,)
@@ -749,7 +747,7 @@ class Arpeggiator(_SingleSampleTrack):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Arpeggiator(_SingleSampleTrack):
+<pre><code class="python">class Arpeggiator(SingleSampleTrack):
     def __init__(self, name, sample, sequencer, basepitch=&#39;C4&#39;, freq=.5,
                  method=&#39;up&#39;):
         super().__init__(name=name, sample=sample, sequencer=sequencer,)
@@ -836,8 +834,8 @@ class Arpeggiator(_SingleSampleTrack):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>wubwub.tracks._SingleSampleTrack</li>
-<li><a title="wubwub.tracks._GenericTrack" href="#wubwub.tracks._GenericTrack">_GenericTrack</a></li>
+<li><a title="wubwub.tracks.SingleSampleTrack" href="#wubwub.tracks.SingleSampleTrack">SingleSampleTrack</a></li>
+<li><a title="wubwub.tracks.Track" href="#wubwub.tracks.Track">Track</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
@@ -966,6 +964,30 @@ class Arpeggiator(_SingleSampleTrack):
 </dd>
 </dl>
 </dd>
+<dt id="wubwub.tracks.MultiSampleTrack"><code class="flex name class">
+<span>class <span class="ident">MultiSampleTrack</span></span>
+<span>(</span><span>name, sequencer, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MultiSampleTrack(Track):
+    def __init__(self, name, sequencer, **kwargs):
+        super().__init__(name=name, sequencer=sequencer, **kwargs)
+        self.samples = {}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="wubwub.tracks.Track" href="#wubwub.tracks.Track">Track</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="wubwub.tracks.MultiSampler" href="#wubwub.tracks.MultiSampler">MultiSampler</a></li>
+</ul>
+</dd>
 <dt id="wubwub.tracks.MultiSampler"><code class="flex name class">
 <span>class <span class="ident">MultiSampler</span></span>
 <span>(</span><span>name, sequencer, overlap=True)</span>
@@ -976,7 +998,7 @@ class Arpeggiator(_SingleSampleTrack):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class MultiSampler(_MultiSampleTrack, _SamplerLikeTrack):
+<pre><code class="python">class MultiSampler(MultiSampleTrack, SamplerLikeTrack):
     def __init__(self, name, sequencer, overlap=True):
         super().__init__(name=name, sequencer=sequencer)
         self.overlap = overlap
@@ -1048,9 +1070,9 @@ class Arpeggiator(_SingleSampleTrack):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>wubwub.tracks._MultiSampleTrack</li>
-<li>wubwub.tracks._SamplerLikeTrack</li>
-<li><a title="wubwub.tracks._GenericTrack" href="#wubwub.tracks._GenericTrack">_GenericTrack</a></li>
+<li><a title="wubwub.tracks.MultiSampleTrack" href="#wubwub.tracks.MultiSampleTrack">MultiSampleTrack</a></li>
+<li><a title="wubwub.tracks.SamplerLikeTrack" href="#wubwub.tracks.SamplerLikeTrack">SamplerLikeTrack</a></li>
+<li><a title="wubwub.tracks.Track" href="#wubwub.tracks.Track">Track</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
@@ -1167,7 +1189,7 @@ class Arpeggiator(_SingleSampleTrack):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Sampler(_SingleSampleTrack, _SamplerLikeTrack):
+<pre><code class="python">class Sampler(SingleSampleTrack, SamplerLikeTrack):
     def __init__(self, name, sample, sequencer, basepitch=&#39;C4&#39;, overlap=True):
         super().__init__(name=name, sample=sample, sequencer=sequencer,
                          basepitch=basepitch, overlap=overlap)
@@ -1227,9 +1249,9 @@ class Arpeggiator(_SingleSampleTrack):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>wubwub.tracks._SingleSampleTrack</li>
-<li>wubwub.tracks._SamplerLikeTrack</li>
-<li><a title="wubwub.tracks._GenericTrack" href="#wubwub.tracks._GenericTrack">_GenericTrack</a></li>
+<li><a title="wubwub.tracks.SingleSampleTrack" href="#wubwub.tracks.SingleSampleTrack">SingleSampleTrack</a></li>
+<li><a title="wubwub.tracks.SamplerLikeTrack" href="#wubwub.tracks.SamplerLikeTrack">SamplerLikeTrack</a></li>
+<li><a title="wubwub.tracks.Track" href="#wubwub.tracks.Track">Track</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
@@ -1303,6 +1325,270 @@ class Arpeggiator(_SingleSampleTrack):
 </dd>
 </dl>
 </dd>
+<dt id="wubwub.tracks.SamplerLikeTrack"><code class="flex name class">
+<span>class <span class="ident">SamplerLikeTrack</span></span>
+<span>(</span><span>name, sequencer, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SamplerLikeTrack(Track):
+    def __init__(self, name, sequencer, **kwargs):
+        super().__init__(name=name, sequencer=sequencer)
+
+    def make_notes(self, beats, pitches=0, lengths=1, volumes=0,
+                   pitch_select=&#39;cycle&#39;, length_select=&#39;cycle&#39;,
+                   volume_select=&#39;cycle&#39;, merge=False):
+
+        if not isinstance(beats, Iterable):
+            beats = [beats]
+
+        pitches = self._convert_select_arg(pitches, pitch_select)
+        lengths = self._convert_select_arg(lengths, length_select)
+        volumes = self._convert_select_arg(volumes, volume_select)
+
+        d = {b : Note(next(pitches), next(lengths), next(volumes))
+             for b in beats}
+
+        self.add_fromdict(d, merge=merge)
+
+    def make_notes_every(self, freq, offset=0, pitches=0, lengths=1, volumes=0,
+                         start=1, end=None, pitch_select=&#39;cycle&#39;,
+                         length_select=&#39;cycle&#39;, volume_select=&#39;cycle&#39;, merge=False):
+
+        freq = Fraction(freq).limit_denominator()
+
+        pitches = self._convert_select_arg(pitches, pitch_select)
+        lengths = self._convert_select_arg(lengths, length_select)
+        volumes = self._convert_select_arg(volumes, volume_select)
+
+        b = Fraction(start + offset).limit_denominator()
+        if end is None:
+            end = self.get_beats() + 1
+        d = {}
+        while b &lt; end:
+            pos = b.numerator / b.denominator
+            d[pos] = Note(next(pitches), next(lengths), next(volumes))
+            b += freq
+
+        self.add_fromdict(d, merge=merge)
+
+    def make_chord(self, beat, pitches, lengths=1, volumes=0, merge=False):
+        chord = self._make_chord_assemble(pitches, lengths, volumes)
+        self.add(beat, chord, merge=merge)
+
+    def make_chord_every(self, freq, offset=0, pitches=0, lengths=1, volumes=0,
+                         start=1, end=None, merge=False):
+
+        freq = Fraction(freq).limit_denominator()
+
+        chord = self._make_chord_assemble(pitches, lengths, volumes)
+        b = Fraction(start + offset).limit_denominator()
+        if end is None:
+            end = self.get_beats() + 1
+        d = {}
+        while b &lt; end:
+            pos = b.numerator / b.denominator
+            d[pos] = chord
+            b += freq
+        self.add_fromdict(d, merge=merge)
+
+    def _make_chord_assemble(self, pitches, lengths, volumes):
+        if not isinstance(pitches, Iterable) or isinstance(pitches, str):
+            pitches = [pitches]
+
+        if isinstance(lengths, Number):
+            lengths = [lengths] * len(pitches)
+
+        if isinstance(volumes, Number):
+            volumes = [volumes] * len(pitches)
+
+        notes = [Note(p, l, v) for p, l, v in zip(pitches, lengths, volumes)]
+        return Chord(notes)
+
+    def _convert_select_arg(self, arg, option):
+        if not isinstance(arg, Iterable) or isinstance(arg, str):
+            arg = [arg]
+
+        if option == &#39;cycle&#39;:
+            return itertools.cycle(arg)
+        elif option == &#39;random&#39;:
+            return random_choice_generator(arg)
+        else:
+            raise WubWubError(&#39;pitch, length, and volume select must be &#39;,
+                              &#39;&#34;cycle&#34; or &#34;random&#34;.&#39;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="wubwub.tracks.Track" href="#wubwub.tracks.Track">Track</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="wubwub.tracks.MultiSampler" href="#wubwub.tracks.MultiSampler">MultiSampler</a></li>
+<li><a title="wubwub.tracks.Sampler" href="#wubwub.tracks.Sampler">Sampler</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="wubwub.tracks.SamplerLikeTrack.make_chord"><code class="name flex">
+<span>def <span class="ident">make_chord</span></span>(<span>self, beat, pitches, lengths=1, volumes=0, merge=False)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_chord(self, beat, pitches, lengths=1, volumes=0, merge=False):
+    chord = self._make_chord_assemble(pitches, lengths, volumes)
+    self.add(beat, chord, merge=merge)</code></pre>
+</details>
+</dd>
+<dt id="wubwub.tracks.SamplerLikeTrack.make_chord_every"><code class="name flex">
+<span>def <span class="ident">make_chord_every</span></span>(<span>self, freq, offset=0, pitches=0, lengths=1, volumes=0, start=1, end=None, merge=False)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_chord_every(self, freq, offset=0, pitches=0, lengths=1, volumes=0,
+                     start=1, end=None, merge=False):
+
+    freq = Fraction(freq).limit_denominator()
+
+    chord = self._make_chord_assemble(pitches, lengths, volumes)
+    b = Fraction(start + offset).limit_denominator()
+    if end is None:
+        end = self.get_beats() + 1
+    d = {}
+    while b &lt; end:
+        pos = b.numerator / b.denominator
+        d[pos] = chord
+        b += freq
+    self.add_fromdict(d, merge=merge)</code></pre>
+</details>
+</dd>
+<dt id="wubwub.tracks.SamplerLikeTrack.make_notes"><code class="name flex">
+<span>def <span class="ident">make_notes</span></span>(<span>self, beats, pitches=0, lengths=1, volumes=0, pitch_select='cycle', length_select='cycle', volume_select='cycle', merge=False)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_notes(self, beats, pitches=0, lengths=1, volumes=0,
+               pitch_select=&#39;cycle&#39;, length_select=&#39;cycle&#39;,
+               volume_select=&#39;cycle&#39;, merge=False):
+
+    if not isinstance(beats, Iterable):
+        beats = [beats]
+
+    pitches = self._convert_select_arg(pitches, pitch_select)
+    lengths = self._convert_select_arg(lengths, length_select)
+    volumes = self._convert_select_arg(volumes, volume_select)
+
+    d = {b : Note(next(pitches), next(lengths), next(volumes))
+         for b in beats}
+
+    self.add_fromdict(d, merge=merge)</code></pre>
+</details>
+</dd>
+<dt id="wubwub.tracks.SamplerLikeTrack.make_notes_every"><code class="name flex">
+<span>def <span class="ident">make_notes_every</span></span>(<span>self, freq, offset=0, pitches=0, lengths=1, volumes=0, start=1, end=None, pitch_select='cycle', length_select='cycle', volume_select='cycle', merge=False)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_notes_every(self, freq, offset=0, pitches=0, lengths=1, volumes=0,
+                     start=1, end=None, pitch_select=&#39;cycle&#39;,
+                     length_select=&#39;cycle&#39;, volume_select=&#39;cycle&#39;, merge=False):
+
+    freq = Fraction(freq).limit_denominator()
+
+    pitches = self._convert_select_arg(pitches, pitch_select)
+    lengths = self._convert_select_arg(lengths, length_select)
+    volumes = self._convert_select_arg(volumes, volume_select)
+
+    b = Fraction(start + offset).limit_denominator()
+    if end is None:
+        end = self.get_beats() + 1
+    d = {}
+    while b &lt; end:
+        pos = b.numerator / b.denominator
+        d[pos] = Note(next(pitches), next(lengths), next(volumes))
+        b += freq
+
+    self.add_fromdict(d, merge=merge)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="wubwub.tracks.SingleSampleTrack"><code class="flex name class">
+<span>class <span class="ident">SingleSampleTrack</span></span>
+<span>(</span><span>name, sample, sequencer, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SingleSampleTrack(Track):
+    def __init__(self, name, sample, sequencer, **kwargs):
+        super().__init__(name=name, sequencer=sequencer, **kwargs)
+        self._sample = None
+        self.sample = sample
+
+    @property
+    def sample(self):
+        return self._sample
+
+    @sample.setter
+    def sample(self, sample):
+        if isinstance(sample, str):
+            _, ext = os.path.splitext(sample)
+            ext = ext.lower().strip(&#39;.&#39;)
+            self._sample = pydub.AudioSegment.from_file(sample,
+                                                        format=ext)
+            self.samplepath = os.path.abspath(sample)
+        elif isinstance(sample, pydub.AudioSegment):
+            self._sample = sample
+        else:
+            raise WubWubError(&#39;sample must be a path or pydub.AudioSegment&#39;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="wubwub.tracks.Track" href="#wubwub.tracks.Track">Track</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="wubwub.tracks.Arpeggiator" href="#wubwub.tracks.Arpeggiator">Arpeggiator</a></li>
+<li><a title="wubwub.tracks.Sampler" href="#wubwub.tracks.Sampler">Sampler</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="wubwub.tracks.SingleSampleTrack.sample"><code class="name">var <span class="ident">sample</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def sample(self):
+    return self._sample</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
 <dt id="wubwub.tracks.SliceableDict"><code class="flex name class">
 <span>class <span class="ident">SliceableDict</span></span>
 <span>(</span><span>d)</span>
@@ -1341,8 +1627,8 @@ class Arpeggiator(_SingleSampleTrack):
                              &#39;slice, iterable, or boolean index.&#39;)</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack"><code class="flex name class">
-<span>class <span class="ident">_GenericTrack</span></span>
+<dt id="wubwub.tracks.Track"><code class="flex name class">
+<span>class <span class="ident">Track</span></span>
 <span>(</span><span>name, sequencer)</span>
 </code></dt>
 <dd>
@@ -1351,7 +1637,7 @@ class Arpeggiator(_SingleSampleTrack):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class _GenericTrack(metaclass=ABCMeta):
+<pre><code class="python">class Track(metaclass=ABCMeta):
 
     handle_outside_notes = &#39;skip&#39;
 
@@ -1667,20 +1953,20 @@ class Arpeggiator(_SingleSampleTrack):
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li>wubwub.tracks._MultiSampleTrack</li>
-<li>wubwub.tracks._SamplerLikeTrack</li>
-<li>wubwub.tracks._SingleSampleTrack</li>
+<li><a title="wubwub.tracks.MultiSampleTrack" href="#wubwub.tracks.MultiSampleTrack">MultiSampleTrack</a></li>
+<li><a title="wubwub.tracks.SamplerLikeTrack" href="#wubwub.tracks.SamplerLikeTrack">SamplerLikeTrack</a></li>
+<li><a title="wubwub.tracks.SingleSampleTrack" href="#wubwub.tracks.SingleSampleTrack">SingleSampleTrack</a></li>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="wubwub.tracks._GenericTrack.handle_outside_notes"><code class="name">var <span class="ident">handle_outside_notes</span></code></dt>
+<dt id="wubwub.tracks.Track.handle_outside_notes"><code class="name">var <span class="ident">handle_outside_notes</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 <h3>Instance variables</h3>
 <dl>
-<dt id="wubwub.tracks._GenericTrack.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dt id="wubwub.tracks.Track.name"><code class="name">var <span class="ident">name</span></code></dt>
 <dd>
 <div class="desc"></div>
 <details class="source">
@@ -1692,7 +1978,7 @@ def name(self):
     return self._name</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.sequencer"><code class="name">var <span class="ident">sequencer</span></code></dt>
+<dt id="wubwub.tracks.Track.sequencer"><code class="name">var <span class="ident">sequencer</span></code></dt>
 <dd>
 <div class="desc"></div>
 <details class="source">
@@ -1704,7 +1990,7 @@ def sequencer(self):
     return self._sequencer</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.slice"><code class="name">var <span class="ident">slice</span></code></dt>
+<dt id="wubwub.tracks.Track.slice"><code class="name">var <span class="ident">slice</span></code></dt>
 <dd>
 <div class="desc"></div>
 <details class="source">
@@ -1719,7 +2005,7 @@ def slice(self):
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="wubwub.tracks._GenericTrack.add"><code class="name flex">
+<dt id="wubwub.tracks.Track.add"><code class="name flex">
 <span>def <span class="ident">add</span></span>(<span>self, beat, element, merge=False, outsiders=None)</span>
 </code></dt>
 <dd>
@@ -1759,7 +2045,7 @@ def slice(self):
     self.notedict[beat] = element</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.add_fromdict"><code class="name flex">
+<dt id="wubwub.tracks.Track.add_fromdict"><code class="name flex">
 <span>def <span class="ident">add_fromdict</span></span>(<span>self, d, offset=0, outsiders=None, merge=False)</span>
 </code></dt>
 <dd>
@@ -1775,7 +2061,7 @@ def slice(self):
                  outsiders=outsiders)</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.array_of_beats"><code class="name flex">
+<dt id="wubwub.tracks.Track.array_of_beats"><code class="name flex">
 <span>def <span class="ident">array_of_beats</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1788,7 +2074,7 @@ def slice(self):
     return np.array(self.notedict.keys())</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.build"><code class="name flex">
+<dt id="wubwub.tracks.Track.build"><code class="name flex">
 <span>def <span class="ident">build</span></span>(<span>self, overhang=0, overhang_type='beats')</span>
 </code></dt>
 <dd>
@@ -1802,7 +2088,7 @@ def build(self, overhang=0, overhang_type=&#39;beats&#39;):
     pass</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.clean"><code class="name flex">
+<dt id="wubwub.tracks.Track.clean"><code class="name flex">
 <span>def <span class="ident">clean</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1817,7 +2103,7 @@ def build(self, overhang=0, overhang_type=&#39;beats&#39;):
                                 if 1 &lt;= b &lt; maxi +1})</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.copy"><code class="name flex">
+<dt id="wubwub.tracks.Track.copy"><code class="name flex">
 <span>def <span class="ident">copy</span></span>(<span>self, newname=None, newseq=False, with_notes=True)</span>
 </code></dt>
 <dd>
@@ -1847,7 +2133,7 @@ def build(self, overhang=0, overhang_type=&#39;beats&#39;):
     return new</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.copypaste"><code class="name flex">
+<dt id="wubwub.tracks.Track.copypaste"><code class="name flex">
 <span>def <span class="ident">copypaste</span></span>(<span>self, start, stop, newstart, outsiders=None, merge=False)</span>
 </code></dt>
 <dd>
@@ -1864,7 +2150,7 @@ def build(self, overhang=0, overhang_type=&#39;beats&#39;):
         self.add_fromdict(at_one, offset=newstart-1)</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.count_by_beat"><code class="name flex">
+<dt id="wubwub.tracks.Track.count_by_beat"><code class="name flex">
 <span>def <span class="ident">count_by_beat</span></span>(<span>self, res=1)</span>
 </code></dt>
 <dd>
@@ -1882,7 +2168,7 @@ def build(self, overhang=0, overhang_type=&#39;beats&#39;):
     return dict(out)</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.delete"><code class="name flex">
+<dt id="wubwub.tracks.Track.delete"><code class="name flex">
 <span>def <span class="ident">delete</span></span>(<span>self, beats)</span>
 </code></dt>
 <dd>
@@ -1897,7 +2183,7 @@ def build(self, overhang=0, overhang_type=&#39;beats&#39;):
         del self.notedict[beat]</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.delete_all"><code class="name flex">
+<dt id="wubwub.tracks.Track.delete_all"><code class="name flex">
 <span>def <span class="ident">delete_all</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1910,7 +2196,7 @@ def build(self, overhang=0, overhang_type=&#39;beats&#39;):
     self.notedict = SortedDict({})</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.delete_fromrange"><code class="name flex">
+<dt id="wubwub.tracks.Track.delete_fromrange"><code class="name flex">
 <span>def <span class="ident">delete_fromrange</span></span>(<span>self, lo, hi)</span>
 </code></dt>
 <dd>
@@ -1924,7 +2210,7 @@ def build(self, overhang=0, overhang_type=&#39;beats&#39;):
                                 if not lo &lt;= b &lt; hi})</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.get_beats"><code class="name flex">
+<dt id="wubwub.tracks.Track.get_beats"><code class="name flex">
 <span>def <span class="ident">get_beats</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1937,7 +2223,7 @@ def build(self, overhang=0, overhang_type=&#39;beats&#39;):
     return self.sequencer.beats</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.get_bpm"><code class="name flex">
+<dt id="wubwub.tracks.Track.get_bpm"><code class="name flex">
 <span>def <span class="ident">get_bpm</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1950,7 +2236,7 @@ def build(self, overhang=0, overhang_type=&#39;beats&#39;):
     return self.sequencer.bpm</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.pianoroll"><code class="name flex">
+<dt id="wubwub.tracks.Track.pianoroll"><code class="name flex">
 <span>def <span class="ident">pianoroll</span></span>(<span>self, timesig=4, grid=True)</span>
 </code></dt>
 <dd>
@@ -1963,7 +2249,7 @@ def build(self, overhang=0, overhang_type=&#39;beats&#39;):
     pianoroll(track=self, timesig=timesig, grid=grid)</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.play"><code class="name flex">
+<dt id="wubwub.tracks.Track.play"><code class="name flex">
 <span>def <span class="ident">play</span></span>(<span>self, start=1, end=None, overhang=0, overhang_type='beats')</span>
 </code></dt>
 <dd>
@@ -1981,7 +2267,7 @@ def build(self, overhang=0, overhang_type=&#39;beats&#39;):
     play(build[start:end])</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.plot"><code class="name flex">
+<dt id="wubwub.tracks.Track.plot"><code class="name flex">
 <span>def <span class="ident">plot</span></span>(<span>self, yaxis='semitones', timesig=4, grid=True, ax=None, plot_kwds=None, scatter_kwds=None)</span>
 </code></dt>
 <dd>
@@ -2001,7 +2287,7 @@ def build(self, overhang=0, overhang_type=&#39;beats&#39;):
               scatter_kwds=scatter_kwds)</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.postprocess"><code class="name flex">
+<dt id="wubwub.tracks.Track.postprocess"><code class="name flex">
 <span>def <span class="ident">postprocess</span></span>(<span>self, build)</span>
 </code></dt>
 <dd>
@@ -2021,7 +2307,7 @@ def build(self, overhang=0, overhang_type=&#39;beats&#39;):
     return build</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.pprint_notedict"><code class="name flex">
+<dt id="wubwub.tracks.Track.pprint_notedict"><code class="name flex">
 <span>def <span class="ident">pprint_notedict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -2034,7 +2320,7 @@ def build(self, overhang=0, overhang_type=&#39;beats&#39;):
     pprint.pprint(self.notedict)</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.quantize"><code class="name flex">
+<dt id="wubwub.tracks.Track.quantize"><code class="name flex">
 <span>def <span class="ident">quantize</span></span>(<span>self, resolution=0.25, merge=False)</span>
 </code></dt>
 <dd>
@@ -2064,7 +2350,7 @@ def build(self, overhang=0, overhang_type=&#39;beats&#39;):
             self.add(closest, note, merge=merge)</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.shift"><code class="name flex">
+<dt id="wubwub.tracks.Track.shift"><code class="name flex">
 <span>def <span class="ident">shift</span></span>(<span>self, beats, by, merge=False)</span>
 </code></dt>
 <dd>
@@ -2083,7 +2369,7 @@ def build(self, overhang=0, overhang_type=&#39;beats&#39;):
         self.add(newbeat, note, merge=merge)</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.soundtest"><code class="name flex">
+<dt id="wubwub.tracks.Track.soundtest"><code class="name flex">
 <span>def <span class="ident">soundtest</span></span>(<span>self, duration=None, postprocess=True)</span>
 </code></dt>
 <dd>
@@ -2097,7 +2383,7 @@ def soundtest(self, duration=None, postprocess=True,):
     pass</code></pre>
 </details>
 </dd>
-<dt id="wubwub.tracks._GenericTrack.unpack_notes"><code class="name flex">
+<dt id="wubwub.tracks.Track.unpack_notes"><code class="name flex">
 <span>def <span class="ident">unpack_notes</span></span>(<span>self, start=0, stop=inf)</span>
 </code></dt>
 <dd>
@@ -2148,6 +2434,9 @@ def soundtest(self, duration=None, postprocess=True,):
 </ul>
 </li>
 <li>
+<h4><code><a title="wubwub.tracks.MultiSampleTrack" href="#wubwub.tracks.MultiSampleTrack">MultiSampleTrack</a></code></h4>
+</li>
+<li>
 <h4><code><a title="wubwub.tracks.MultiSampler" href="#wubwub.tracks.MultiSampler">MultiSampler</a></code></h4>
 <ul class="">
 <li><code><a title="wubwub.tracks.MultiSampler.add_sample" href="#wubwub.tracks.MultiSampler.add_sample">add_sample</a></code></li>
@@ -2164,37 +2453,52 @@ def soundtest(self, duration=None, postprocess=True,):
 </ul>
 </li>
 <li>
+<h4><code><a title="wubwub.tracks.SamplerLikeTrack" href="#wubwub.tracks.SamplerLikeTrack">SamplerLikeTrack</a></code></h4>
+<ul class="">
+<li><code><a title="wubwub.tracks.SamplerLikeTrack.make_chord" href="#wubwub.tracks.SamplerLikeTrack.make_chord">make_chord</a></code></li>
+<li><code><a title="wubwub.tracks.SamplerLikeTrack.make_chord_every" href="#wubwub.tracks.SamplerLikeTrack.make_chord_every">make_chord_every</a></code></li>
+<li><code><a title="wubwub.tracks.SamplerLikeTrack.make_notes" href="#wubwub.tracks.SamplerLikeTrack.make_notes">make_notes</a></code></li>
+<li><code><a title="wubwub.tracks.SamplerLikeTrack.make_notes_every" href="#wubwub.tracks.SamplerLikeTrack.make_notes_every">make_notes_every</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="wubwub.tracks.SingleSampleTrack" href="#wubwub.tracks.SingleSampleTrack">SingleSampleTrack</a></code></h4>
+<ul class="">
+<li><code><a title="wubwub.tracks.SingleSampleTrack.sample" href="#wubwub.tracks.SingleSampleTrack.sample">sample</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="wubwub.tracks.SliceableDict" href="#wubwub.tracks.SliceableDict">SliceableDict</a></code></h4>
 </li>
 <li>
-<h4><code><a title="wubwub.tracks._GenericTrack" href="#wubwub.tracks._GenericTrack">_GenericTrack</a></code></h4>
+<h4><code><a title="wubwub.tracks.Track" href="#wubwub.tracks.Track">Track</a></code></h4>
 <ul class="">
-<li><code><a title="wubwub.tracks._GenericTrack.add" href="#wubwub.tracks._GenericTrack.add">add</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.add_fromdict" href="#wubwub.tracks._GenericTrack.add_fromdict">add_fromdict</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.array_of_beats" href="#wubwub.tracks._GenericTrack.array_of_beats">array_of_beats</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.build" href="#wubwub.tracks._GenericTrack.build">build</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.clean" href="#wubwub.tracks._GenericTrack.clean">clean</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.copy" href="#wubwub.tracks._GenericTrack.copy">copy</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.copypaste" href="#wubwub.tracks._GenericTrack.copypaste">copypaste</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.count_by_beat" href="#wubwub.tracks._GenericTrack.count_by_beat">count_by_beat</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.delete" href="#wubwub.tracks._GenericTrack.delete">delete</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.delete_all" href="#wubwub.tracks._GenericTrack.delete_all">delete_all</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.delete_fromrange" href="#wubwub.tracks._GenericTrack.delete_fromrange">delete_fromrange</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.get_beats" href="#wubwub.tracks._GenericTrack.get_beats">get_beats</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.get_bpm" href="#wubwub.tracks._GenericTrack.get_bpm">get_bpm</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.handle_outside_notes" href="#wubwub.tracks._GenericTrack.handle_outside_notes">handle_outside_notes</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.name" href="#wubwub.tracks._GenericTrack.name">name</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.pianoroll" href="#wubwub.tracks._GenericTrack.pianoroll">pianoroll</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.play" href="#wubwub.tracks._GenericTrack.play">play</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.plot" href="#wubwub.tracks._GenericTrack.plot">plot</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.postprocess" href="#wubwub.tracks._GenericTrack.postprocess">postprocess</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.pprint_notedict" href="#wubwub.tracks._GenericTrack.pprint_notedict">pprint_notedict</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.quantize" href="#wubwub.tracks._GenericTrack.quantize">quantize</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.sequencer" href="#wubwub.tracks._GenericTrack.sequencer">sequencer</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.shift" href="#wubwub.tracks._GenericTrack.shift">shift</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.slice" href="#wubwub.tracks._GenericTrack.slice">slice</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.soundtest" href="#wubwub.tracks._GenericTrack.soundtest">soundtest</a></code></li>
-<li><code><a title="wubwub.tracks._GenericTrack.unpack_notes" href="#wubwub.tracks._GenericTrack.unpack_notes">unpack_notes</a></code></li>
+<li><code><a title="wubwub.tracks.Track.add" href="#wubwub.tracks.Track.add">add</a></code></li>
+<li><code><a title="wubwub.tracks.Track.add_fromdict" href="#wubwub.tracks.Track.add_fromdict">add_fromdict</a></code></li>
+<li><code><a title="wubwub.tracks.Track.array_of_beats" href="#wubwub.tracks.Track.array_of_beats">array_of_beats</a></code></li>
+<li><code><a title="wubwub.tracks.Track.build" href="#wubwub.tracks.Track.build">build</a></code></li>
+<li><code><a title="wubwub.tracks.Track.clean" href="#wubwub.tracks.Track.clean">clean</a></code></li>
+<li><code><a title="wubwub.tracks.Track.copy" href="#wubwub.tracks.Track.copy">copy</a></code></li>
+<li><code><a title="wubwub.tracks.Track.copypaste" href="#wubwub.tracks.Track.copypaste">copypaste</a></code></li>
+<li><code><a title="wubwub.tracks.Track.count_by_beat" href="#wubwub.tracks.Track.count_by_beat">count_by_beat</a></code></li>
+<li><code><a title="wubwub.tracks.Track.delete" href="#wubwub.tracks.Track.delete">delete</a></code></li>
+<li><code><a title="wubwub.tracks.Track.delete_all" href="#wubwub.tracks.Track.delete_all">delete_all</a></code></li>
+<li><code><a title="wubwub.tracks.Track.delete_fromrange" href="#wubwub.tracks.Track.delete_fromrange">delete_fromrange</a></code></li>
+<li><code><a title="wubwub.tracks.Track.get_beats" href="#wubwub.tracks.Track.get_beats">get_beats</a></code></li>
+<li><code><a title="wubwub.tracks.Track.get_bpm" href="#wubwub.tracks.Track.get_bpm">get_bpm</a></code></li>
+<li><code><a title="wubwub.tracks.Track.handle_outside_notes" href="#wubwub.tracks.Track.handle_outside_notes">handle_outside_notes</a></code></li>
+<li><code><a title="wubwub.tracks.Track.name" href="#wubwub.tracks.Track.name">name</a></code></li>
+<li><code><a title="wubwub.tracks.Track.pianoroll" href="#wubwub.tracks.Track.pianoroll">pianoroll</a></code></li>
+<li><code><a title="wubwub.tracks.Track.play" href="#wubwub.tracks.Track.play">play</a></code></li>
+<li><code><a title="wubwub.tracks.Track.plot" href="#wubwub.tracks.Track.plot">plot</a></code></li>
+<li><code><a title="wubwub.tracks.Track.postprocess" href="#wubwub.tracks.Track.postprocess">postprocess</a></code></li>
+<li><code><a title="wubwub.tracks.Track.pprint_notedict" href="#wubwub.tracks.Track.pprint_notedict">pprint_notedict</a></code></li>
+<li><code><a title="wubwub.tracks.Track.quantize" href="#wubwub.tracks.Track.quantize">quantize</a></code></li>
+<li><code><a title="wubwub.tracks.Track.sequencer" href="#wubwub.tracks.Track.sequencer">sequencer</a></code></li>
+<li><code><a title="wubwub.tracks.Track.shift" href="#wubwub.tracks.Track.shift">shift</a></code></li>
+<li><code><a title="wubwub.tracks.Track.slice" href="#wubwub.tracks.Track.slice">slice</a></code></li>
+<li><code><a title="wubwub.tracks.Track.soundtest" href="#wubwub.tracks.Track.soundtest">soundtest</a></code></li>
+<li><code><a title="wubwub.tracks.Track.unpack_notes" href="#wubwub.tracks.Track.unpack_notes">unpack_notes</a></code></li>
 </ul>
 </li>
 </ul>

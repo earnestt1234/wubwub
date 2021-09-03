@@ -36,7 +36,6 @@ This module contains the Sequencer class, and associated functions for
 working with Sequencers in wubwub.
 &#34;&#34;&#34;
 
-from copy import copy
 import os
 import time
 
@@ -124,7 +123,7 @@ class Sequencer:
         &#39;&#39;&#39;
         For all tracks of the Sequencer, take a section of notes and replicate
         them on a new beat (keeping the same relative spacing between notes).
-        Simply, this method calls `wubwub.tracks._GenericTrack.copypaste()`
+        Simply, this method calls `wubwub.tracks.Track.copypaste()`
         for all tracks within the Sequencer.
 
         Parameters
@@ -148,7 +147,7 @@ class Sequencer:
         &#34;&#34;&#34;
         Modifies the Sequencer length while simultaneously removing notes
         that are outside of the sequence after the change.  I.e., sets
-        &lt;code&gt;beats&lt;/code&gt; and calls `wubwub.tracks._GenericTrack.clean()` for
+        &lt;code&gt;beats&lt;/code&gt; and calls `wubwub.tracks.Track.clean()` for
         all tracks.  This is a convenience method which is only useful when
         shortening the sequence length.
 
@@ -222,6 +221,11 @@ class Sequencer:
         basepitch : int or str, optional
             Set the base pitch for the new Sampler. The default is &#39;C4&#39;.
 
+        Returns
+        -------
+        new : wubwub.tracks.Sampler
+            The new Track.
+
         Examples
         --------
         ```python
@@ -239,11 +243,6 @@ class Sequencer:
         seq.add_sampler(clap, name=&#39;clap&#39;)
         ```
 
-        Returns
-        -------
-        new : Track
-            The new Track.
-
         &#34;&#34;&#34;
         if name is None:
             name = unique_name(&#39;Track&#39;, self.tracknames())
@@ -253,6 +252,41 @@ class Sequencer:
 
     def add_arpeggiator(self, sample, name=None, freq=0.5, method=&#39;up&#39;,
                         basepitch=&#39;C4&#39;):
+        &#39;&#39;&#39;
+        Create a new `wubwub.tracks.Arpeggiator` Track and add to the Sequencer.
+        Parameters here are initialization values for `wubwub.tracks.Arpeggiator`;
+        see there for more detailed documentation.
+
+        Parameters
+        ----------
+        sample : path or pydub.AudioSegment
+            Sample for Sampler initialization.
+        name : str, optional
+            Name for the new Sampler.
+        freq : int or float, optional
+            Set the frequency of the new arpeggiator. The default is 0.5.
+        method : str, optional
+            Set the pattern of the new arpeggiator. The default is &#39;up&#39;.
+        basepitch : int or str, optional
+            Set the base pitch for the new Sampler. The default is &#39;C4&#39;.
+
+        Returns
+        -------
+        new : wubwub.tracks.Arpeggiator
+            The new Track.
+
+        Examples
+        --------
+        ```python
+        import wubwub as wb
+
+        seq = wb.Sequencer(bpm=100, beats=16)
+
+        # path to sound, or a pydub.AudioSegment
+        seq.add_arpeggiator(&#39;saw.wav&#39;, name=&#39;Arp&#39;, freq=.5, method=&#39;downup&#39;)
+        ```
+
+        &#39;&#39;&#39;
         if name is None:
             name = unique_name(&#39;Track&#39;, self.tracknames())
         new = Arpeggiator(name=name, sample=sample, freq=freq,
@@ -261,12 +295,50 @@ class Sequencer:
         return new
 
     def add_multisampler(self, name=None, overlap=False):
+        &#39;&#39;&#39;
+        Create a new `wubwub.tracks.MultiSampler` Track and add to the Sequencer.
+        Parameters here are initialization values for `wubwub.tracks.MultiSampler`;
+        see there for more detailed documentation.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name for the new Sampler.
+        overlap : bool, optional
+            Set the overlap behavior of the new Sampler. The default is False.
+
+        Returns
+        -------
+        new : wubwub.tracks.MultiSampler
+            The new Track.
+
+        &#39;&#39;&#39;
         if name is None:
             name = unique_name(&#39;Track&#39;, self.tracknames())
         new = MultiSampler(name=name, overlap=overlap, sequencer=self)
         return new
 
     def add_samplers(self, samples, names=None, overlap=False, basepitch=&#39;C4&#39;):
+        &#39;&#39;&#39;
+        From a list of sounds or pydub Audio Segments, add multiple
+        `wubwub.tracks.Sampler` Tracks.
+
+        Parameters
+        ----------
+        samples : list like
+            List of paths to sounds, or pydub AudioSegments to load.
+        names : list like, optional
+            The string name of each sample being added. The default is None.
+        overlap : bool, optional
+            The overlap behavior of the new samplers. The default is False.
+        basepitch : int or str, optional
+            The base pitch of the new samplers. The default is &#39;C4&#39;.
+
+        Returns
+        -------
+        None.
+
+        &#39;&#39;&#39;
         if names is None:
             names = [None] * len(samples)
         for sample, name in zip(samples, names):
@@ -274,18 +346,154 @@ class Sequencer:
                              basepitch=basepitch)
 
     def duplicate_track(self, track, newname=None, with_notes=True):
+        &#39;&#39;&#39;
+        Create a copy of the specified Track within and add it to the
+        current Sequencer.
+
+        Parameters
+        ----------
+        track : wubwub.tracks.Track or str
+            Name of a Track, or the actual Track object.
+        newname : str, optional
+            New name for the duplicated Track. The default is None.  If not passed,
+            a generic name is created.
+        with_notes : bool, optional
+            When True (default), all the Notes/Chords contained in the original
+            Track are copied over.
+
+        Returns
+        -------
+        dup : wubwub.tracks.Track
+            Reference to the new Track.
+
+        Examples
+        --------
+
+        ```python
+        &gt;&gt;&gt; import wubwub as wb
+
+        # add a track with some notes
+        &gt;&gt;&gt; seq = wb.Sequencer(bpm=120, beats=8)
+        &gt;&gt;&gt; seq.add_sampler(snd.load(&#39;drums.808&#39;)[&#39;kick1&#39;], name=&#39;kick1&#39;)
+        &gt;&gt;&gt; seq[&#39;kick1&#39;].make_notes_every(1)
+
+        # duplicate the track
+        &gt;&gt;&gt; seq.duplicate_track(&#39;kick1&#39;, newname=&#39;kick2&#39;)
+
+        # by default, the notes are copied
+        &gt;&gt;&gt; len(seq[&#39;kick2&#39;].notedict)
+        8
+
+        # specify with_notes to change this behavior
+        &gt;&gt;&gt; seq.duplicate_track(&#39;kick1&#39;, newname=&#39;kick3&#39;, with_notes=False)
+        &gt;&gt;&gt; len(seq[&#39;kick3&#39;].notedict)
+        0
+        ```
+
+        &#39;&#39;&#39;
         if newname is None:
             newname = unique_name(&#39;Track&#39;, self.tracknames())
         dup = self.get_track(track).copy(newname=newname, with_notes=with_notes)
         return dup
 
     def copy(self, with_notes=True):
+        &#39;&#39;&#39;
+        Create a copy of the current Sequencer.  The copy (and its associated
+        Tracks) are *new objects*, so editing it will not affect this Sequencer
+        (and vice versa).
+
+
+        Parameters
+        ----------
+        with_notes : bool, optional
+            When True (default), all the Notes/Chords are copied over for
+            every copied track.
+
+        Returns
+        -------
+        new : wubwub.sequencer.Sequencer
+            The new Sequencer.
+
+        Examples
+        --------
+
+        ```python
+        &gt;&gt;&gt; import wubwub as wb
+
+        # add a track
+        &gt;&gt;&gt; seq = wb.Sequencer(bpm=120, beats=8)
+        &gt;&gt;&gt; seq.add_sampler(snd.load(&#39;drums.808&#39;)[&#39;kick1&#39;], name=&#39;kick1&#39;)
+
+        # copy the sequencer
+        &gt;&gt;&gt; other = seq.copy()
+
+        # editing the new sequencer doesn&#39;t affect the original
+        &gt;&gt;&gt; other.delete_track(&#39;kick1&#39;)
+        &gt;&gt;&gt; other.tracknames()
+        []
+
+        &gt;&gt;&gt; seq.tracknames()
+        [&#39;kick1&#39;]
+        ```
+
+        &#39;&#39;&#39;
         new = Sequencer(beats=self.beats, bpm=self.bpm)
         for track in self.tracks():
-            t = track.copy(with_notes=with_notes, newseq=new)
+            track.copy(with_notes=with_notes, newseq=new)
         return new
 
     def split(self, beat):
+        &#39;&#39;&#39;
+        Split the Sequencer into two new Sequencers at a given beat.  The objects
+        returned are *new Sequencers* (generated by `Sequencer.copy()`).
+
+        Parameters
+        ----------
+        beat : int
+            The beat to split the Sequencer on.
+
+        Raises
+        ------
+        TypeError
+            Non-integer beat is passed.
+
+        Returns
+        -------
+        a, b : wubwub.sequencer.Sequencer
+            Two new Sequencers.
+
+        Examples
+        --------
+        ```python
+        &gt;&gt;&gt; import wubwub as wb
+        &gt;&gt;&gt; import wubwub.sounds as snd
+
+        # make a sequencer and add tracks/notes
+        &gt;&gt;&gt; seq = wb.Sequencer(beats=8, bpm=100)
+        &gt;&gt;&gt; drums = snd.load(&#39;drums.808&#39;)
+        &gt;&gt;&gt; kick = seq.add_sampler(drums[&#39;kick1&#39;], name=&#39;kick&#39;)
+        &gt;&gt;&gt; snare = seq.add_sampler(drums[&#39;snare&#39;], name=&#39;snare&#39;)
+        &gt;&gt;&gt; kick.make_notes_every(2)
+        &gt;&gt;&gt; snare.make_notes_every(2, offset=1)
+        &gt;&gt;&gt; seq.show()
+               1 2 3 4 5 6 7 8
+          kick ■ □ ■ □ ■ □ ■ □
+         snare □ ■ □ ■ □ ■ □ ■
+
+        # split
+        &gt;&gt;&gt; a, b = seq.split(4)
+        &gt;&gt;&gt; a.show()
+               1 2 3
+          kick ■ □ ■
+         snare □ ■ □
+
+        &gt;&gt;&gt; b.show()
+               1 2 3 4 5
+          kick □ ■ □ □ ■
+         snare ■ □ ■ □ □
+        ```
+
+        &#39;&#39;&#39;
         if not isinstance(beat, int):
             raise TypeError(f&#39;Beat for split must be int, not {type(beat)}.&#39;)
 
@@ -659,7 +867,7 @@ the output audio and creates a container for subsidiary tracks.</p></div>
         &#39;&#39;&#39;
         For all tracks of the Sequencer, take a section of notes and replicate
         them on a new beat (keeping the same relative spacing between notes).
-        Simply, this method calls `wubwub.tracks._GenericTrack.copypaste()`
+        Simply, this method calls `wubwub.tracks.Track.copypaste()`
         for all tracks within the Sequencer.
 
         Parameters
@@ -683,7 +891,7 @@ the output audio and creates a container for subsidiary tracks.</p></div>
         &#34;&#34;&#34;
         Modifies the Sequencer length while simultaneously removing notes
         that are outside of the sequence after the change.  I.e., sets
-        &lt;code&gt;beats&lt;/code&gt; and calls `wubwub.tracks._GenericTrack.clean()` for
+        &lt;code&gt;beats&lt;/code&gt; and calls `wubwub.tracks.Track.clean()` for
         all tracks.  This is a convenience method which is only useful when
         shortening the sequence length.
 
@@ -757,6 +965,11 @@ the output audio and creates a container for subsidiary tracks.</p></div>
         basepitch : int or str, optional
             Set the base pitch for the new Sampler. The default is &#39;C4&#39;.
 
+        Returns
+        -------
+        new : wubwub.tracks.Sampler
+            The new Track.
+
         Examples
         --------
         ```python
@@ -774,11 +987,6 @@ the output audio and creates a container for subsidiary tracks.</p></div>
         seq.add_sampler(clap, name=&#39;clap&#39;)
         ```
 
-        Returns
-        -------
-        new : Track
-            The new Track.
-
         &#34;&#34;&#34;
         if name is None:
             name = unique_name(&#39;Track&#39;, self.tracknames())
@@ -788,6 +996,41 @@ the output audio and creates a container for subsidiary tracks.</p></div>
 
     def add_arpeggiator(self, sample, name=None, freq=0.5, method=&#39;up&#39;,
                         basepitch=&#39;C4&#39;):
+        &#39;&#39;&#39;
+        Create a new `wubwub.tracks.Arpeggiator` Track and add to the Sequencer.
+        Parameters here are initialization values for `wubwub.tracks.Arpeggiator`;
+        see there for more detailed documentation.
+
+        Parameters
+        ----------
+        sample : path or pydub.AudioSegment
+            Sample for Sampler initialization.
+        name : str, optional
+            Name for the new Sampler.
+        freq : int or float, optional
+            Set the frequency of the new arpeggiator. The default is 0.5.
+        method : str, optional
+            Set the pattern of the new arpeggiator. The default is &#39;up&#39;.
+        basepitch : int or str, optional
+            Set the base pitch for the new Sampler. The default is &#39;C4&#39;.
+
+        Returns
+        -------
+        new : wubwub.tracks.Arpeggiator
+            The new Track.
+
+        Examples
+        --------
+        ```python
+        import wubwub as wb
+
+        seq = wb.Sequencer(bpm=100, beats=16)
+
+        # path to sound, or a pydub.AudioSegment
+        seq.add_arpeggiator(&#39;saw.wav&#39;, name=&#39;Arp&#39;, freq=.5, method=&#39;downup&#39;)
+        ```
+
+        &#39;&#39;&#39;
         if name is None:
             name = unique_name(&#39;Track&#39;, self.tracknames())
         new = Arpeggiator(name=name, sample=sample, freq=freq,
@@ -796,12 +1039,50 @@ the output audio and creates a container for subsidiary tracks.</p></div>
         return new
 
     def add_multisampler(self, name=None, overlap=False):
+        &#39;&#39;&#39;
+        Create a new `wubwub.tracks.MultiSampler` Track and add to the Sequencer.
+        Parameters here are initialization values for `wubwub.tracks.MultiSampler`;
+        see there for more detailed documentation.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name for the new Sampler.
+        overlap : bool, optional
+            Set the overlap behavior of the new Sampler. The default is False.
+
+        Returns
+        -------
+        new : wubwub.tracks.MultiSampler
+            The new Track.
+
+        &#39;&#39;&#39;
         if name is None:
             name = unique_name(&#39;Track&#39;, self.tracknames())
         new = MultiSampler(name=name, overlap=overlap, sequencer=self)
         return new
 
     def add_samplers(self, samples, names=None, overlap=False, basepitch=&#39;C4&#39;):
+        &#39;&#39;&#39;
+        From a list of sounds or pydub Audio Segments, add multiple
+        `wubwub.tracks.Sampler` Tracks.
+
+        Parameters
+        ----------
+        samples : list like
+            List of paths to sounds, or pydub AudioSegments to load.
+        names : list like, optional
+            The string name of each sample being added. The default is None.
+        overlap : bool, optional
+            The overlap behavior of the new samplers. The default is False.
+        basepitch : int or str, optional
+            The base pitch of the new samplers. The default is &#39;C4&#39;.
+
+        Returns
+        -------
+        None.
+
+        &#39;&#39;&#39;
         if names is None:
             names = [None] * len(samples)
         for sample, name in zip(samples, names):
@@ -809,18 +1090,154 @@ the output audio and creates a container for subsidiary tracks.</p></div>
                              basepitch=basepitch)
 
     def duplicate_track(self, track, newname=None, with_notes=True):
+        &#39;&#39;&#39;
+        Create a copy of the specified Track within and add it to the
+        current Sequencer.
+
+        Parameters
+        ----------
+        track : wubwub.tracks.Track or str
+            Name of a Track, or the actual Track object.
+        newname : str, optional
+            New name for the duplicated Track. The default is None.  If not passed,
+            a generic name is created.
+        with_notes : bool, optional
+            When True (default), all the Notes/Chords contained in the original
+            Track are copied over.
+
+        Returns
+        -------
+        dup : wubwub.tracks.Track
+            Reference to the new Track.
+
+        Examples
+        --------
+
+        ```python
+        &gt;&gt;&gt; import wubwub as wb
+
+        # add a track with some notes
+        &gt;&gt;&gt; seq = wb.Sequencer(bpm=120, beats=8)
+        &gt;&gt;&gt; seq.add_sampler(snd.load(&#39;drums.808&#39;)[&#39;kick1&#39;], name=&#39;kick1&#39;)
+        &gt;&gt;&gt; seq[&#39;kick1&#39;].make_notes_every(1)
+
+        # duplicate the track
+        &gt;&gt;&gt; seq.duplicate_track(&#39;kick1&#39;, newname=&#39;kick2&#39;)
+
+        # by default, the notes are copied
+        &gt;&gt;&gt; len(seq[&#39;kick2&#39;].notedict)
+        8
+
+        # specify with_notes to change this behavior
+        &gt;&gt;&gt; seq.duplicate_track(&#39;kick1&#39;, newname=&#39;kick3&#39;, with_notes=False)
+        &gt;&gt;&gt; len(seq[&#39;kick3&#39;].notedict)
+        0
+        ```
+
+        &#39;&#39;&#39;
         if newname is None:
             newname = unique_name(&#39;Track&#39;, self.tracknames())
         dup = self.get_track(track).copy(newname=newname, with_notes=with_notes)
         return dup
 
     def copy(self, with_notes=True):
+        &#39;&#39;&#39;
+        Create a copy of the current Sequencer.  The copy (and its associated
+        Tracks) are *new objects*, so editing it will not affect this Sequencer
+        (and vice versa).
+
+
+        Parameters
+        ----------
+        with_notes : bool, optional
+            When True (default), all the Notes/Chords are copied over for
+            every copied track.
+
+        Returns
+        -------
+        new : wubwub.sequencer.Sequencer
+            The new Sequencer.
+
+        Examples
+        --------
+
+        ```python
+        &gt;&gt;&gt; import wubwub as wb
+
+        # add a track
+        &gt;&gt;&gt; seq = wb.Sequencer(bpm=120, beats=8)
+        &gt;&gt;&gt; seq.add_sampler(snd.load(&#39;drums.808&#39;)[&#39;kick1&#39;], name=&#39;kick1&#39;)
+
+        # copy the sequencer
+        &gt;&gt;&gt; other = seq.copy()
+
+        # editing the new sequencer doesn&#39;t affect the original
+        &gt;&gt;&gt; other.delete_track(&#39;kick1&#39;)
+        &gt;&gt;&gt; other.tracknames()
+        []
+
+        &gt;&gt;&gt; seq.tracknames()
+        [&#39;kick1&#39;]
+        ```
+
+        &#39;&#39;&#39;
         new = Sequencer(beats=self.beats, bpm=self.bpm)
         for track in self.tracks():
-            t = track.copy(with_notes=with_notes, newseq=new)
+            track.copy(with_notes=with_notes, newseq=new)
         return new
 
     def split(self, beat):
+        &#39;&#39;&#39;
+        Split the Sequencer into two new Sequencers at a given beat.  The objects
+        returned are *new Sequencers* (generated by `Sequencer.copy()`).
+
+        Parameters
+        ----------
+        beat : int
+            The beat to split the Sequencer on.
+
+        Raises
+        ------
+        TypeError
+            Non-integer beat is passed.
+
+        Returns
+        -------
+        a, b : wubwub.sequencer.Sequencer
+            Two new Sequencers.
+
+        Examples
+        --------
+        ```python
+        &gt;&gt;&gt; import wubwub as wb
+        &gt;&gt;&gt; import wubwub.sounds as snd
+
+        # make a sequencer and add tracks/notes
+        &gt;&gt;&gt; seq = wb.Sequencer(beats=8, bpm=100)
+        &gt;&gt;&gt; drums = snd.load(&#39;drums.808&#39;)
+        &gt;&gt;&gt; kick = seq.add_sampler(drums[&#39;kick1&#39;], name=&#39;kick&#39;)
+        &gt;&gt;&gt; snare = seq.add_sampler(drums[&#39;snare&#39;], name=&#39;snare&#39;)
+        &gt;&gt;&gt; kick.make_notes_every(2)
+        &gt;&gt;&gt; snare.make_notes_every(2, offset=1)
+        &gt;&gt;&gt; seq.show()
+               1 2 3 4 5 6 7 8
+          kick ■ □ ■ □ ■ □ ■ □
+         snare □ ■ □ ■ □ ■ □ ■
+
+        # split
+        &gt;&gt;&gt; a, b = seq.split(4)
+        &gt;&gt;&gt; a.show()
+               1 2 3
+          kick ■ □ ■
+         snare □ ■ □
+
+        &gt;&gt;&gt; b.show()
+               1 2 3 4 5
+          kick □ ■ □ □ ■
+         snare ■ □ ■ □ □
+        ```
+
+        &#39;&#39;&#39;
         if not isinstance(beat, int):
             raise TypeError(f&#39;Beat for split must be int, not {type(beat)}.&#39;)
 
@@ -928,13 +1345,76 @@ the output audio and creates a container for subsidiary tracks.</p></div>
 <span>def <span class="ident">add_arpeggiator</span></span>(<span>self, sample, name=None, freq=0.5, method='up', basepitch='C4')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Create a new <code><a title="wubwub.tracks.Arpeggiator" href="tracks.html#wubwub.tracks.Arpeggiator">Arpeggiator</a></code> Track and add to the Sequencer.
+Parameters here are initialization values for <code><a title="wubwub.tracks.Arpeggiator" href="tracks.html#wubwub.tracks.Arpeggiator">Arpeggiator</a></code>;
+see there for more detailed documentation.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>sample</code></strong> :&ensp;<code>path</code> or <code>pydub.AudioSegment</code></dt>
+<dd>Sample for Sampler initialization.</dd>
+<dt><strong><code>name</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Name for the new Sampler.</dd>
+<dt><strong><code>freq</code></strong> :&ensp;<code>int</code> or <code>float</code>, optional</dt>
+<dd>Set the frequency of the new arpeggiator. The default is 0.5.</dd>
+<dt><strong><code>method</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Set the pattern of the new arpeggiator. The default is 'up'.</dd>
+<dt><strong><code>basepitch</code></strong> :&ensp;<code>int</code> or <code>str</code>, optional</dt>
+<dd>Set the base pitch for the new Sampler. The default is 'C4'.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>new</code></strong> :&ensp;<code><a title="wubwub.tracks.Arpeggiator" href="tracks.html#wubwub.tracks.Arpeggiator">Arpeggiator</a></code></dt>
+<dd>The new Track.</dd>
+</dl>
+<h2 id="examples">Examples</h2>
+<pre><code class="python">import wubwub as wb
+
+seq = wb.Sequencer(bpm=100, beats=16)
+
+# path to sound, or a pydub.AudioSegment
+seq.add_arpeggiator('saw.wav', name='Arp', freq=.5, method='downup')
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def add_arpeggiator(self, sample, name=None, freq=0.5, method=&#39;up&#39;,
                     basepitch=&#39;C4&#39;):
+    &#39;&#39;&#39;
+    Create a new `wubwub.tracks.Arpeggiator` Track and add to the Sequencer.
+    Parameters here are initialization values for `wubwub.tracks.Arpeggiator`;
+    see there for more detailed documentation.
+
+    Parameters
+    ----------
+    sample : path or pydub.AudioSegment
+        Sample for Sampler initialization.
+    name : str, optional
+        Name for the new Sampler.
+    freq : int or float, optional
+        Set the frequency of the new arpeggiator. The default is 0.5.
+    method : str, optional
+        Set the pattern of the new arpeggiator. The default is &#39;up&#39;.
+    basepitch : int or str, optional
+        Set the base pitch for the new Sampler. The default is &#39;C4&#39;.
+
+    Returns
+    -------
+    new : wubwub.tracks.Arpeggiator
+        The new Track.
+
+    Examples
+    --------
+    ```python
+    import wubwub as wb
+
+    seq = wb.Sequencer(bpm=100, beats=16)
+
+    # path to sound, or a pydub.AudioSegment
+    seq.add_arpeggiator(&#39;saw.wav&#39;, name=&#39;Arp&#39;, freq=.5, method=&#39;downup&#39;)
+    ```
+
+    &#39;&#39;&#39;
     if name is None:
         name = unique_name(&#39;Track&#39;, self.tracknames())
     new = Arpeggiator(name=name, sample=sample, freq=freq,
@@ -947,12 +1427,44 @@ the output audio and creates a container for subsidiary tracks.</p></div>
 <span>def <span class="ident">add_multisampler</span></span>(<span>self, name=None, overlap=False)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Create a new <code><a title="wubwub.tracks.MultiSampler" href="tracks.html#wubwub.tracks.MultiSampler">MultiSampler</a></code> Track and add to the Sequencer.
+Parameters here are initialization values for <code><a title="wubwub.tracks.MultiSampler" href="tracks.html#wubwub.tracks.MultiSampler">MultiSampler</a></code>;
+see there for more detailed documentation.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>name</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Name for the new Sampler.</dd>
+<dt><strong><code>overlap</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Set the overlap behavior of the new Sampler. The default is False.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>new</code></strong> :&ensp;<code><a title="wubwub.tracks.MultiSampler" href="tracks.html#wubwub.tracks.MultiSampler">MultiSampler</a></code></dt>
+<dd>The new Track.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def add_multisampler(self, name=None, overlap=False):
+    &#39;&#39;&#39;
+    Create a new `wubwub.tracks.MultiSampler` Track and add to the Sequencer.
+    Parameters here are initialization values for `wubwub.tracks.MultiSampler`;
+    see there for more detailed documentation.
+
+    Parameters
+    ----------
+    name : str, optional
+        Name for the new Sampler.
+    overlap : bool, optional
+        Set the overlap behavior of the new Sampler. The default is False.
+
+    Returns
+    -------
+    new : wubwub.tracks.MultiSampler
+        The new Track.
+
+    &#39;&#39;&#39;
     if name is None:
         name = unique_name(&#39;Track&#39;, self.tracknames())
     new = MultiSampler(name=name, overlap=overlap, sequencer=self)
@@ -977,6 +1489,11 @@ see there for more detailed documentation.</p>
 <dt><strong><code>basepitch</code></strong> :&ensp;<code>int</code> or <code>str</code>, optional</dt>
 <dd>Set the base pitch for the new Sampler. The default is 'C4'.</dd>
 </dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>new</code></strong> :&ensp;<code><a title="wubwub.tracks.Sampler" href="tracks.html#wubwub.tracks.Sampler">Sampler</a></code></dt>
+<dd>The new Track.</dd>
+</dl>
 <h2 id="examples">Examples</h2>
 <pre><code class="python">import wubwub as wb
 
@@ -990,12 +1507,7 @@ import wubwub.sounds as snd
 
 clap = snd.load('drums.808')['handclap']
 seq.add_sampler(clap, name='clap')
-</code></pre>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>new</code></strong> :&ensp;<code>Track</code></dt>
-<dd>The new Track.</dd>
-</dl></div>
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1017,6 +1529,11 @@ seq.add_sampler(clap, name='clap')
     basepitch : int or str, optional
         Set the base pitch for the new Sampler. The default is &#39;C4&#39;.
 
+    Returns
+    -------
+    new : wubwub.tracks.Sampler
+        The new Track.
+
     Examples
     --------
     ```python
@@ -1034,11 +1551,6 @@ seq.add_sampler(clap, name='clap')
     seq.add_sampler(clap, name=&#39;clap&#39;)
     ```
 
-    Returns
-    -------
-    new : Track
-        The new Track.
-
     &#34;&#34;&#34;
     if name is None:
         name = unique_name(&#39;Track&#39;, self.tracknames())
@@ -1051,12 +1563,46 @@ seq.add_sampler(clap, name='clap')
 <span>def <span class="ident">add_samplers</span></span>(<span>self, samples, names=None, overlap=False, basepitch='C4')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>From a list of sounds or pydub Audio Segments, add multiple
+<code><a title="wubwub.tracks.Sampler" href="tracks.html#wubwub.tracks.Sampler">Sampler</a></code> Tracks.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>samples</code></strong> :&ensp;<code>list like</code></dt>
+<dd>List of paths to sounds, or pydub AudioSegments to load.</dd>
+<dt><strong><code>names</code></strong> :&ensp;<code>list like</code>, optional</dt>
+<dd>The string name of each sample being added. The default is None.</dd>
+<dt><strong><code>overlap</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>The overlap behavior of the new samplers. The default is False.</dd>
+<dt><strong><code>basepitch</code></strong> :&ensp;<code>int</code> or <code>str</code>, optional</dt>
+<dd>The base pitch of the new samplers. The default is 'C4'.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>None.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def add_samplers(self, samples, names=None, overlap=False, basepitch=&#39;C4&#39;):
+    &#39;&#39;&#39;
+    From a list of sounds or pydub Audio Segments, add multiple
+    `wubwub.tracks.Sampler` Tracks.
+
+    Parameters
+    ----------
+    samples : list like
+        List of paths to sounds, or pydub AudioSegments to load.
+    names : list like, optional
+        The string name of each sample being added. The default is None.
+    overlap : bool, optional
+        The overlap behavior of the new samplers. The default is False.
+    basepitch : int or str, optional
+        The base pitch of the new samplers. The default is &#39;C4&#39;.
+
+    Returns
+    -------
+    None.
+
+    &#39;&#39;&#39;
     if names is None:
         names = [None] * len(samples)
     for sample, name in zip(samples, names):
@@ -1087,15 +1633,87 @@ seq.add_sampler(clap, name='clap')
 <span>def <span class="ident">copy</span></span>(<span>self, with_notes=True)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Create a copy of the current Sequencer.
+The copy (and its associated
+Tracks) are <em>new objects</em>, so editing it will not affect this Sequencer
+(and vice versa).</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>with_notes</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>When True (default), all the Notes/Chords are copied over for
+every copied track.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>new</code></strong> :&ensp;<code><a title="wubwub.sequencer.Sequencer" href="#wubwub.sequencer.Sequencer">Sequencer</a></code></dt>
+<dd>The new Sequencer.</dd>
+</dl>
+<h2 id="examples">Examples</h2>
+<pre><code class="python">&gt;&gt;&gt; import wubwub as wb
+
+# add a track
+&gt;&gt;&gt; seq = wb.Sequencer(bpm=120, beats=8)
+&gt;&gt;&gt; seq.add_sampler(snd.load('drums.808')['kick1'], name='kick1')
+
+# copy the sequencer
+&gt;&gt;&gt; other = seq.copy()
+
+# editing the new sequencer doesn't affect the original
+&gt;&gt;&gt; other.delete_track('kick1')
+&gt;&gt;&gt; other.tracknames()
+[]
+
+&gt;&gt;&gt; seq.tracknames()
+['kick1']
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def copy(self, with_notes=True):
+    &#39;&#39;&#39;
+    Create a copy of the current Sequencer.  The copy (and its associated
+    Tracks) are *new objects*, so editing it will not affect this Sequencer
+    (and vice versa).
+
+
+    Parameters
+    ----------
+    with_notes : bool, optional
+        When True (default), all the Notes/Chords are copied over for
+        every copied track.
+
+    Returns
+    -------
+    new : wubwub.sequencer.Sequencer
+        The new Sequencer.
+
+    Examples
+    --------
+
+    ```python
+    &gt;&gt;&gt; import wubwub as wb
+
+    # add a track
+    &gt;&gt;&gt; seq = wb.Sequencer(bpm=120, beats=8)
+    &gt;&gt;&gt; seq.add_sampler(snd.load(&#39;drums.808&#39;)[&#39;kick1&#39;], name=&#39;kick1&#39;)
+
+    # copy the sequencer
+    &gt;&gt;&gt; other = seq.copy()
+
+    # editing the new sequencer doesn&#39;t affect the original
+    &gt;&gt;&gt; other.delete_track(&#39;kick1&#39;)
+    &gt;&gt;&gt; other.tracknames()
+    []
+
+    &gt;&gt;&gt; seq.tracknames()
+    [&#39;kick1&#39;]
+    ```
+
+    &#39;&#39;&#39;
     new = Sequencer(beats=self.beats, bpm=self.bpm)
     for track in self.tracks():
-        t = track.copy(with_notes=with_notes, newseq=new)
+        track.copy(with_notes=with_notes, newseq=new)
     return new</code></pre>
 </details>
 </dd>
@@ -1105,7 +1723,7 @@ seq.add_sampler(clap, name='clap')
 <dd>
 <div class="desc"><p>For all tracks of the Sequencer, take a section of notes and replicate
 them on a new beat (keeping the same relative spacing between notes).
-Simply, this method calls <code><a title="wubwub.tracks._GenericTrack.copypaste" href="tracks.html#wubwub.tracks._GenericTrack.copypaste">_GenericTrack.copypaste()</a></code>
+Simply, this method calls <code><a title="wubwub.tracks.Track.copypaste" href="tracks.html#wubwub.tracks.Track.copypaste">Track.copypaste()</a></code>
 for all tracks within the Sequencer.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -1126,7 +1744,7 @@ for all tracks within the Sequencer.</p>
     &#39;&#39;&#39;
     For all tracks of the Sequencer, take a section of notes and replicate
     them on a new beat (keeping the same relative spacing between notes).
-    Simply, this method calls `wubwub.tracks._GenericTrack.copypaste()`
+    Simply, this method calls `wubwub.tracks.Track.copypaste()`
     for all tracks within the Sequencer.
 
     Parameters
@@ -1166,12 +1784,95 @@ for all tracks within the Sequencer.</p>
 <span>def <span class="ident">duplicate_track</span></span>(<span>self, track, newname=None, with_notes=True)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Create a copy of the specified Track within and add it to the
+current Sequencer.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>track</code></strong> :&ensp;<code><a title="wubwub.tracks.Track" href="tracks.html#wubwub.tracks.Track">Track</a></code> or <code>str</code></dt>
+<dd>Name of a Track, or the actual Track object.</dd>
+<dt><strong><code>newname</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>New name for the duplicated Track. The default is None.
+If not passed,
+a generic name is created.</dd>
+<dt><strong><code>with_notes</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>When True (default), all the Notes/Chords contained in the original
+Track are copied over.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>dup</code></strong> :&ensp;<code><a title="wubwub.tracks.Track" href="tracks.html#wubwub.tracks.Track">Track</a></code></dt>
+<dd>Reference to the new Track.</dd>
+</dl>
+<h2 id="examples">Examples</h2>
+<pre><code class="python">&gt;&gt;&gt; import wubwub as wb
+
+# add a track with some notes
+&gt;&gt;&gt; seq = wb.Sequencer(bpm=120, beats=8)
+&gt;&gt;&gt; seq.add_sampler(snd.load('drums.808')['kick1'], name='kick1')
+&gt;&gt;&gt; seq['kick1'].make_notes_every(1)
+
+# duplicate the track
+&gt;&gt;&gt; seq.duplicate_track('kick1', newname='kick2')
+
+# by default, the notes are copied
+&gt;&gt;&gt; len(seq['kick2'].notedict)
+8
+
+# specify with_notes to change this behavior
+&gt;&gt;&gt; seq.duplicate_track('kick1', newname='kick3', with_notes=False)
+&gt;&gt;&gt; len(seq['kick3'].notedict)
+0
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def duplicate_track(self, track, newname=None, with_notes=True):
+    &#39;&#39;&#39;
+    Create a copy of the specified Track within and add it to the
+    current Sequencer.
+
+    Parameters
+    ----------
+    track : wubwub.tracks.Track or str
+        Name of a Track, or the actual Track object.
+    newname : str, optional
+        New name for the duplicated Track. The default is None.  If not passed,
+        a generic name is created.
+    with_notes : bool, optional
+        When True (default), all the Notes/Chords contained in the original
+        Track are copied over.
+
+    Returns
+    -------
+    dup : wubwub.tracks.Track
+        Reference to the new Track.
+
+    Examples
+    --------
+
+    ```python
+    &gt;&gt;&gt; import wubwub as wb
+
+    # add a track with some notes
+    &gt;&gt;&gt; seq = wb.Sequencer(bpm=120, beats=8)
+    &gt;&gt;&gt; seq.add_sampler(snd.load(&#39;drums.808&#39;)[&#39;kick1&#39;], name=&#39;kick1&#39;)
+    &gt;&gt;&gt; seq[&#39;kick1&#39;].make_notes_every(1)
+
+    # duplicate the track
+    &gt;&gt;&gt; seq.duplicate_track(&#39;kick1&#39;, newname=&#39;kick2&#39;)
+
+    # by default, the notes are copied
+    &gt;&gt;&gt; len(seq[&#39;kick2&#39;].notedict)
+    8
+
+    # specify with_notes to change this behavior
+    &gt;&gt;&gt; seq.duplicate_track(&#39;kick1&#39;, newname=&#39;kick3&#39;, with_notes=False)
+    &gt;&gt;&gt; len(seq[&#39;kick3&#39;].notedict)
+    0
+    ```
+
+    &#39;&#39;&#39;
     if newname is None:
         newname = unique_name(&#39;Track&#39;, self.tracknames())
     dup = self.get_track(track).copy(newname=newname, with_notes=with_notes)
@@ -1344,7 +2045,7 @@ itself (provided the Track is part of the current Sequencer).</p>
 <div class="desc"><p>Modifies the Sequencer length while simultaneously removing notes
 that are outside of the sequence after the change.
 I.e., sets
-<code>beats</code> and calls <code><a title="wubwub.tracks._GenericTrack.clean" href="tracks.html#wubwub.tracks._GenericTrack.clean">_GenericTrack.clean()</a></code> for
+<code>beats</code> and calls <code><a title="wubwub.tracks.Track.clean" href="tracks.html#wubwub.tracks.Track.clean">Track.clean()</a></code> for
 all tracks.
 This is a convenience method which is only useful when
 shortening the sequence length.</p>
@@ -1363,7 +2064,7 @@ shortening the sequence length.</p>
     &#34;&#34;&#34;
     Modifies the Sequencer length while simultaneously removing notes
     that are outside of the sequence after the change.  I.e., sets
-    &lt;code&gt;beats&lt;/code&gt; and calls `wubwub.tracks._GenericTrack.clean()` for
+    &lt;code&gt;beats&lt;/code&gt; and calls `wubwub.tracks.Track.clean()` for
     all tracks.  This is a convenience method which is only useful when
     shortening the sequence length.
 
@@ -1432,12 +2133,108 @@ shortening the sequence length.</p>
 <span>def <span class="ident">split</span></span>(<span>self, beat)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Split the Sequencer into two new Sequencers at a given beat.
+The objects
+returned are <em>new Sequencers</em> (generated by <code><a title="wubwub.sequencer.Sequencer.copy" href="#wubwub.sequencer.Sequencer.copy">Sequencer.copy()</a></code>).</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>beat</code></strong> :&ensp;<code>int</code></dt>
+<dd>The beat to split the Sequencer on.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>TypeError</code></dt>
+<dd>Non-integer beat is passed.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>a</code></strong>, <strong><code>b</code></strong> :&ensp;<code><a title="wubwub.sequencer.Sequencer" href="#wubwub.sequencer.Sequencer">Sequencer</a></code></dt>
+<dd>Two new Sequencers.</dd>
+</dl>
+<h2 id="examples">Examples</h2>
+<pre><code class="python">&gt;&gt;&gt; import wubwub as wb
+&gt;&gt;&gt; import wubwub.sounds as snd
+
+# make a sequencer and add tracks/notes
+&gt;&gt;&gt; seq = wb.Sequencer(beats=8, bpm=100)
+&gt;&gt;&gt; drums = snd.load('drums.808')
+&gt;&gt;&gt; kick = seq.add_sampler(drums['kick1'], name='kick')
+&gt;&gt;&gt; snare = seq.add_sampler(drums['snare'], name='snare')
+&gt;&gt;&gt; kick.make_notes_every(2)
+&gt;&gt;&gt; snare.make_notes_every(2, offset=1)
+&gt;&gt;&gt; seq.show()
+       1 2 3 4 5 6 7 8
+  kick ■ □ ■ □ ■ □ ■ □
+ snare □ ■ □ ■ □ ■ □ ■
+
+# split
+&gt;&gt;&gt; a, b = seq.split(4)
+&gt;&gt;&gt; a.show()
+       1 2 3
+  kick ■ □ ■
+ snare □ ■ □
+
+&gt;&gt;&gt; b.show()
+       1 2 3 4 5
+  kick □ ■ □ □ ■
+ snare ■ □ ■ □ □
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def split(self, beat):
+    &#39;&#39;&#39;
+    Split the Sequencer into two new Sequencers at a given beat.  The objects
+    returned are *new Sequencers* (generated by `Sequencer.copy()`).
+
+    Parameters
+    ----------
+    beat : int
+        The beat to split the Sequencer on.
+
+    Raises
+    ------
+    TypeError
+        Non-integer beat is passed.
+
+    Returns
+    -------
+    a, b : wubwub.sequencer.Sequencer
+        Two new Sequencers.
+
+    Examples
+    --------
+    ```python
+    &gt;&gt;&gt; import wubwub as wb
+    &gt;&gt;&gt; import wubwub.sounds as snd
+
+    # make a sequencer and add tracks/notes
+    &gt;&gt;&gt; seq = wb.Sequencer(beats=8, bpm=100)
+    &gt;&gt;&gt; drums = snd.load(&#39;drums.808&#39;)
+    &gt;&gt;&gt; kick = seq.add_sampler(drums[&#39;kick1&#39;], name=&#39;kick&#39;)
+    &gt;&gt;&gt; snare = seq.add_sampler(drums[&#39;snare&#39;], name=&#39;snare&#39;)
+    &gt;&gt;&gt; kick.make_notes_every(2)
+    &gt;&gt;&gt; snare.make_notes_every(2, offset=1)
+    &gt;&gt;&gt; seq.show()
+           1 2 3 4 5 6 7 8
+      kick ■ □ ■ □ ■ □ ■ □
+     snare □ ■ □ ■ □ ■ □ ■
+
+    # split
+    &gt;&gt;&gt; a, b = seq.split(4)
+    &gt;&gt;&gt; a.show()
+           1 2 3
+      kick ■ □ ■
+     snare □ ■ □
+
+    &gt;&gt;&gt; b.show()
+           1 2 3 4 5
+      kick □ ■ □ □ ■
+     snare ■ □ ■ □ □
+    ```
+
+    &#39;&#39;&#39;
     if not isinstance(beat, int):
         raise TypeError(f&#39;Beat for split must be int, not {type(beat)}.&#39;)
 

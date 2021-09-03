@@ -27,8 +27,6 @@ from wubwub.notes import ArpChord, Chord, Note, arpeggiate, _notetypes_
 from wubwub.plots import trackplot, pianoroll
 from wubwub.resources import random_choice_generator, MINUTE, SECOND
 
-__pdoc__ = {'_GenericTrack':True}
-
 class SliceableDict:
     def __init__(self, d):
         self.d = d
@@ -56,7 +54,7 @@ class SliceableDict:
             raise IndexError('Could not interpret input as int, '
                              'slice, iterable, or boolean index.')
 
-class _GenericTrack(metaclass=ABCMeta):
+class Track(metaclass=ABCMeta):
 
     handle_outside_notes = 'skip'
 
@@ -370,7 +368,7 @@ class _GenericTrack(metaclass=ABCMeta):
     def pianoroll(self, timesig=4, grid=True,):
         pianoroll(track=self, timesig=timesig, grid=grid)
 
-class _SamplerLikeTrack(_GenericTrack):
+class SamplerLikeTrack(Track):
     def __init__(self, name, sequencer, **kwargs):
         super().__init__(name=name, sequencer=sequencer)
 
@@ -456,7 +454,7 @@ class _SamplerLikeTrack(_GenericTrack):
             raise WubWubError('pitch, length, and volume select must be ',
                               '"cycle" or "random".')
 
-class _SingleSampleTrack(_GenericTrack):
+class SingleSampleTrack(Track):
     def __init__(self, name, sample, sequencer, **kwargs):
         super().__init__(name=name, sequencer=sequencer, **kwargs)
         self._sample = None
@@ -479,12 +477,12 @@ class _SingleSampleTrack(_GenericTrack):
         else:
             raise WubWubError('sample must be a path or pydub.AudioSegment')
 
-class _MultiSampleTrack(_GenericTrack):
+class MultiSampleTrack(Track):
     def __init__(self, name, sequencer, **kwargs):
         super().__init__(name=name, sequencer=sequencer, **kwargs)
         self.samples = {}
 
-class Sampler(_SingleSampleTrack, _SamplerLikeTrack):
+class Sampler(SingleSampleTrack, SamplerLikeTrack):
     def __init__(self, name, sample, sequencer, basepitch='C4', overlap=True):
         super().__init__(name=name, sample=sample, sequencer=sequencer,
                          basepitch=basepitch, overlap=overlap)
@@ -542,7 +540,7 @@ class Sampler(_SingleSampleTrack, _SamplerLikeTrack):
             duration = duration * SECOND
         play(test[:duration])
 
-class MultiSampler(_MultiSampleTrack, _SamplerLikeTrack):
+class MultiSampler(MultiSampleTrack, SamplerLikeTrack):
     def __init__(self, name, sequencer, overlap=True):
         super().__init__(name=name, sequencer=sequencer)
         self.overlap = overlap
@@ -612,7 +610,7 @@ class MultiSampler(_MultiSampleTrack, _SamplerLikeTrack):
     def get_sample(self, key):
         return self.samples.get(key, self.default_sample)
 
-class Arpeggiator(_SingleSampleTrack):
+class Arpeggiator(SingleSampleTrack):
     def __init__(self, name, sample, sequencer, basepitch='C4', freq=.5,
                  method='up'):
         super().__init__(name=name, sample=sample, sequencer=sequencer,)

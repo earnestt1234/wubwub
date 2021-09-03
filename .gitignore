@@ -2,6 +2,9 @@
 /wubwub/SAMPLES
 /wubwub/__MACOSX
 
+# remove testing file
+wubwubtesting.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
