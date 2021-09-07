@@ -504,19 +504,48 @@ class Sequencer:
 
     def build(self, overhang=0, overhang_type='beats'):
         '''
-
+        Render all the contained Tracks into one output, namely a pydub
+        AudioSegment.  Calls the "build" method of each Track, and overlays
+        them.
 
         Parameters
         ----------
-        overhang : TYPE, optional
-            DESCRIPTION. The default is 0.
-        overhang_type : TYPE, optional
-            DESCRIPTION. The default is 'beats'.
+        overhang : int or number, optional
+            How much extra time to render beyond the length
+            (i.e., the `beats`) of the Sequencer. The default is 0.
+            Units are either in beats or in seconds, dependent on the
+            `overhang_type` argument.  This can be useful when there are
+            notes or effects that reverberate beyond the duration of the
+            Sequencer.
+        overhang_type : str -> "beats" or "seconds", optional
+            Unit for the overhang. The default is 'beats'.
 
         Returns
         -------
-        TYPE
-            DESCRIPTION.
+        pydub.AudioSegment
+            The rendered audio.
+
+        Examples
+        --------
+        ```python
+        >>> import wubwub as wb
+
+        # 60 BPM == 1 second per beat
+        >>> seq = wb.Sequencer(beats=4, bpm=60)
+
+        # expected length (in milliseconds, per pydub)
+        >>> expected = 4 * 1000
+        >>> expected == len(seq.build())
+        True
+
+        # add overhang of 2 beats
+        >>> len(seq.build(overhang=2))
+        6000
+
+        # add overhang in seconds
+        >>> len(seq.build(overhang=3.777, overhang_type='beats'))
+        7777
+        ```
 
         '''
         b = (1/self.bpm) * MINUTE
@@ -528,6 +557,43 @@ class Sequencer:
         return self.postprocess(audio)
 
     def postprocess(self, build):
+        '''
+        Add postprocessing to a rendered audio output of the Sequencer,
+        typically that of `Sequencer.build()`.  There are currently 3
+        postprocessing steps applied, corresponding to 3 attributes of
+        the Sequencer:
+
+        - `effects`: This attribute can be set to a pysndfx
+        AudioEffectsChain instance to add audio effects (such as reverb,
+        delay, overdrive, etc.) See
+        [here](https://github.com/carlthome/python-audio-effects) for more
+        documentation.
+        - `volume`: This attribute can be set to modify the output volume
+        of the build.  Note that the value reflects a relative change in
+        dB, so values can be positive or negative.
+        - `pan`: a value between `-1.0` (100% left) and `+1.0` (100% right)
+        indicating the stereo panning (`0.0` is centered).
+
+        The order/presence of these processing steps can be determined by
+        setting the `postprocess_steps` attribute, which should be a list
+        containing some subset of the strings `'effects'`, `'volume'`, and
+        `'pan`' (corresponding to each of the three steps above).  The default
+        is `self.postprocess_steps = ['effects', 'volume', 'pan']`.  *Omitted
+        steps in this attribute will not be applied, while repeated steps
+        will be applied multiple times.*  Additionally, the steps are applied
+        in the order encountered in `self.postprocess_steps`.
+
+        Parameters
+        ----------
+        build : pydub AudioSegment
+            Audio to postprocess, typically output of `Sequencer.build()`
+
+        Returns
+        -------
+        build : pydub AudioSegment
+            Audio with postprocessing steps applied.
+
+        '''
         for step in self.postprocess_steps:
             if step == 'effects':
                 build = add_effects(build, self.effects)
@@ -538,6 +604,30 @@ class Sequencer:
         return build
 
     def play(self, start=1, end=None, overhang=0, overhang_type='beats'):
+        '''
+        Audio playback of the Sequencer.
+
+        Parameters
+        ----------
+        start : int, optional
+            Beat to start playback on. The default is 1.
+        end : int or None, optional
+            Beat to end playback on. The default is None.
+        overhang : int or number, optional
+            How much extra time to render beyond the length
+            (i.e., the `beats`) of the Sequencer. The default is 0.
+            Units are either in beats or in seconds, dependent on the
+            `overhang_type` argument.  This can be useful when there are
+            notes or effects that reverberate beyond the duration of the
+            Sequencer.
+        overhang_type : str -> "beats" or "seconds", optional
+            Unit for the overhang. The default is 'beats'.
+
+        Returns
+        -------
+        None.
+
+        '''
         b = (1/self.bpm) * MINUTE
         start = (start-1) * b
         if end is not None:
@@ -546,11 +636,39 @@ class Sequencer:
         play(build[start:end])
 
     def loop(self, times=4, internal_overhang=0, end_overhang=0, overhang_type='beats'):
+        '''
+        Return a looped rendering of the Sequencer.  This is akin to
+        `Sequencer.build()`, but the content of the Sequencer is repeated
+        a specified number of times.
+
+        Parameters
+        ----------
+        times : int, optional
+            How many times to loop. The default is 4.
+        internal_overhang : int or float, optional
+            Determine the length of extra time to render when the loop restarts.
+            This can be used to prevent abrubt shortening of sounds near the
+            end of the sequence. The default is 0, meaning all sounds are
+            cut at the end of the Sequencer length for each loop.
+        end_overhang : int or float, optional
+            Determine the length of extra time to render at the of the audio,
+            i.e. after all loops are complete. The default is 0.
+        overhang_type : str -> 'beats' or 'seconds', optional
+            Units for the overhang. The default is 'beats'.
+
+        Returns
+        -------
+        looped : pydub.AudioSegment
+            The looped audio.
+
+        '''
         looped = loop(self, times=times, internal_overhang=internal_overhang,
                       end_overhang=end_overhang, overhang_type=overhang_type)
         return looped
 
     def loopplay(self, times=4, internal_overhang=0, end_overhang=0, overhang_type='beats'):
+        '''Calls `Sequencer.play()` on `Sequencer.loop()`; i.e.
+        immediately plays back looped audio.'''
         looped = loop(self, times=times, internal_overhang=internal_overhang,
                       end_overhang=end_overhang, overhang_type=overhang_type)
         play(looped)
