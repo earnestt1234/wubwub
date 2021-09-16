@@ -674,6 +674,8 @@ class Sequencer:
         play(looped)
 
     def soundtest(self, selection=None, postprocess=True, gap=.5):
+        '''Calls the sound test method for each Track in the Sequencer; i.e.
+        plays back all the samples being used.'''
         if selection is None:
             selection = self.tracks()
         else:
@@ -686,12 +688,43 @@ class Sequencer:
             time.sleep(gap)
 
     def export(self, path, overhang=0, overhang_type='beats'):
+        '''
+        Saves the rendered audio to a file.  The Sequencer creates
+        a pydub AudioSegment which contains all Tracks overlaid,
+        and then uses its export method to save.
+
+        See the pydub documentation for more information on exporting.
+
+        Parameters
+        ----------
+        path : system path
+            File path to save the audio to.
+        overhang : int or number, optional
+            How much extra time to render beyond the length
+            (i.e., the `beats`) of the Sequencer. The default is 0.
+            Units are either in beats or in seconds, dependent on the
+            `overhang_type` argument.  This can be useful when there are
+            notes or effects that reverberate beyond the duration of the
+            Sequencer.
+        overhang_type : str -> "beats" or "seconds", optional
+            Unit for the overhang. The default is 'beats'.
+
+        Returns
+        -------
+        None.
+
+        '''
         _, fmt = os.path.splitext(path)
         build = self.build(overhang, overhang_type)
         build.export(path, format=fmt)
 
     def show(self, printout=True, name_cutoff=None, resolution=1,
              singlenote='■', multinote='■', empty='□', wrap=32):
+        '''
+        Print (or return) a sequencer grid diagram, showing when
+        each Track contains notes.  For more information, see
+        `wubwub.seqstring.seqstring()`.
+        '''
         s = seqstring(self,
                       name_cutoff=name_cutoff,
                       resolution=resolution,
