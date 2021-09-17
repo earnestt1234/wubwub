@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu Feb 11 14:34:36 2021
-
-@author: earnestt1234
+Various plots for visualizing the contents of a `wubwub.sequencer.Sequencer`.
 """
 from numbers import Number
 
@@ -39,6 +37,34 @@ def _actual_soundlength(track, element):
 
 def sequencerplot(sequencer, timesig=4, grid=True, ax=None, scatter_kwds=None,
                   plot_kwds=None):
+    '''
+    Create a plot showing beats on the x-axis, and Tracks on the y-axis.
+    Plotted elements correspond to the start and length of each Note in each
+    Track.
+
+    Parameters
+    ----------
+    sequencer : wubwub.sequencer.Sequencer
+        A Sequencer.
+    timesig : int, optional
+        Sets the ticks/grid to a given frequency of beats. The default is 4.
+    grid : bool, optional
+        Whether to include a grid. The default is True.
+    ax : matplotlib.axes.Axes, optional
+        Axes to create the plot on. The default is None.
+    scatter_kwds : dict, optional
+        Keyword arguments passed to `matplotlib.axes.Axes.scatter`.
+        The default is None.
+    plot_kwds : dict, optional
+        Keyword arguments passed to `matplotlib.axes.Axes.plot`.
+        The default is None.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        The Figure containing the axes used.
+
+    '''
     if ax is None:
         ax = plt.gca()
     if scatter_kwds is None:

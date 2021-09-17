@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.1" />
 <title>wubwub.seqstring API documentation</title>
-<meta name="description" content="Created on Tue Mar 16 22:50:31 2021 …" />
+<meta name="description" content="Create string diagrams showing the content of a Sequencer …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -22,8 +22,86 @@
 <h1 class="title">Module <code>wubwub.seqstring</code></h1>
 </header>
 <section id="section-intro">
-<p>Created on Tue Mar 16 22:50:31 2021</p>
-<p>@author: earnestt1234</p>
+<p>Create string diagrams showing the content of a Sequencer.</p>
+<p>The diagram is essentially a boolean grid, where the rows are Tracks and the
+columns are beats. Cells are filled when the given Track contains a Note/Chord
+on the given beat.</p>
+<p>Here is an example beat:</p>
+<pre><code class="python">import wubwub as wb
+import wubwub.sounds as snd
+
+# load sounds
+DRUMS = snd.load('drums.808')
+
+# create a sequencer and add tracks
+seq = wb.Sequencer(bpm=120, beats=8)
+kick = seq.add_sampler(DRUMS['kick1'], name='Kick')
+clap = seq.add_sampler(DRUMS['handclap'], name='Clap')
+hat = seq.add_sampler(DRUMS['closed_hihat'], name='HiHat')
+rim = seq.add_sampler(DRUMS['rimshot'], name='Rim')
+
+# add notes
+kick.make_notes_every(1)
+clap.make_notes_every(2, offset=1)
+hat.make_notes_every(.5)
+rimpattern = wb.Pattern([1, 1.25, 1.5,
+                         2,
+                         3, 3.25, 3.75,
+                         4, 4.5], length=4)
+rim[rimpattern * 2] = wb.Note()
+
+</code></pre>
+<p>Sequencers have a <code><a title="wubwub.sequencer.Sequencer.show" href="sequencer.html#wubwub.sequencer.Sequencer.show">Sequencer.show()</a></code> method, which
+calls <code><a title="wubwub.seqstring.seqstring" href="#wubwub.seqstring.seqstring">seqstring()</a></code> and prints the output.</p>
+<pre><code class="python">&gt;&gt;&gt; seq.show()
+      1 2 3 4 5 6 7 8
+ Kick ■ ■ ■ ■ ■ ■ ■ ■
+ Clap □ ■ □ ■ □ ■ □ ■
+HiHat ■ ■ ■ ■ ■ ■ ■ ■
+  Rim ■ ■ ■ ■ ■ ■ ■ ■
+
+</code></pre>
+<p>By default, the seqstring's resolution is equal to the <code>beats</code> attribute
+of the Sequencer.
+The Track names are determined by the <code>name</code> attribute
+of each Track.</p>
+<p>You can increase the resolution to see the hihat and rimshot patterns:</p>
+<pre><code class="python">&gt;&gt;&gt; seq.show(resolution = 1/4)
+      1       2       3       4       5       6       7       8
+ Kick ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □
+ Clap □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □
+HiHat ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □
+  Rim ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □ ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □
+
+</code></pre>
+<p>Note that <code>1/4</code> here means 1/4 of each beat in the Sequencer; not a "quarter note".
+Since this beat is basically common time, <code>1/4</code> is essentially sixteenth-notes.</p>
+<p>You can change the symbols used, for beats with one note, multiple notes,
+or no notes:</p>
+<pre><code class="python">&gt;&gt;&gt; seq.show(singlenote='.', multinote = 'o', empty = ' ')
+      1 2 3 4 5 6 7 8
+ Kick . . . . . . . .
+ Clap   .   .   .   .
+HiHat o o o o o o o o
+  Rim o . o o o . o o
+
+</code></pre>
+<p>You can also set the wrap length (the number of boxes per line, as determined
+by the <code>resolution</code>):</p>
+<pre><code class="python">&gt;&gt;&gt; seq.show(resolution=1/4, wrap=16)
+      1       2       3       4          \
+ Kick ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □
+ Clap □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □
+HiHat ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □
+  Rim ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □
+
+      5       6       7       8
+ Kick ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □
+ Clap □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □
+HiHat ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □
+  Rim ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □
+
+</code></pre>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -31,9 +109,103 @@
 <pre><code class="python">#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 &#34;&#34;&#34;
-Created on Tue Mar 16 22:50:31 2021
+Create string diagrams showing the content of a Sequencer.
 
-@author: earnestt1234
+The diagram is essentially a boolean grid, where the rows are Tracks and the
+columns are beats. Cells are filled when the given Track contains a Note/Chord
+on the given beat.
+
+Here is an example beat:
+
+```python
+import wubwub as wb
+import wubwub.sounds as snd
+
+# load sounds
+DRUMS = snd.load(&#39;drums.808&#39;)
+
+# create a sequencer and add tracks
+seq = wb.Sequencer(bpm=120, beats=8)
+kick = seq.add_sampler(DRUMS[&#39;kick1&#39;], name=&#39;Kick&#39;)
+clap = seq.add_sampler(DRUMS[&#39;handclap&#39;], name=&#39;Clap&#39;)
+hat = seq.add_sampler(DRUMS[&#39;closed_hihat&#39;], name=&#39;HiHat&#39;)
+rim = seq.add_sampler(DRUMS[&#39;rimshot&#39;], name=&#39;Rim&#39;)
+
+# add notes
+kick.make_notes_every(1)
+clap.make_notes_every(2, offset=1)
+hat.make_notes_every(.5)
+rimpattern = wb.Pattern([1, 1.25, 1.5,
+                         2,
+                         3, 3.25, 3.75,
+                         4, 4.5], length=4)
+rim[rimpattern * 2] = wb.Note()
+
+```
+
+Sequencers have a `wubwub.sequencer.Sequencer.show()` method, which
+calls `seqstring()` and prints the output.
+
+```python
+&gt;&gt;&gt; seq.show()
+      1 2 3 4 5 6 7 8
+ Kick ■ ■ ■ ■ ■ ■ ■ ■
+ Clap □ ■ □ ■ □ ■ □ ■
+HiHat ■ ■ ■ ■ ■ ■ ■ ■
+  Rim ■ ■ ■ ■ ■ ■ ■ ■
+
+```
+
+By default, the seqstring&#39;s resolution is equal to the `beats` attribute
+of the Sequencer.  The Track names are determined by the `name` attribute
+of each Track.
+
+You can increase the resolution to see the hihat and rimshot patterns:
+
+```python
+&gt;&gt;&gt; seq.show(resolution = 1/4)
+      1       2       3       4       5       6       7       8
+ Kick ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □
+ Clap □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □
+HiHat ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □
+  Rim ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □ ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □
+
+```
+Note that `1/4` here means 1/4 of each beat in the Sequencer; not a &#34;quarter note&#34;.
+Since this beat is basically common time, `1/4` is essentially sixteenth-notes.
+
+You can change the symbols used, for beats with one note, multiple notes,
+or no notes:
+
+```python
+&gt;&gt;&gt; seq.show(singlenote=&#39;.&#39;, multinote = &#39;o&#39;, empty = &#39; &#39;)
+      1 2 3 4 5 6 7 8
+ Kick . . . . . . . .
+ Clap   .   .   .   .
+HiHat o o o o o o o o
+  Rim o . o o o . o o
+
+```
+
+You can also set the wrap length (the number of boxes per line, as determined
+by the `resolution`):
+
+```python
+&gt;&gt;&gt; seq.show(resolution=1/4, wrap=16)
+      1       2       3       4          \\
+ Kick ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □
+ Clap □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □
+HiHat ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □
+  Rim ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □
+
+      5       6       7       8
+ Kick ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □
+ Clap □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □
+HiHat ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □
+  Rim ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □
+
+```
+
 &#34;&#34;&#34;
 
 import numpy as np
@@ -42,6 +214,41 @@ from wubwub.errors import WubWubError
 
 def seqstring(sequencer, name_cutoff=None, resolution=1, singlenote=&#39;■&#39;,
               multinote=&#39;■&#39;, empty=&#39;□&#39;, wrap=32):
+    &#39;&#39;&#39;
+    Create a string diagram of a Sequencer.  The diagram is essentially
+    a boolean grid, where the rows are Tracks and the columns are beats.
+    Cells are filled when the given Track contains a Note/Chord on the given
+    beat.
+
+    Parameters
+    ----------
+    sequencer : wubwub.sequencer.Sequencer
+        A Sequencer.
+    name_cutoff : int, optional
+        Number of characters to allow track names to be. The default is None.
+    resolution : int or float, optional
+        Determines the frequency of beats to use. The default is 1.
+    singlenote : str, optional
+        Character to use for beats containing single Notes. The default is &#39;■&#39;.
+    multinote : str, optional
+        Character to use for beats containing multiple notes. The default is &#39;■&#39;.
+    empty : str, optional
+        Character to use for beats not containing notes. The default is &#39;□&#39;.
+    wrap : int, optional
+        How many beats (as determined by `resolution`) to show on a single line.
+        The default is 32.
+
+    Raises
+    ------
+    WubWubError
+        The resolution does not evenly divide 1.
+
+    Returns
+    -------
+    str
+        The string diagram.
+
+    &#39;&#39;&#39;
     tracknames = []
     namelengths = []
     for track in sequencer.tracks():
@@ -120,13 +327,80 @@ def seqstring(sequencer, name_cutoff=None, resolution=1, singlenote=&#39;■&#39
 <span>def <span class="ident">seqstring</span></span>(<span>sequencer, name_cutoff=None, resolution=1, singlenote='■', multinote='■', empty='□', wrap=32)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Create a string diagram of a Sequencer.
+The diagram is essentially
+a boolean grid, where the rows are Tracks and the columns are beats.
+Cells are filled when the given Track contains a Note/Chord on the given
+beat.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>sequencer</code></strong> :&ensp;<code><a title="wubwub.sequencer.Sequencer" href="sequencer.html#wubwub.sequencer.Sequencer">Sequencer</a></code></dt>
+<dd>A Sequencer.</dd>
+<dt><strong><code>name_cutoff</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Number of characters to allow track names to be. The default is None.</dd>
+<dt><strong><code>resolution</code></strong> :&ensp;<code>int</code> or <code>float</code>, optional</dt>
+<dd>Determines the frequency of beats to use. The default is 1.</dd>
+<dt><strong><code>singlenote</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Character to use for beats containing single Notes. The default is '■'.</dd>
+<dt><strong><code>multinote</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Character to use for beats containing multiple notes. The default is '■'.</dd>
+<dt><strong><code>empty</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Character to use for beats not containing notes. The default is '□'.</dd>
+<dt><strong><code>wrap</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>How many beats (as determined by <code>resolution</code>) to show on a single line.
+The default is 32.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>WubWubError</code></dt>
+<dd>The resolution does not evenly divide 1.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>str</code></dt>
+<dd>The string diagram.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def seqstring(sequencer, name_cutoff=None, resolution=1, singlenote=&#39;■&#39;,
               multinote=&#39;■&#39;, empty=&#39;□&#39;, wrap=32):
+    &#39;&#39;&#39;
+    Create a string diagram of a Sequencer.  The diagram is essentially
+    a boolean grid, where the rows are Tracks and the columns are beats.
+    Cells are filled when the given Track contains a Note/Chord on the given
+    beat.
+
+    Parameters
+    ----------
+    sequencer : wubwub.sequencer.Sequencer
+        A Sequencer.
+    name_cutoff : int, optional
+        Number of characters to allow track names to be. The default is None.
+    resolution : int or float, optional
+        Determines the frequency of beats to use. The default is 1.
+    singlenote : str, optional
+        Character to use for beats containing single Notes. The default is &#39;■&#39;.
+    multinote : str, optional
+        Character to use for beats containing multiple notes. The default is &#39;■&#39;.
+    empty : str, optional
+        Character to use for beats not containing notes. The default is &#39;□&#39;.
+    wrap : int, optional
+        How many beats (as determined by `resolution`) to show on a single line.
+        The default is 32.
+
+    Raises
+    ------
+    WubWubError
+        The resolution does not evenly divide 1.
+
+    Returns
+    -------
+    str
+        The string diagram.
+
+    &#39;&#39;&#39;
     tracknames = []
     namelengths = []
     for track in sequencer.tracks():

@@ -635,6 +635,30 @@ class Sequencer:
         return build
 
     def play(self, start=1, end=None, overhang=0, overhang_type=&#39;beats&#39;):
+        &#39;&#39;&#39;
+        Audio playback of the Sequencer.
+
+        Parameters
+        ----------
+        start : int, optional
+            Beat to start playback on. The default is 1.
+        end : int or None, optional
+            Beat to end playback on. The default is None.
+        overhang : int or number, optional
+            How much extra time to render beyond the length
+            (i.e., the `beats`) of the Sequencer. The default is 0.
+            Units are either in beats or in seconds, dependent on the
+            `overhang_type` argument.  This can be useful when there are
+            notes or effects that reverberate beyond the duration of the
+            Sequencer.
+        overhang_type : str -&gt; &#34;beats&#34; or &#34;seconds&#34;, optional
+            Unit for the overhang. The default is &#39;beats&#39;.
+
+        Returns
+        -------
+        None.
+
+        &#39;&#39;&#39;
         b = (1/self.bpm) * MINUTE
         start = (start-1) * b
         if end is not None:
@@ -643,16 +667,46 @@ class Sequencer:
         play(build[start:end])
 
     def loop(self, times=4, internal_overhang=0, end_overhang=0, overhang_type=&#39;beats&#39;):
+        &#39;&#39;&#39;
+        Return a looped rendering of the Sequencer.  This is akin to
+        `Sequencer.build()`, but the content of the Sequencer is repeated
+        a specified number of times.
+
+        Parameters
+        ----------
+        times : int, optional
+            How many times to loop. The default is 4.
+        internal_overhang : int or float, optional
+            Determine the length of extra time to render when the loop restarts.
+            This can be used to prevent abrubt shortening of sounds near the
+            end of the sequence. The default is 0, meaning all sounds are
+            cut at the end of the Sequencer length for each loop.
+        end_overhang : int or float, optional
+            Determine the length of extra time to render at the of the audio,
+            i.e. after all loops are complete. The default is 0.
+        overhang_type : str -&gt; &#39;beats&#39; or &#39;seconds&#39;, optional
+            Units for the overhang. The default is &#39;beats&#39;.
+
+        Returns
+        -------
+        looped : pydub.AudioSegment
+            The looped audio.
+
+        &#39;&#39;&#39;
         looped = loop(self, times=times, internal_overhang=internal_overhang,
                       end_overhang=end_overhang, overhang_type=overhang_type)
         return looped
 
     def loopplay(self, times=4, internal_overhang=0, end_overhang=0, overhang_type=&#39;beats&#39;):
+        &#39;&#39;&#39;Calls `Sequencer.play()` on `Sequencer.loop()`; i.e.
+        immediately plays back looped audio.&#39;&#39;&#39;
         looped = loop(self, times=times, internal_overhang=internal_overhang,
                       end_overhang=end_overhang, overhang_type=overhang_type)
         play(looped)
 
     def soundtest(self, selection=None, postprocess=True, gap=.5):
+        &#39;&#39;&#39;Calls the sound test method for each Track in the Sequencer; i.e.
+        plays back all the samples being used.&#39;&#39;&#39;
         if selection is None:
             selection = self.tracks()
         else:
@@ -665,12 +719,69 @@ class Sequencer:
             time.sleep(gap)
 
     def export(self, path, overhang=0, overhang_type=&#39;beats&#39;):
+        &#39;&#39;&#39;
+        Saves the rendered audio to a file.  The Sequencer creates
+        a pydub AudioSegment which contains all Tracks overlaid,
+        and then uses its export method to save.
+
+        See the pydub documentation for more information on exporting.
+
+        Parameters
+        ----------
+        path : system path
+            File path to save the audio to.
+        overhang : int or number, optional
+            How much extra time to render beyond the length
+            (i.e., the `beats`) of the Sequencer. The default is 0.
+            Units are either in beats or in seconds, dependent on the
+            `overhang_type` argument.  This can be useful when there are
+            notes or effects that reverberate beyond the duration of the
+            Sequencer.
+        overhang_type : str -&gt; &#34;beats&#34; or &#34;seconds&#34;, optional
+            Unit for the overhang. The default is &#39;beats&#39;.
+
+        Returns
+        -------
+        None.
+
+        &#39;&#39;&#39;
         _, fmt = os.path.splitext(path)
         build = self.build(overhang, overhang_type)
         build.export(path, format=fmt)
 
     def show(self, printout=True, name_cutoff=None, resolution=1,
              singlenote=&#39;■&#39;, multinote=&#39;■&#39;, empty=&#39;□&#39;, wrap=32):
+        &#39;&#39;&#39;
+        Print (or return) a sequencer grid diagram, showing when
+        each Track contains notes.  For more information, see
+        `wubwub.seqstring.seqstring()`.
+
+        Parameters
+        ----------
+        printout : bool, optional
+            When True (default), print the diagram.  When False,
+            return the string.
+        name_cutoff : int, optional
+            Number of characters to allow track names to be. The default is None.
+        resolution : int or float, optional
+            Determines the frequency of beats to use. The default is 1.
+        singlenote : str, optional
+            Character to use for beats containing single Notes. The default is &#39;■&#39;.
+        multinote : str, optional
+            Character to use for beats containing multiple notes. The default is &#39;■&#39;.
+        empty : str, optional
+            Character to use for beats not containing notes. The default is &#39;□&#39;.
+        wrap : int, optional
+            How many beats (as determined by `resolution`) to show on a single line.
+            The default is 32.
+
+        Returns
+        -------
+        s (str) or None
+            The string diagram is returned if `printout` is `False`, otherwise
+            it is printed and `None` is returned.
+
+        &#39;&#39;&#39;
         s = seqstring(self,
                       name_cutoff=name_cutoff,
                       resolution=resolution,
@@ -685,6 +796,28 @@ class Sequencer:
 
     def plot(self, timesig=4, grid=True, ax=None, scatter_kwds=None,
              plot_kwds=None):
+        &#39;&#39;&#39;
+        Run `wubwub.plots.sequencerplot()` for this Sequencer.
+
+        timesig : int, optional
+            Sets the ticks/grid to a given frequency of beats. The default is 4.
+        grid : bool, optional
+            Whether to include a grid. The default is True.
+        ax : matplotlib.axes.Axes, optional
+            Axes to create the plot on. The default is None.
+        scatter_kwds : dict, optional
+            Keyword arguments passed to `matplotlib.axes.Axes.scatter`.
+            The default is None.
+        plot_kwds : dict, optional
+            Keyword arguments passed to `matplotlib.axes.Axes.plot`.
+            The default is None.
+
+        Returns
+        -------
+        matplotlib.figure.Figure
+            The Figure containing the axes used.
+
+        &#39;&#39;&#39;
         sequencerplot(self,
                       timesig=timesig,
                       grid=grid,
@@ -1476,6 +1609,30 @@ the output audio and creates a container for subsidiary tracks.</p></div>
         return build
 
     def play(self, start=1, end=None, overhang=0, overhang_type=&#39;beats&#39;):
+        &#39;&#39;&#39;
+        Audio playback of the Sequencer.
+
+        Parameters
+        ----------
+        start : int, optional
+            Beat to start playback on. The default is 1.
+        end : int or None, optional
+            Beat to end playback on. The default is None.
+        overhang : int or number, optional
+            How much extra time to render beyond the length
+            (i.e., the `beats`) of the Sequencer. The default is 0.
+            Units are either in beats or in seconds, dependent on the
+            `overhang_type` argument.  This can be useful when there are
+            notes or effects that reverberate beyond the duration of the
+            Sequencer.
+        overhang_type : str -&gt; &#34;beats&#34; or &#34;seconds&#34;, optional
+            Unit for the overhang. The default is &#39;beats&#39;.
+
+        Returns
+        -------
+        None.
+
+        &#39;&#39;&#39;
         b = (1/self.bpm) * MINUTE
         start = (start-1) * b
         if end is not None:
@@ -1484,16 +1641,46 @@ the output audio and creates a container for subsidiary tracks.</p></div>
         play(build[start:end])
 
     def loop(self, times=4, internal_overhang=0, end_overhang=0, overhang_type=&#39;beats&#39;):
+        &#39;&#39;&#39;
+        Return a looped rendering of the Sequencer.  This is akin to
+        `Sequencer.build()`, but the content of the Sequencer is repeated
+        a specified number of times.
+
+        Parameters
+        ----------
+        times : int, optional
+            How many times to loop. The default is 4.
+        internal_overhang : int or float, optional
+            Determine the length of extra time to render when the loop restarts.
+            This can be used to prevent abrubt shortening of sounds near the
+            end of the sequence. The default is 0, meaning all sounds are
+            cut at the end of the Sequencer length for each loop.
+        end_overhang : int or float, optional
+            Determine the length of extra time to render at the of the audio,
+            i.e. after all loops are complete. The default is 0.
+        overhang_type : str -&gt; &#39;beats&#39; or &#39;seconds&#39;, optional
+            Units for the overhang. The default is &#39;beats&#39;.
+
+        Returns
+        -------
+        looped : pydub.AudioSegment
+            The looped audio.
+
+        &#39;&#39;&#39;
         looped = loop(self, times=times, internal_overhang=internal_overhang,
                       end_overhang=end_overhang, overhang_type=overhang_type)
         return looped
 
     def loopplay(self, times=4, internal_overhang=0, end_overhang=0, overhang_type=&#39;beats&#39;):
+        &#39;&#39;&#39;Calls `Sequencer.play()` on `Sequencer.loop()`; i.e.
+        immediately plays back looped audio.&#39;&#39;&#39;
         looped = loop(self, times=times, internal_overhang=internal_overhang,
                       end_overhang=end_overhang, overhang_type=overhang_type)
         play(looped)
 
     def soundtest(self, selection=None, postprocess=True, gap=.5):
+        &#39;&#39;&#39;Calls the sound test method for each Track in the Sequencer; i.e.
+        plays back all the samples being used.&#39;&#39;&#39;
         if selection is None:
             selection = self.tracks()
         else:
@@ -1506,12 +1693,69 @@ the output audio and creates a container for subsidiary tracks.</p></div>
             time.sleep(gap)
 
     def export(self, path, overhang=0, overhang_type=&#39;beats&#39;):
+        &#39;&#39;&#39;
+        Saves the rendered audio to a file.  The Sequencer creates
+        a pydub AudioSegment which contains all Tracks overlaid,
+        and then uses its export method to save.
+
+        See the pydub documentation for more information on exporting.
+
+        Parameters
+        ----------
+        path : system path
+            File path to save the audio to.
+        overhang : int or number, optional
+            How much extra time to render beyond the length
+            (i.e., the `beats`) of the Sequencer. The default is 0.
+            Units are either in beats or in seconds, dependent on the
+            `overhang_type` argument.  This can be useful when there are
+            notes or effects that reverberate beyond the duration of the
+            Sequencer.
+        overhang_type : str -&gt; &#34;beats&#34; or &#34;seconds&#34;, optional
+            Unit for the overhang. The default is &#39;beats&#39;.
+
+        Returns
+        -------
+        None.
+
+        &#39;&#39;&#39;
         _, fmt = os.path.splitext(path)
         build = self.build(overhang, overhang_type)
         build.export(path, format=fmt)
 
     def show(self, printout=True, name_cutoff=None, resolution=1,
              singlenote=&#39;■&#39;, multinote=&#39;■&#39;, empty=&#39;□&#39;, wrap=32):
+        &#39;&#39;&#39;
+        Print (or return) a sequencer grid diagram, showing when
+        each Track contains notes.  For more information, see
+        `wubwub.seqstring.seqstring()`.
+
+        Parameters
+        ----------
+        printout : bool, optional
+            When True (default), print the diagram.  When False,
+            return the string.
+        name_cutoff : int, optional
+            Number of characters to allow track names to be. The default is None.
+        resolution : int or float, optional
+            Determines the frequency of beats to use. The default is 1.
+        singlenote : str, optional
+            Character to use for beats containing single Notes. The default is &#39;■&#39;.
+        multinote : str, optional
+            Character to use for beats containing multiple notes. The default is &#39;■&#39;.
+        empty : str, optional
+            Character to use for beats not containing notes. The default is &#39;□&#39;.
+        wrap : int, optional
+            How many beats (as determined by `resolution`) to show on a single line.
+            The default is 32.
+
+        Returns
+        -------
+        s (str) or None
+            The string diagram is returned if `printout` is `False`, otherwise
+            it is printed and `None` is returned.
+
+        &#39;&#39;&#39;
         s = seqstring(self,
                       name_cutoff=name_cutoff,
                       resolution=resolution,
@@ -1526,6 +1770,28 @@ the output audio and creates a container for subsidiary tracks.</p></div>
 
     def plot(self, timesig=4, grid=True, ax=None, scatter_kwds=None,
              plot_kwds=None):
+        &#39;&#39;&#39;
+        Run `wubwub.plots.sequencerplot()` for this Sequencer.
+
+        timesig : int, optional
+            Sets the ticks/grid to a given frequency of beats. The default is 4.
+        grid : bool, optional
+            Whether to include a grid. The default is True.
+        ax : matplotlib.axes.Axes, optional
+            Axes to create the plot on. The default is None.
+        scatter_kwds : dict, optional
+            Keyword arguments passed to `matplotlib.axes.Axes.scatter`.
+            The default is None.
+        plot_kwds : dict, optional
+            Keyword arguments passed to `matplotlib.axes.Axes.plot`.
+            The default is None.
+
+        Returns
+        -------
+        matplotlib.figure.Figure
+            The Figure containing the axes used.
+
+        &#39;&#39;&#39;
         sequencerplot(self,
                       timesig=timesig,
                       grid=grid,
@@ -2182,12 +2448,59 @@ Track are copied over.</dd>
 <span>def <span class="ident">export</span></span>(<span>self, path, overhang=0, overhang_type='beats')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Saves the rendered audio to a file.
+The Sequencer creates
+a pydub AudioSegment which contains all Tracks overlaid,
+and then uses its export method to save.</p>
+<p>See the pydub documentation for more information on exporting.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>path</code></strong> :&ensp;<code>system path</code></dt>
+<dd>File path to save the audio to.</dd>
+<dt><strong><code>overhang</code></strong> :&ensp;<code>int</code> or <code>number</code>, optional</dt>
+<dd>How much extra time to render beyond the length
+(i.e., the <code>beats</code>) of the Sequencer. The default is 0.
+Units are either in beats or in seconds, dependent on the
+<code>overhang_type</code> argument.
+This can be useful when there are
+notes or effects that reverberate beyond the duration of the
+Sequencer.</dd>
+<dt><strong><code>overhang_type</code></strong> :&ensp;<code>str -&gt; "beats"</code> or <code>"seconds"</code>, optional</dt>
+<dd>Unit for the overhang. The default is 'beats'.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>None.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def export(self, path, overhang=0, overhang_type=&#39;beats&#39;):
+    &#39;&#39;&#39;
+    Saves the rendered audio to a file.  The Sequencer creates
+    a pydub AudioSegment which contains all Tracks overlaid,
+    and then uses its export method to save.
+
+    See the pydub documentation for more information on exporting.
+
+    Parameters
+    ----------
+    path : system path
+        File path to save the audio to.
+    overhang : int or number, optional
+        How much extra time to render beyond the length
+        (i.e., the `beats`) of the Sequencer. The default is 0.
+        Units are either in beats or in seconds, dependent on the
+        `overhang_type` argument.  This can be useful when there are
+        notes or effects that reverberate beyond the duration of the
+        Sequencer.
+    overhang_type : str -&gt; &#34;beats&#34; or &#34;seconds&#34;, optional
+        Unit for the overhang. The default is &#39;beats&#39;.
+
+    Returns
+    -------
+    None.
+
+    &#39;&#39;&#39;
     _, fmt = os.path.splitext(path)
     build = self.build(overhang, overhang_type)
     build.export(path, format=fmt)</code></pre>
@@ -2254,12 +2567,61 @@ itself (provided the Track is part of the current Sequencer).</p>
 <span>def <span class="ident">loop</span></span>(<span>self, times=4, internal_overhang=0, end_overhang=0, overhang_type='beats')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Return a looped rendering of the Sequencer.
+This is akin to
+<code><a title="wubwub.sequencer.Sequencer.build" href="#wubwub.sequencer.Sequencer.build">Sequencer.build()</a></code>, but the content of the Sequencer is repeated
+a specified number of times.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>times</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>How many times to loop. The default is 4.</dd>
+<dt><strong><code>internal_overhang</code></strong> :&ensp;<code>int</code> or <code>float</code>, optional</dt>
+<dd>Determine the length of extra time to render when the loop restarts.
+This can be used to prevent abrubt shortening of sounds near the
+end of the sequence. The default is 0, meaning all sounds are
+cut at the end of the Sequencer length for each loop.</dd>
+<dt><strong><code>end_overhang</code></strong> :&ensp;<code>int</code> or <code>float</code>, optional</dt>
+<dd>Determine the length of extra time to render at the of the audio,
+i.e. after all loops are complete. The default is 0.</dd>
+<dt><strong><code>overhang_type</code></strong> :&ensp;<code>str -&gt; 'beats'</code> or <code>'seconds'</code>, optional</dt>
+<dd>Units for the overhang. The default is 'beats'.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>looped</code></strong> :&ensp;<code>pydub.AudioSegment</code></dt>
+<dd>The looped audio.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def loop(self, times=4, internal_overhang=0, end_overhang=0, overhang_type=&#39;beats&#39;):
+    &#39;&#39;&#39;
+    Return a looped rendering of the Sequencer.  This is akin to
+    `Sequencer.build()`, but the content of the Sequencer is repeated
+    a specified number of times.
+
+    Parameters
+    ----------
+    times : int, optional
+        How many times to loop. The default is 4.
+    internal_overhang : int or float, optional
+        Determine the length of extra time to render when the loop restarts.
+        This can be used to prevent abrubt shortening of sounds near the
+        end of the sequence. The default is 0, meaning all sounds are
+        cut at the end of the Sequencer length for each loop.
+    end_overhang : int or float, optional
+        Determine the length of extra time to render at the of the audio,
+        i.e. after all loops are complete. The default is 0.
+    overhang_type : str -&gt; &#39;beats&#39; or &#39;seconds&#39;, optional
+        Units for the overhang. The default is &#39;beats&#39;.
+
+    Returns
+    -------
+    looped : pydub.AudioSegment
+        The looped audio.
+
+    &#39;&#39;&#39;
     looped = loop(self, times=times, internal_overhang=internal_overhang,
                   end_overhang=end_overhang, overhang_type=overhang_type)
     return looped</code></pre>
@@ -2269,12 +2631,15 @@ itself (provided the Track is part of the current Sequencer).</p>
 <span>def <span class="ident">loopplay</span></span>(<span>self, times=4, internal_overhang=0, end_overhang=0, overhang_type='beats')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Calls <code><a title="wubwub.sequencer.Sequencer.play" href="#wubwub.sequencer.Sequencer.play">Sequencer.play()</a></code> on <code><a title="wubwub.sequencer.Sequencer.loop" href="#wubwub.sequencer.Sequencer.loop">Sequencer.loop()</a></code>; i.e.
+immediately plays back looped audio.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def loopplay(self, times=4, internal_overhang=0, end_overhang=0, overhang_type=&#39;beats&#39;):
+    &#39;&#39;&#39;Calls `Sequencer.play()` on `Sequencer.loop()`; i.e.
+    immediately plays back looped audio.&#39;&#39;&#39;
     looped = loop(self, times=times, internal_overhang=internal_overhang,
                   end_overhang=end_overhang, overhang_type=overhang_type)
     play(looped)</code></pre>
@@ -2284,12 +2649,55 @@ itself (provided the Track is part of the current Sequencer).</p>
 <span>def <span class="ident">play</span></span>(<span>self, start=1, end=None, overhang=0, overhang_type='beats')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Audio playback of the Sequencer.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>start</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Beat to start playback on. The default is 1.</dd>
+<dt><strong><code>end</code></strong> :&ensp;<code>int</code> or <code>None</code>, optional</dt>
+<dd>Beat to end playback on. The default is None.</dd>
+<dt><strong><code>overhang</code></strong> :&ensp;<code>int</code> or <code>number</code>, optional</dt>
+<dd>How much extra time to render beyond the length
+(i.e., the <code>beats</code>) of the Sequencer. The default is 0.
+Units are either in beats or in seconds, dependent on the
+<code>overhang_type</code> argument.
+This can be useful when there are
+notes or effects that reverberate beyond the duration of the
+Sequencer.</dd>
+<dt><strong><code>overhang_type</code></strong> :&ensp;<code>str -&gt; "beats"</code> or <code>"seconds"</code>, optional</dt>
+<dd>Unit for the overhang. The default is 'beats'.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>None.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def play(self, start=1, end=None, overhang=0, overhang_type=&#39;beats&#39;):
+    &#39;&#39;&#39;
+    Audio playback of the Sequencer.
+
+    Parameters
+    ----------
+    start : int, optional
+        Beat to start playback on. The default is 1.
+    end : int or None, optional
+        Beat to end playback on. The default is None.
+    overhang : int or number, optional
+        How much extra time to render beyond the length
+        (i.e., the `beats`) of the Sequencer. The default is 0.
+        Units are either in beats or in seconds, dependent on the
+        `overhang_type` argument.  This can be useful when there are
+        notes or effects that reverberate beyond the duration of the
+        Sequencer.
+    overhang_type : str -&gt; &#34;beats&#34; or &#34;seconds&#34;, optional
+        Unit for the overhang. The default is &#39;beats&#39;.
+
+    Returns
+    -------
+    None.
+
+    &#39;&#39;&#39;
     b = (1/self.bpm) * MINUTE
     start = (start-1) * b
     if end is not None:
@@ -2302,13 +2710,52 @@ itself (provided the Track is part of the current Sequencer).</p>
 <span>def <span class="ident">plot</span></span>(<span>self, timesig=4, grid=True, ax=None, scatter_kwds=None, plot_kwds=None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Run <code><a title="wubwub.plots.sequencerplot" href="plots.html#wubwub.plots.sequencerplot">sequencerplot()</a></code> for this Sequencer.</p>
+<p>timesig : int, optional
+Sets the ticks/grid to a given frequency of beats. The default is 4.
+grid : bool, optional
+Whether to include a grid. The default is True.
+ax : matplotlib.axes.Axes, optional
+Axes to create the plot on. The default is None.
+scatter_kwds : dict, optional
+Keyword arguments passed to <code>matplotlib.axes.Axes.scatter</code>.
+The default is None.
+plot_kwds : dict, optional
+Keyword arguments passed to <code>matplotlib.axes.Axes.plot</code>.
+The default is None.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>matplotlib.figure.Figure</code></dt>
+<dd>The Figure containing the axes used.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def plot(self, timesig=4, grid=True, ax=None, scatter_kwds=None,
          plot_kwds=None):
+    &#39;&#39;&#39;
+    Run `wubwub.plots.sequencerplot()` for this Sequencer.
+
+    timesig : int, optional
+        Sets the ticks/grid to a given frequency of beats. The default is 4.
+    grid : bool, optional
+        Whether to include a grid. The default is True.
+    ax : matplotlib.axes.Axes, optional
+        Axes to create the plot on. The default is None.
+    scatter_kwds : dict, optional
+        Keyword arguments passed to `matplotlib.axes.Axes.scatter`.
+        The default is None.
+    plot_kwds : dict, optional
+        Keyword arguments passed to `matplotlib.axes.Axes.plot`.
+        The default is None.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        The Figure containing the axes used.
+
+    &#39;&#39;&#39;
     sequencerplot(self,
                   timesig=timesig,
                   grid=grid,
@@ -2461,13 +2908,73 @@ shortening the sequence length.</p>
 <span>def <span class="ident">show</span></span>(<span>self, printout=True, name_cutoff=None, resolution=1, singlenote='■', multinote='■', empty='□', wrap=32)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Print (or return) a sequencer grid diagram, showing when
+each Track contains notes.
+For more information, see
+<code><a title="wubwub.seqstring.seqstring" href="seqstring.html#wubwub.seqstring.seqstring">seqstring()</a></code>.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>printout</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>When True (default), print the diagram.
+When False,
+return the string.</dd>
+<dt><strong><code>name_cutoff</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Number of characters to allow track names to be. The default is None.</dd>
+<dt><strong><code>resolution</code></strong> :&ensp;<code>int</code> or <code>float</code>, optional</dt>
+<dd>Determines the frequency of beats to use. The default is 1.</dd>
+<dt><strong><code>singlenote</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Character to use for beats containing single Notes. The default is '■'.</dd>
+<dt><strong><code>multinote</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Character to use for beats containing multiple notes. The default is '■'.</dd>
+<dt><strong><code>empty</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Character to use for beats not containing notes. The default is '□'.</dd>
+<dt><strong><code>wrap</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>How many beats (as determined by <code>resolution</code>) to show on a single line.
+The default is 32.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>s (str)</code> or <code>None</code></dt>
+<dd>The string diagram is returned if <code>printout</code> is <code>False</code>, otherwise
+it is printed and <code>None</code> is returned.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def show(self, printout=True, name_cutoff=None, resolution=1,
          singlenote=&#39;■&#39;, multinote=&#39;■&#39;, empty=&#39;□&#39;, wrap=32):
+    &#39;&#39;&#39;
+    Print (or return) a sequencer grid diagram, showing when
+    each Track contains notes.  For more information, see
+    `wubwub.seqstring.seqstring()`.
+
+    Parameters
+    ----------
+    printout : bool, optional
+        When True (default), print the diagram.  When False,
+        return the string.
+    name_cutoff : int, optional
+        Number of characters to allow track names to be. The default is None.
+    resolution : int or float, optional
+        Determines the frequency of beats to use. The default is 1.
+    singlenote : str, optional
+        Character to use for beats containing single Notes. The default is &#39;■&#39;.
+    multinote : str, optional
+        Character to use for beats containing multiple notes. The default is &#39;■&#39;.
+    empty : str, optional
+        Character to use for beats not containing notes. The default is &#39;□&#39;.
+    wrap : int, optional
+        How many beats (as determined by `resolution`) to show on a single line.
+        The default is 32.
+
+    Returns
+    -------
+    s (str) or None
+        The string diagram is returned if `printout` is `False`, otherwise
+        it is printed and `None` is returned.
+
+    &#39;&#39;&#39;
     s = seqstring(self,
                   name_cutoff=name_cutoff,
                   resolution=resolution,
@@ -2485,12 +2992,15 @@ shortening the sequence length.</p>
 <span>def <span class="ident">soundtest</span></span>(<span>self, selection=None, postprocess=True, gap=0.5)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Calls the sound test method for each Track in the Sequencer; i.e.
+plays back all the samples being used.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def soundtest(self, selection=None, postprocess=True, gap=.5):
+    &#39;&#39;&#39;Calls the sound test method for each Track in the Sequencer; i.e.
+    plays back all the samples being used.&#39;&#39;&#39;
     if selection is None:
         selection = self.tracks()
     else:

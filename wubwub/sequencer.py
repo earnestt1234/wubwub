@@ -724,6 +724,32 @@ class Sequencer:
         Print (or return) a sequencer grid diagram, showing when
         each Track contains notes.  For more information, see
         `wubwub.seqstring.seqstring()`.
+
+        Parameters
+        ----------
+        printout : bool, optional
+            When True (default), print the diagram.  When False,
+            return the string.
+        name_cutoff : int, optional
+            Number of characters to allow track names to be. The default is None.
+        resolution : int or float, optional
+            Determines the frequency of beats to use. The default is 1.
+        singlenote : str, optional
+            Character to use for beats containing single Notes. The default is '■'.
+        multinote : str, optional
+            Character to use for beats containing multiple notes. The default is '■'.
+        empty : str, optional
+            Character to use for beats not containing notes. The default is '□'.
+        wrap : int, optional
+            How many beats (as determined by `resolution`) to show on a single line.
+            The default is 32.
+
+        Returns
+        -------
+        s (str) or None
+            The string diagram is returned if `printout` is `False`, otherwise
+            it is printed and `None` is returned.
+
         '''
         s = seqstring(self,
                       name_cutoff=name_cutoff,
@@ -739,6 +765,28 @@ class Sequencer:
 
     def plot(self, timesig=4, grid=True, ax=None, scatter_kwds=None,
              plot_kwds=None):
+        '''
+        Run `wubwub.plots.sequencerplot()` for this Sequencer.
+
+        timesig : int, optional
+            Sets the ticks/grid to a given frequency of beats. The default is 4.
+        grid : bool, optional
+            Whether to include a grid. The default is True.
+        ax : matplotlib.axes.Axes, optional
+            Axes to create the plot on. The default is None.
+        scatter_kwds : dict, optional
+            Keyword arguments passed to `matplotlib.axes.Axes.scatter`.
+            The default is None.
+        plot_kwds : dict, optional
+            Keyword arguments passed to `matplotlib.axes.Axes.plot`.
+            The default is None.
+
+        Returns
+        -------
+        matplotlib.figure.Figure
+            The Figure containing the axes used.
+
+        '''
         sequencerplot(self,
                       timesig=timesig,
                       grid=grid,

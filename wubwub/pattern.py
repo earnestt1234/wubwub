@@ -65,6 +65,9 @@ class Pattern:
         self.length = newl
         return self
 
+    def __len__(self):
+        return len(self.pattern)
+
     def merge(self, other):
         newp = self.pattern.copy()
         for p in other.pattern:
