@@ -26,82 +26,6 @@
 <p>The diagram is essentially a boolean grid, where the rows are Tracks and the
 columns are beats. Cells are filled when the given Track contains a Note/Chord
 on the given beat.</p>
-<p>Here is an example beat:</p>
-<pre><code class="python">import wubwub as wb
-import wubwub.sounds as snd
-
-# load sounds
-DRUMS = snd.load('drums.808')
-
-# create a sequencer and add tracks
-seq = wb.Sequencer(bpm=120, beats=8)
-kick = seq.add_sampler(DRUMS['kick1'], name='Kick')
-clap = seq.add_sampler(DRUMS['handclap'], name='Clap')
-hat = seq.add_sampler(DRUMS['closed_hihat'], name='HiHat')
-rim = seq.add_sampler(DRUMS['rimshot'], name='Rim')
-
-# add notes
-kick.make_notes_every(1)
-clap.make_notes_every(2, offset=1)
-hat.make_notes_every(.5)
-rimpattern = wb.Pattern([1, 1.25, 1.5,
-                         2,
-                         3, 3.25, 3.75,
-                         4, 4.5], length=4)
-rim[rimpattern * 2] = wb.Note()
-
-</code></pre>
-<p>Sequencers have a <code><a title="wubwub.sequencer.Sequencer.show" href="sequencer.html#wubwub.sequencer.Sequencer.show">Sequencer.show()</a></code> method, which
-calls <code><a title="wubwub.seqstring.seqstring" href="#wubwub.seqstring.seqstring">seqstring()</a></code> and prints the output.</p>
-<pre><code class="python">&gt;&gt;&gt; seq.show()
-      1 2 3 4 5 6 7 8
- Kick ■ ■ ■ ■ ■ ■ ■ ■
- Clap □ ■ □ ■ □ ■ □ ■
-HiHat ■ ■ ■ ■ ■ ■ ■ ■
-  Rim ■ ■ ■ ■ ■ ■ ■ ■
-
-</code></pre>
-<p>By default, the seqstring's resolution is equal to the <code>beats</code> attribute
-of the Sequencer.
-The Track names are determined by the <code>name</code> attribute
-of each Track.</p>
-<p>You can increase the resolution to see the hihat and rimshot patterns:</p>
-<pre><code class="python">&gt;&gt;&gt; seq.show(resolution = 1/4)
-      1       2       3       4       5       6       7       8
- Kick ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □
- Clap □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □
-HiHat ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □
-  Rim ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □ ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □
-
-</code></pre>
-<p>Note that <code>1/4</code> here means 1/4 of each beat in the Sequencer; not a "quarter note".
-Since this beat is basically common time, <code>1/4</code> is essentially sixteenth-notes.</p>
-<p>You can change the symbols used, for beats with one note, multiple notes,
-or no notes:</p>
-<pre><code class="python">&gt;&gt;&gt; seq.show(singlenote='.', multinote = 'o', empty = ' ')
-      1 2 3 4 5 6 7 8
- Kick . . . . . . . .
- Clap   .   .   .   .
-HiHat o o o o o o o o
-  Rim o . o o o . o o
-
-</code></pre>
-<p>You can also set the wrap length (the number of boxes per line, as determined
-by the <code>resolution</code>):</p>
-<pre><code class="python">&gt;&gt;&gt; seq.show(resolution=1/4, wrap=16)
-      1       2       3       4          \
- Kick ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □
- Clap □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □
-HiHat ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □
-  Rim ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □
-
-      5       6       7       8
- Kick ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □
- Clap □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □
-HiHat ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □
-  Rim ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □
-
-</code></pre>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -114,97 +38,6 @@ Create string diagrams showing the content of a Sequencer.
 The diagram is essentially a boolean grid, where the rows are Tracks and the
 columns are beats. Cells are filled when the given Track contains a Note/Chord
 on the given beat.
-
-Here is an example beat:
-
-```python
-import wubwub as wb
-import wubwub.sounds as snd
-
-# load sounds
-DRUMS = snd.load(&#39;drums.808&#39;)
-
-# create a sequencer and add tracks
-seq = wb.Sequencer(bpm=120, beats=8)
-kick = seq.add_sampler(DRUMS[&#39;kick1&#39;], name=&#39;Kick&#39;)
-clap = seq.add_sampler(DRUMS[&#39;handclap&#39;], name=&#39;Clap&#39;)
-hat = seq.add_sampler(DRUMS[&#39;closed_hihat&#39;], name=&#39;HiHat&#39;)
-rim = seq.add_sampler(DRUMS[&#39;rimshot&#39;], name=&#39;Rim&#39;)
-
-# add notes
-kick.make_notes_every(1)
-clap.make_notes_every(2, offset=1)
-hat.make_notes_every(.5)
-rimpattern = wb.Pattern([1, 1.25, 1.5,
-                         2,
-                         3, 3.25, 3.75,
-                         4, 4.5], length=4)
-rim[rimpattern * 2] = wb.Note()
-
-```
-
-Sequencers have a `wubwub.sequencer.Sequencer.show()` method, which
-calls `seqstring()` and prints the output.
-
-```python
-&gt;&gt;&gt; seq.show()
-      1 2 3 4 5 6 7 8
- Kick ■ ■ ■ ■ ■ ■ ■ ■
- Clap □ ■ □ ■ □ ■ □ ■
-HiHat ■ ■ ■ ■ ■ ■ ■ ■
-  Rim ■ ■ ■ ■ ■ ■ ■ ■
-
-```
-
-By default, the seqstring&#39;s resolution is equal to the `beats` attribute
-of the Sequencer.  The Track names are determined by the `name` attribute
-of each Track.
-
-You can increase the resolution to see the hihat and rimshot patterns:
-
-```python
-&gt;&gt;&gt; seq.show(resolution = 1/4)
-      1       2       3       4       5       6       7       8
- Kick ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □
- Clap □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □
-HiHat ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □
-  Rim ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □ ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □
-
-```
-Note that `1/4` here means 1/4 of each beat in the Sequencer; not a &#34;quarter note&#34;.
-Since this beat is basically common time, `1/4` is essentially sixteenth-notes.
-
-You can change the symbols used, for beats with one note, multiple notes,
-or no notes:
-
-```python
-&gt;&gt;&gt; seq.show(singlenote=&#39;.&#39;, multinote = &#39;o&#39;, empty = &#39; &#39;)
-      1 2 3 4 5 6 7 8
- Kick . . . . . . . .
- Clap   .   .   .   .
-HiHat o o o o o o o o
-  Rim o . o o o . o o
-
-```
-
-You can also set the wrap length (the number of boxes per line, as determined
-by the `resolution`):
-
-```python
-&gt;&gt;&gt; seq.show(resolution=1/4, wrap=16)
-      1       2       3       4          \\
- Kick ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □
- Clap □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □
-HiHat ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □
-  Rim ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □
-
-      5       6       7       8
- Kick ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □
- Clap □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □
-HiHat ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □
-  Rim ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □
-
-```
 
 &#34;&#34;&#34;
 
@@ -247,6 +80,99 @@ def seqstring(sequencer, name_cutoff=None, resolution=1, singlenote=&#39;■&#39
     -------
     str
         The string diagram.
+
+    Examples
+    --------
+
+    Here is an example beat:
+
+    ```python
+    import wubwub as wb
+    import wubwub.sounds as snd
+
+    # load sounds
+    DRUMS = snd.load(&#39;drums.808&#39;)
+
+    # create a sequencer and add tracks
+    seq = wb.Sequencer(bpm=120, beats=8)
+    kick = seq.add_sampler(DRUMS[&#39;kick1&#39;], name=&#39;Kick&#39;)
+    clap = seq.add_sampler(DRUMS[&#39;handclap&#39;], name=&#39;Clap&#39;)
+    hat = seq.add_sampler(DRUMS[&#39;closed_hihat&#39;], name=&#39;HiHat&#39;)
+    rim = seq.add_sampler(DRUMS[&#39;rimshot&#39;], name=&#39;Rim&#39;)
+
+    # add notes
+    kick.make_notes_every(1)
+    clap.make_notes_every(2, offset=1)
+    hat.make_notes_every(.5)
+    rimpattern = wb.Pattern([1, 1.25, 1.5,
+                             2,
+                             3, 3.25, 3.75,
+                             4, 4.5], length=4)
+    rim[rimpattern * 2] = wb.Note()
+
+    ```
+
+    Sequencers have a `wubwub.sequencer.Sequencer.show()` method, which
+    calls `seqstring()` and prints the output.
+
+    ```python
+    &gt;&gt;&gt; seq.show()
+          1 2 3 4 5 6 7 8
+     Kick ■ ■ ■ ■ ■ ■ ■ ■
+     Clap □ ■ □ ■ □ ■ □ ■
+    HiHat ■ ■ ■ ■ ■ ■ ■ ■
+      Rim ■ ■ ■ ■ ■ ■ ■ ■
+
+    ```
+
+    By default, the seqstring&#39;s resolution is equal to the `beats` attribute
+    of the Sequencer.  The Track names are determined by the `name` attribute
+    of each Track.
+
+    You can increase the resolution to see the hihat and rimshot patterns:
+
+    ```python
+    &gt;&gt;&gt; seq.show(resolution = 1/4)
+          1       2       3       4       5       6       7       8
+     Kick ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □
+     Clap □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □
+    HiHat ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □
+      Rim ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □ ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □
+
+    ```
+    Note that `1/4` here means 1/4 of each beat in the Sequencer; not a &#34;quarter note&#34;.
+    Since this beat is basically common time, `1/4` is essentially sixteenth-notes.
+
+    You can change the symbols used, for beats with one note, multiple notes,
+    or no notes:
+
+    ```python
+    &gt;&gt;&gt; seq.show(singlenote=&#39;.&#39;, multinote = &#39;o&#39;, empty = &#39; &#39;)
+          1 2 3 4 5 6 7 8
+     Kick . . . . . . . .
+     Clap   .   .   .   .
+    HiHat o o o o o o o o
+      Rim o . o o o . o o
+
+    ```
+
+    You can also set the wrap length (the number of boxes per line, as determined
+    by the `resolution`):
+
+    ```python
+    &gt;&gt;&gt; seq.show(resolution=1/4, wrap=16)
+          1       2       3       4          \\
+     Kick ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □
+     Clap □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □
+    HiHat ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □
+      Rim ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □
+
+          5       6       7       8
+     Kick ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □
+     Clap □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □
+    HiHat ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □
+      Rim ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □
+    ```
 
     &#39;&#39;&#39;
     tracknames = []
@@ -359,7 +285,83 @@ The default is 32.</dd>
 <dl>
 <dt><code>str</code></dt>
 <dd>The string diagram.</dd>
-</dl></div>
+</dl>
+<h2 id="examples">Examples</h2>
+<p>Here is an example beat:</p>
+<pre><code class="python">import wubwub as wb
+import wubwub.sounds as snd
+
+# load sounds
+DRUMS = snd.load('drums.808')
+
+# create a sequencer and add tracks
+seq = wb.Sequencer(bpm=120, beats=8)
+kick = seq.add_sampler(DRUMS['kick1'], name='Kick')
+clap = seq.add_sampler(DRUMS['handclap'], name='Clap')
+hat = seq.add_sampler(DRUMS['closed_hihat'], name='HiHat')
+rim = seq.add_sampler(DRUMS['rimshot'], name='Rim')
+
+# add notes
+kick.make_notes_every(1)
+clap.make_notes_every(2, offset=1)
+hat.make_notes_every(.5)
+rimpattern = wb.Pattern([1, 1.25, 1.5,
+                         2,
+                         3, 3.25, 3.75,
+                         4, 4.5], length=4)
+rim[rimpattern * 2] = wb.Note()
+
+</code></pre>
+<p>Sequencers have a <code><a title="wubwub.sequencer.Sequencer.show" href="sequencer.html#wubwub.sequencer.Sequencer.show">Sequencer.show()</a></code> method, which
+calls <code><a title="wubwub.seqstring.seqstring" href="#wubwub.seqstring.seqstring">seqstring()</a></code> and prints the output.</p>
+<pre><code class="python">&gt;&gt;&gt; seq.show()
+      1 2 3 4 5 6 7 8
+ Kick ■ ■ ■ ■ ■ ■ ■ ■
+ Clap □ ■ □ ■ □ ■ □ ■
+HiHat ■ ■ ■ ■ ■ ■ ■ ■
+  Rim ■ ■ ■ ■ ■ ■ ■ ■
+
+</code></pre>
+<p>By default, the seqstring's resolution is equal to the <code>beats</code> attribute
+of the Sequencer.
+The Track names are determined by the <code>name</code> attribute
+of each Track.</p>
+<p>You can increase the resolution to see the hihat and rimshot patterns:</p>
+<pre><code class="python">&gt;&gt;&gt; seq.show(resolution = 1/4)
+      1       2       3       4       5       6       7       8
+ Kick ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □
+ Clap □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □
+HiHat ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □
+  Rim ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □ ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □
+
+</code></pre>
+<p>Note that <code>1/4</code> here means 1/4 of each beat in the Sequencer; not a "quarter note".
+Since this beat is basically common time, <code>1/4</code> is essentially sixteenth-notes.</p>
+<p>You can change the symbols used, for beats with one note, multiple notes,
+or no notes:</p>
+<pre><code class="python">&gt;&gt;&gt; seq.show(singlenote='.', multinote = 'o', empty = ' ')
+      1 2 3 4 5 6 7 8
+ Kick . . . . . . . .
+ Clap   .   .   .   .
+HiHat o o o o o o o o
+  Rim o . o o o . o o
+
+</code></pre>
+<p>You can also set the wrap length (the number of boxes per line, as determined
+by the <code>resolution</code>):</p>
+<pre><code class="python">&gt;&gt;&gt; seq.show(resolution=1/4, wrap=16)
+      1       2       3       4          \
+ Kick ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □
+ Clap □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □
+HiHat ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □
+  Rim ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □
+
+      5       6       7       8
+ Kick ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □
+ Clap □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □
+HiHat ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □
+  Rim ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -399,6 +401,99 @@ The default is 32.</dd>
     -------
     str
         The string diagram.
+
+    Examples
+    --------
+
+    Here is an example beat:
+
+    ```python
+    import wubwub as wb
+    import wubwub.sounds as snd
+
+    # load sounds
+    DRUMS = snd.load(&#39;drums.808&#39;)
+
+    # create a sequencer and add tracks
+    seq = wb.Sequencer(bpm=120, beats=8)
+    kick = seq.add_sampler(DRUMS[&#39;kick1&#39;], name=&#39;Kick&#39;)
+    clap = seq.add_sampler(DRUMS[&#39;handclap&#39;], name=&#39;Clap&#39;)
+    hat = seq.add_sampler(DRUMS[&#39;closed_hihat&#39;], name=&#39;HiHat&#39;)
+    rim = seq.add_sampler(DRUMS[&#39;rimshot&#39;], name=&#39;Rim&#39;)
+
+    # add notes
+    kick.make_notes_every(1)
+    clap.make_notes_every(2, offset=1)
+    hat.make_notes_every(.5)
+    rimpattern = wb.Pattern([1, 1.25, 1.5,
+                             2,
+                             3, 3.25, 3.75,
+                             4, 4.5], length=4)
+    rim[rimpattern * 2] = wb.Note()
+
+    ```
+
+    Sequencers have a `wubwub.sequencer.Sequencer.show()` method, which
+    calls `seqstring()` and prints the output.
+
+    ```python
+    &gt;&gt;&gt; seq.show()
+          1 2 3 4 5 6 7 8
+     Kick ■ ■ ■ ■ ■ ■ ■ ■
+     Clap □ ■ □ ■ □ ■ □ ■
+    HiHat ■ ■ ■ ■ ■ ■ ■ ■
+      Rim ■ ■ ■ ■ ■ ■ ■ ■
+
+    ```
+
+    By default, the seqstring&#39;s resolution is equal to the `beats` attribute
+    of the Sequencer.  The Track names are determined by the `name` attribute
+    of each Track.
+
+    You can increase the resolution to see the hihat and rimshot patterns:
+
+    ```python
+    &gt;&gt;&gt; seq.show(resolution = 1/4)
+          1       2       3       4       5       6       7       8
+     Kick ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □
+     Clap □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □
+    HiHat ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □
+      Rim ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □ ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □
+
+    ```
+    Note that `1/4` here means 1/4 of each beat in the Sequencer; not a &#34;quarter note&#34;.
+    Since this beat is basically common time, `1/4` is essentially sixteenth-notes.
+
+    You can change the symbols used, for beats with one note, multiple notes,
+    or no notes:
+
+    ```python
+    &gt;&gt;&gt; seq.show(singlenote=&#39;.&#39;, multinote = &#39;o&#39;, empty = &#39; &#39;)
+          1 2 3 4 5 6 7 8
+     Kick . . . . . . . .
+     Clap   .   .   .   .
+    HiHat o o o o o o o o
+      Rim o . o o o . o o
+
+    ```
+
+    You can also set the wrap length (the number of boxes per line, as determined
+    by the `resolution`):
+
+    ```python
+    &gt;&gt;&gt; seq.show(resolution=1/4, wrap=16)
+          1       2       3       4          \\
+     Kick ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □
+     Clap □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □
+    HiHat ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □
+      Rim ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □
+
+          5       6       7       8
+     Kick ■ □ □ □ ■ □ □ □ ■ □ □ □ ■ □ □ □
+     Clap □ □ □ □ ■ □ □ □ □ □ □ □ ■ □ □ □
+    HiHat ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □ ■ □
+      Rim ■ ■ ■ □ ■ □ □ □ ■ ■ □ ■ ■ □ ■ □
+    ```
 
     &#39;&#39;&#39;
     tracknames = []

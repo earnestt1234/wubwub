@@ -460,8 +460,8 @@ class Sequencer:
 
         >>> b.show()
               1 2 3 4 5
-         kick □ ■ □ □ ■
-        snare ■ □ ■ □ □
+         kick □ ■ □ ■ □
+        snare ■ □ ■ □ ■
         ```
 
         '''
@@ -480,7 +480,7 @@ class Sequencer:
             anotes = selftrack.slice[a1:a2]
             atrack.add_fromdict(anotes)
             bnotes = selftrack.slice[b1:b2]
-            btrack.add_fromdict(bnotes, offset=-b.beats)
+            btrack.add_fromdict(bnotes, offset=(-beat + 1))
 
         return a, b
 

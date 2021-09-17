@@ -491,8 +491,8 @@ class Sequencer:
 
         &gt;&gt;&gt; b.show()
               1 2 3 4 5
-         kick □ ■ □ □ ■
-        snare ■ □ ■ □ □
+         kick □ ■ □ ■ □
+        snare ■ □ ■ □ ■
         ```
 
         &#39;&#39;&#39;
@@ -511,7 +511,7 @@ class Sequencer:
             anotes = selftrack.slice[a1:a2]
             atrack.add_fromdict(anotes)
             bnotes = selftrack.slice[b1:b2]
-            btrack.add_fromdict(bnotes, offset=-b.beats)
+            btrack.add_fromdict(bnotes, offset=(-beat + 1))
 
         return a, b
 
@@ -1465,8 +1465,8 @@ the output audio and creates a container for subsidiary tracks.</p></div>
 
         &gt;&gt;&gt; b.show()
               1 2 3 4 5
-         kick □ ■ □ □ ■
-        snare ■ □ ■ □ □
+         kick □ ■ □ ■ □
+        snare ■ □ ■ □ ■
         ```
 
         &#39;&#39;&#39;
@@ -1485,7 +1485,7 @@ the output audio and creates a container for subsidiary tracks.</p></div>
             anotes = selftrack.slice[a1:a2]
             atrack.add_fromdict(anotes)
             bnotes = selftrack.slice[b1:b2]
-            btrack.add_fromdict(bnotes, offset=-b.beats)
+            btrack.add_fromdict(bnotes, offset=(-beat + 1))
 
         return a, b
 
@@ -3062,8 +3062,8 @@ snare □ ■ □
 
 &gt;&gt;&gt; b.show()
       1 2 3 4 5
- kick □ ■ □ □ ■
-snare ■ □ ■ □ □
+ kick □ ■ □ ■ □
+snare ■ □ ■ □ ■
 </code></pre></div>
 <details class="source">
 <summary>
@@ -3118,8 +3118,8 @@ snare ■ □ ■ □ □
 
     &gt;&gt;&gt; b.show()
           1 2 3 4 5
-     kick □ ■ □ □ ■
-    snare ■ □ ■ □ □
+     kick □ ■ □ ■ □
+    snare ■ □ ■ □ ■
     ```
 
     &#39;&#39;&#39;
@@ -3138,7 +3138,7 @@ snare ■ □ ■ □ □
         anotes = selftrack.slice[a1:a2]
         atrack.add_fromdict(anotes)
         bnotes = selftrack.slice[b1:b2]
-        btrack.add_fromdict(bnotes, offset=-b.beats)
+        btrack.add_fromdict(bnotes, offset=(-beat + 1))
 
     return a, b</code></pre>
 </details>
