@@ -796,6 +796,51 @@ class Sequencer:
 
 
 def stitch(sequencers, internal_overhang=0, end_overhang=0, overhang_type='beats'):
+    """
+    Take a list of Sequencers, and concatenate the audio produced by each one.
+    A pydub `AudioSegment` is returned, which is the concatenation of
+    the outputs of each Sequencer's `build()` method.
+
+    Parameters
+    ----------
+    sequencers : list-like
+        Sequencers to use.
+    internal_overhang : int or float, optional
+        Determine the length of extra time to render when the loop restarts.
+        This can be used to prevent abrubt shortening of sounds near the
+        end of the sequence. The default is 0, meaning all sounds are
+        cut at the end of the Sequencer length for each loop.
+    end_overhang : int or float, optional
+        Determine the length of extra time to render at the of the audio,
+        i.e. after all loops are complete. The default is 0.
+    overhang_type : str -> 'beats' or 'seconds', optional
+        Units for the overhang. The default is 'beats'.
+
+    Returns
+    -------
+    stitched : pydub.AudioSegment
+        AudioSegment of the stitched audio.
+
+    Examples
+    --------
+
+    ```python
+    import wubwub as wb
+
+    # init some dummy Sequencers
+    a = wb.Sequencer(beats=8, bpm=120)
+    b = wb.Sequencer(beats=4, bpm=120)
+
+    # stitch is used to concatenate their audio (empty here)
+    stitched = wb.stitch([a, b])
+
+    # with no end_overhang, the length should be equal to the sum of lengths
+    print(len(stitched) == len(a.build()) + len(b.build()))
+    # True
+
+    ```
+
+    """
     total_length = 0
     current = 0
     sectionstarts = []
@@ -815,6 +860,9 @@ def stitch(sequencers, internal_overhang=0, end_overhang=0, overhang_type='beats
     return stitched
 
 def _matchesforjoin(oldtracks, newtrack, on='name'):
+    '''Helper method for joining two Sequencers.  Given a list of tracks
+    (from one Sequencer) and a test track (from a different Sequencer), tries
+    to return a matching track.'''
     ons = ['name', 'sample', 'sample+type']
     if on not in ons:
         raise WubWubError(f'`on` must be selected from {ons}')
@@ -855,6 +903,8 @@ def join(sequencers, on='name'):
     return out
 
 def loop(sequencer, times=4, internal_overhang=0, end_overhang=0, overhang_type='beats'):
+    '''Calls `stitch()` on one Sequencer multiple times, to create a looped
+    AudioSegment.'''
 
     return stitch([sequencer] * times,
                   internal_overhang,
