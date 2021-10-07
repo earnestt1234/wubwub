@@ -14,6 +14,9 @@ from pydub.playback import play as _play
 from wubwub.errors import WubWubError
 from wubwub.pitch import relative_pitch_to_int, shift_pitch
 
+__pdoc__ = {'add_note_to_audio': False,
+            'add_effects': False}
+
 def add_note_to_audio(note, audio, sample, position, duration, basepitch=None,
                       fade=10, shift=True):
     if shift:

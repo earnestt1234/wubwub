@@ -48,7 +48,7 @@ from wubwub.resources import MINUTE, unique_name
 from wubwub.seqstring import seqstring
 from wubwub.tracks import Sampler, Arpeggiator, MultiSampler
 
-__all__ = (&#39;Sequencer&#39;, &#39;stitch&#39;, &#39;join&#39;, &#39;loop&#39;)
+__all__ = [&#39;Sequencer&#39;, &#39;stitch&#39;, &#39;join&#39;, &#39;loop&#39;]
 
 class Sequencer:
     &#39;&#39;&#39;
@@ -827,6 +827,51 @@ class Sequencer:
 
 
 def stitch(sequencers, internal_overhang=0, end_overhang=0, overhang_type=&#39;beats&#39;):
+    &#34;&#34;&#34;
+    Take a list of Sequencers, and concatenate the audio produced by each one.
+    A pydub `AudioSegment` is returned, which is the concatenation of
+    the outputs of each Sequencer&#39;s `build()` method.
+
+    Parameters
+    ----------
+    sequencers : list-like
+        Sequencers to use.
+    internal_overhang : int or float, optional
+        Determine the length of extra time to render when the loop restarts.
+        This can be used to prevent abrubt shortening of sounds near the
+        end of the sequence. The default is 0, meaning all sounds are
+        cut at the end of the Sequencer length for each loop.
+    end_overhang : int or float, optional
+        Determine the length of extra time to render at the of the audio,
+        i.e. after all loops are complete. The default is 0.
+    overhang_type : str -&gt; &#39;beats&#39; or &#39;seconds&#39;, optional
+        Units for the overhang. The default is &#39;beats&#39;.
+
+    Returns
+    -------
+    stitched : pydub.AudioSegment
+        AudioSegment of the stitched audio.
+
+    Examples
+    --------
+
+    ```python
+    import wubwub as wb
+
+    # init some dummy Sequencers
+    a = wb.Sequencer(beats=8, bpm=120)
+    b = wb.Sequencer(beats=4, bpm=120)
+
+    # stitch is used to concatenate their audio (empty here)
+    stitched = wb.stitch([a, b])
+
+    # with no end_overhang, the length should be equal to the sum of lengths
+    print(len(stitched) == len(a.build()) + len(b.build()))
+    # True
+
+    ```
+
+    &#34;&#34;&#34;
     total_length = 0
     current = 0
     sectionstarts = []
@@ -846,6 +891,9 @@ def stitch(sequencers, internal_overhang=0, end_overhang=0, overhang_type=&#39;b
     return stitched
 
 def _matchesforjoin(oldtracks, newtrack, on=&#39;name&#39;):
+    &#39;&#39;&#39;Helper method for joining two Sequencers.  Given a list of tracks
+    (from one Sequencer) and a test track (from a different Sequencer), tries
+    to return a matching track.&#39;&#39;&#39;
     ons = [&#39;name&#39;, &#39;sample&#39;, &#39;sample+type&#39;]
     if on not in ons:
         raise WubWubError(f&#39;`on` must be selected from {ons}&#39;)
@@ -860,6 +908,31 @@ def _matchesforjoin(oldtracks, newtrack, on=&#39;name&#39;):
     return []
 
 def join(sequencers, on=&#39;name&#39;):
+    &#39;&#39;&#39;
+    Combine multiple Sequencers into a single Sequencer.  The function
+    tries to match Tracks based on either the name or sample (see the `on`
+    parameter).  If a Track cannot be matched, it is kept as a separate
+    entity. This hopefully works well for re-merging Sequencers created
+    by `split()`, but may not work as well when merging very different
+    Sequencers (please report any issues).
+
+    Parameters
+    ----------
+    sequencers : list-like
+        List of Sequencers to join.
+    on : str, &#34;name&#34;, &#34;sample&#34;, or &#34;sample+type&#34;, optional
+        Method to use for matching Tracks between adjacent Sequencers.
+        If &#39;name&#39; (default), match based on the Track name.  If &#39;sample&#39;,
+        match based on equivalence of the `sample` attribute. If `sample+type`,
+        match based on the sample, but also on the Track being of the same
+        class.
+
+    Returns
+    -------
+    out : wubwub.sequencer.Sequencer
+        The joined Sequencers.
+
+    &#39;&#39;&#39;
     beats = sum(seq.beats for seq in sequencers)
     out = Sequencer(bpm=sequencers[0].bpm, beats=beats)
     offset = 0
@@ -886,6 +959,8 @@ def join(sequencers, on=&#39;name&#39;):
     return out
 
 def loop(sequencer, times=4, internal_overhang=0, end_overhang=0, overhang_type=&#39;beats&#39;):
+    &#39;&#39;&#39;Calls `stitch()` on one Sequencer multiple times, to create a looped
+    AudioSegment.&#39;&#39;&#39;
 
     return stitch([sequencer] * times,
                   internal_overhang,
@@ -904,12 +979,61 @@ def loop(sequencer, times=4, internal_overhang=0, end_overhang=0, overhang_type=
 <span>def <span class="ident">join</span></span>(<span>sequencers, on='name')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Combine multiple Sequencers into a single Sequencer.
+The function
+tries to match Tracks based on either the name or sample (see the <code>on</code>
+parameter).
+If a Track cannot be matched, it is kept as a separate
+entity. This hopefully works well for re-merging Sequencers created
+by <code>split()</code>, but may not work as well when merging very different
+Sequencers (please report any issues).</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>sequencers</code></strong> :&ensp;<code>list-like</code></dt>
+<dd>List of Sequencers to join.</dd>
+<dt><strong><code>on</code></strong> :&ensp;<code>str, "name", "sample",</code> or <code>"sample+type"</code>, optional</dt>
+<dd>Method to use for matching Tracks between adjacent Sequencers.
+If 'name' (default), match based on the Track name.
+If 'sample',
+match based on equivalence of the <code>sample</code> attribute. If <code>sample+type</code>,
+match based on the sample, but also on the Track being of the same
+class.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>out</code></strong> :&ensp;<code><a title="wubwub.sequencer.Sequencer" href="#wubwub.sequencer.Sequencer">Sequencer</a></code></dt>
+<dd>The joined Sequencers.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def join(sequencers, on=&#39;name&#39;):
+    &#39;&#39;&#39;
+    Combine multiple Sequencers into a single Sequencer.  The function
+    tries to match Tracks based on either the name or sample (see the `on`
+    parameter).  If a Track cannot be matched, it is kept as a separate
+    entity. This hopefully works well for re-merging Sequencers created
+    by `split()`, but may not work as well when merging very different
+    Sequencers (please report any issues).
+
+    Parameters
+    ----------
+    sequencers : list-like
+        List of Sequencers to join.
+    on : str, &#34;name&#34;, &#34;sample&#34;, or &#34;sample+type&#34;, optional
+        Method to use for matching Tracks between adjacent Sequencers.
+        If &#39;name&#39; (default), match based on the Track name.  If &#39;sample&#39;,
+        match based on equivalence of the `sample` attribute. If `sample+type`,
+        match based on the sample, but also on the Track being of the same
+        class.
+
+    Returns
+    -------
+    out : wubwub.sequencer.Sequencer
+        The joined Sequencers.
+
+    &#39;&#39;&#39;
     beats = sum(seq.beats for seq in sequencers)
     out = Sequencer(bpm=sequencers[0].bpm, beats=beats)
     offset = 0
@@ -940,12 +1064,15 @@ def loop(sequencer, times=4, internal_overhang=0, end_overhang=0, overhang_type=
 <span>def <span class="ident">loop</span></span>(<span>sequencer, times=4, internal_overhang=0, end_overhang=0, overhang_type='beats')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Calls <code><a title="wubwub.sequencer.stitch" href="#wubwub.sequencer.stitch">stitch()</a></code> on one Sequencer multiple times, to create a looped
+AudioSegment.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def loop(sequencer, times=4, internal_overhang=0, end_overhang=0, overhang_type=&#39;beats&#39;):
+    &#39;&#39;&#39;Calls `stitch()` on one Sequencer multiple times, to create a looped
+    AudioSegment.&#39;&#39;&#39;
 
     return stitch([sequencer] * times,
                   internal_overhang,
@@ -957,12 +1084,94 @@ def loop(sequencer, times=4, internal_overhang=0, end_overhang=0, overhang_type=
 <span>def <span class="ident">stitch</span></span>(<span>sequencers, internal_overhang=0, end_overhang=0, overhang_type='beats')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Take a list of Sequencers, and concatenate the audio produced by each one.
+A pydub <code>AudioSegment</code> is returned, which is the concatenation of
+the outputs of each Sequencer's <code>build()</code> method.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>sequencers</code></strong> :&ensp;<code>list-like</code></dt>
+<dd>Sequencers to use.</dd>
+<dt><strong><code>internal_overhang</code></strong> :&ensp;<code>int</code> or <code>float</code>, optional</dt>
+<dd>Determine the length of extra time to render when the loop restarts.
+This can be used to prevent abrubt shortening of sounds near the
+end of the sequence. The default is 0, meaning all sounds are
+cut at the end of the Sequencer length for each loop.</dd>
+<dt><strong><code>end_overhang</code></strong> :&ensp;<code>int</code> or <code>float</code>, optional</dt>
+<dd>Determine the length of extra time to render at the of the audio,
+i.e. after all loops are complete. The default is 0.</dd>
+<dt><strong><code>overhang_type</code></strong> :&ensp;<code>str -&gt; 'beats'</code> or <code>'seconds'</code>, optional</dt>
+<dd>Units for the overhang. The default is 'beats'.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>stitched</code></strong> :&ensp;<code>pydub.AudioSegment</code></dt>
+<dd>AudioSegment of the stitched audio.</dd>
+</dl>
+<h2 id="examples">Examples</h2>
+<pre><code class="python">import wubwub as wb
+
+# init some dummy Sequencers
+a = wb.Sequencer(beats=8, bpm=120)
+b = wb.Sequencer(beats=4, bpm=120)
+
+# stitch is used to concatenate their audio (empty here)
+stitched = wb.stitch([a, b])
+
+# with no end_overhang, the length should be equal to the sum of lengths
+print(len(stitched) == len(a.build()) + len(b.build()))
+# True
+
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def stitch(sequencers, internal_overhang=0, end_overhang=0, overhang_type=&#39;beats&#39;):
+    &#34;&#34;&#34;
+    Take a list of Sequencers, and concatenate the audio produced by each one.
+    A pydub `AudioSegment` is returned, which is the concatenation of
+    the outputs of each Sequencer&#39;s `build()` method.
+
+    Parameters
+    ----------
+    sequencers : list-like
+        Sequencers to use.
+    internal_overhang : int or float, optional
+        Determine the length of extra time to render when the loop restarts.
+        This can be used to prevent abrubt shortening of sounds near the
+        end of the sequence. The default is 0, meaning all sounds are
+        cut at the end of the Sequencer length for each loop.
+    end_overhang : int or float, optional
+        Determine the length of extra time to render at the of the audio,
+        i.e. after all loops are complete. The default is 0.
+    overhang_type : str -&gt; &#39;beats&#39; or &#39;seconds&#39;, optional
+        Units for the overhang. The default is &#39;beats&#39;.
+
+    Returns
+    -------
+    stitched : pydub.AudioSegment
+        AudioSegment of the stitched audio.
+
+    Examples
+    --------
+
+    ```python
+    import wubwub as wb
+
+    # init some dummy Sequencers
+    a = wb.Sequencer(beats=8, bpm=120)
+    b = wb.Sequencer(beats=4, bpm=120)
+
+    # stitch is used to concatenate their audio (empty here)
+    stitched = wb.stitch([a, b])
+
+    # with no end_overhang, the length should be equal to the sum of lengths
+    print(len(stitched) == len(a.build()) + len(b.build()))
+    # True
+
+    ```
+
+    &#34;&#34;&#34;
     total_length = 0
     current = 0
     sectionstarts = []

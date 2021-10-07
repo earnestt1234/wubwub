@@ -46,6 +46,9 @@ from pydub.playback import play as _play
 from wubwub.errors import WubWubError
 from wubwub.pitch import relative_pitch_to_int, shift_pitch
 
+__pdoc__ = {&#39;add_note_to_audio&#39;: False,
+            &#39;add_effects&#39;: False}
+
 def add_note_to_audio(note, audio, sample, position, duration, basepitch=None,
                       fade=10, shift=True):
     if shift:
@@ -98,51 +101,6 @@ def play(audiosegment, convert=True):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="wubwub.audio.add_effects"><code class="name flex">
-<span>def <span class="ident">add_effects</span></span>(<span>sound, fx)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def add_effects(sound, fx):
-    if fx is None:
-        return sound
-    samples = np.array(sound.get_array_of_samples())
-    samples = fx(samples)
-    samples = array.array(sound.array_type, samples)
-    effected = sound._spawn(samples)
-    return effected</code></pre>
-</details>
-</dd>
-<dt id="wubwub.audio.add_note_to_audio"><code class="name flex">
-<span>def <span class="ident">add_note_to_audio</span></span>(<span>note, audio, sample, position, duration, basepitch=None, fade=10, shift=True)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def add_note_to_audio(note, audio, sample, position, duration, basepitch=None,
-                      fade=10, shift=True):
-    if shift:
-        pitch = note.pitch
-        if pitch is None:
-            return audio
-        if isinstance(pitch, str) and pitch != 0:
-            pitch = relative_pitch_to_int(basepitch, pitch)
-        sample = shift_pitch(sample, pitch)
-    sound = sample
-    sound += note.volume
-    sound = sound[:duration]
-    sound = sound.fade_out(fade)
-    audio = audio.overlay(sound, position=position)
-    return audio</code></pre>
-</details>
-</dd>
 <dt id="wubwub.audio.play"><code class="name flex">
 <span>def <span class="ident">play</span></span>(<span>audiosegment, convert=True)</span>
 </code></dt>
@@ -181,8 +139,6 @@ def play(audiosegment, convert=True):
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="wubwub.audio.add_effects" href="#wubwub.audio.add_effects">add_effects</a></code></li>
-<li><code><a title="wubwub.audio.add_note_to_audio" href="#wubwub.audio.add_note_to_audio">add_note_to_audio</a></code></li>
 <li><code><a title="wubwub.audio.play" href="#wubwub.audio.play">play</a></code></li>
 </ul>
 </li>

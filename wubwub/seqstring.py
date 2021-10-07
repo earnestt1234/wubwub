@@ -13,6 +13,8 @@ import numpy as np
 
 from wubwub.errors import WubWubError
 
+__all__ = ['seqstring']
+
 def seqstring(sequencer, name_cutoff=None, resolution=1, singlenote='■',
               multinote='■', empty='□', wrap=32):
     '''

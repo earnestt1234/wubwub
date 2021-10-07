@@ -17,7 +17,7 @@ from wubwub.resources import MINUTE, unique_name
 from wubwub.seqstring import seqstring
 from wubwub.tracks import Sampler, Arpeggiator, MultiSampler
 
-__all__ = ('Sequencer', 'stitch', 'join', 'loop')
+__all__ = ['Sequencer', 'stitch', 'join', 'loop']
 
 class Sequencer:
     '''
@@ -877,6 +877,31 @@ def _matchesforjoin(oldtracks, newtrack, on='name'):
     return []
 
 def join(sequencers, on='name'):
+    '''
+    Combine multiple Sequencers into a single Sequencer.  The function
+    tries to match Tracks based on either the name or sample (see the `on`
+    parameter).  If a Track cannot be matched, it is kept as a separate
+    entity. This hopefully works well for re-merging Sequencers created
+    by `split()`, but may not work as well when merging very different
+    Sequencers (please report any issues).
+
+    Parameters
+    ----------
+    sequencers : list-like
+        List of Sequencers to join.
+    on : str, "name", "sample", or "sample+type", optional
+        Method to use for matching Tracks between adjacent Sequencers.
+        If 'name' (default), match based on the Track name.  If 'sample',
+        match based on equivalence of the `sample` attribute. If `sample+type`,
+        match based on the sample, but also on the Track being of the same
+        class.
+
+    Returns
+    -------
+    out : wubwub.sequencer.Sequencer
+        The joined Sequencers.
+
+    '''
     beats = sum(seq.beats for seq in sequencers)
     out = Sequencer(bpm=sequencers[0].bpm, beats=beats)
     offset = 0
