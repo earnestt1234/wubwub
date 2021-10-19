@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.1" />
 <title>wubwub.audio API documentation</title>
-<meta name="description" content="Created on Tue Feb
-9 10:17:19 2021 …" />
+<meta name="description" content="This module provides some functions for manipulating pydub AudioSegments." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -23,9 +22,7 @@
 <h1 class="title">Module <code>wubwub.audio</code></h1>
 </header>
 <section id="section-intro">
-<p>Created on Tue Feb
-9 10:17:19 2021</p>
-<p>@author: earnestt1234</p>
+<p>This module provides some functions for manipulating pydub AudioSegments.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -33,9 +30,7 @@
 <pre><code class="python">#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 &#34;&#34;&#34;
-Created on Tue Feb  9 10:17:19 2021
-
-@author: earnestt1234
+This module provides some functions for manipulating pydub AudioSegments.
 &#34;&#34;&#34;
 
 import array
@@ -51,6 +46,35 @@ __pdoc__ = {&#39;add_note_to_audio&#39;: False,
 
 def add_note_to_audio(note, audio, sample, position, duration, basepitch=None,
                       fade=10, shift=True):
+    &#39;&#39;&#39;
+    A function for adding a `wubwub.notes.Note` onto an pydub AudioSegment.
+
+    Parameters
+    ----------
+    note : wubwub.notes.Note
+        Note to add.
+    audio : pydub.AudioSegment
+        Audio to be added onto.
+    sample : pydub.AudioSegment
+        New sample to be added.
+    position : int or float
+        Position in the audio to add the new sample.
+    duration : int
+        Duration of the sample to add.
+    basepitch : str or number, optional
+        Basepitch for the sample; used for shifting the pitch.
+        The default is None.
+    fade : int, optional
+        Fade (in milliseconds) for the end of the sample. The default is 10.
+    shift : bool, optional
+        Whether to shift the pitch of the sample or not. The default is True.
+
+    Returns
+    -------
+    audio : pydub.AudioSegment
+        Audio with the sample added.
+
+    &#39;&#39;&#39;
     if shift:
         pitch = note.pitch
         if pitch is None:
@@ -66,6 +90,7 @@ def add_note_to_audio(note, audio, sample, position, duration, basepitch=None,
     return audio
 
 def add_effects(sound, fx):
+    &#39;&#39;&#39;Add a pysndfx AudioEffectsChain to a pydub AudioSegment.&#39;&#39;&#39;
     if fx is None:
         return sound
     samples = np.array(sound.get_array_of_samples())
@@ -75,6 +100,7 @@ def add_effects(sound, fx):
     return effected
 
 def _overhang_to_milli(overhang, overhang_type, b=600):
+    &#39;&#39;&#39;Return an ovehang in seconds or beats into milliseconds.&#39;&#39;&#39;
     if overhang_type == &#39;beats&#39;:
         overhang = b * overhang
     elif overhang_type in [&#39;s&#39;, &#39;seconds&#39;]:
@@ -84,6 +110,16 @@ def _overhang_to_milli(overhang, overhang_type, b=600):
     return overhang
 
 def play(audiosegment, convert=True):
+    &#39;&#39;&#39;Playback a pydub AudioSegment.  Essentially calls `pydub.play`.
+
+    Note that wubwub only plays sounds if they are 16-bit and have a 44100Hz
+    sample rate.  If `convert` is `True` (default), sounds that do not meet
+    this criteria will be converted.  If not, the sound will not be played.
+    This is due to the author&#39;s personal experience with some buggy sound
+    playback (see here: https://stackoverflow.com/q/68355805/13386979).
+
+    To get around the limitation imposed here, you can instead use
+    `pydub.play` on any AudioSegments produced in wubwub.&#39;&#39;&#39;
     if audiosegment.sample_width != 2:
         if convert:
             audiosegment = audiosegment.set_sample_width(2).set_frame_rate(44100)
@@ -105,12 +141,32 @@ def play(audiosegment, convert=True):
 <span>def <span class="ident">play</span></span>(<span>audiosegment, convert=True)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Playback a pydub AudioSegment.
+Essentially calls <code>pydub.play</code>.</p>
+<p>Note that wubwub only plays sounds if they are 16-bit and have a 44100Hz
+sample rate.
+If <code>convert</code> is <code>True</code> (default), sounds that do not meet
+this criteria will be converted.
+If not, the sound will not be played.
+This is due to the author's personal experience with some buggy sound
+playback (see here: <a href="https://stackoverflow.com/q/68355805/13386979">https://stackoverflow.com/q/68355805/13386979</a>).</p>
+<p>To get around the limitation imposed here, you can instead use
+<code>pydub.play</code> on any AudioSegments produced in wubwub.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def play(audiosegment, convert=True):
+    &#39;&#39;&#39;Playback a pydub AudioSegment.  Essentially calls `pydub.play`.
+
+    Note that wubwub only plays sounds if they are 16-bit and have a 44100Hz
+    sample rate.  If `convert` is `True` (default), sounds that do not meet
+    this criteria will be converted.  If not, the sound will not be played.
+    This is due to the author&#39;s personal experience with some buggy sound
+    playback (see here: https://stackoverflow.com/q/68355805/13386979).
+
+    To get around the limitation imposed here, you can instead use
+    `pydub.play` on any AudioSegments produced in wubwub.&#39;&#39;&#39;
     if audiosegment.sample_width != 2:
         if convert:
             audiosegment = audiosegment.set_sample_width(2).set_frame_rate(44100)

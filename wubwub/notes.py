@@ -1,15 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Feb  9 10:13:53 2021
+Notes are objects representing musical notes in wubwub.  They are akin to
+MIDI notes in a real DAW; they are used to tell Tracks what musical notes
+should be played (specifically their pitch, length, and volume).  Note that
+the placement of Notes (the beat they are on) is not referenced within the Note
+class; that is specified within each Track.
 
-@author: earnestt1234
+The Note is a single atomic note with a pitch, length, and volume.  Notes can
+be combined to create Chords (basically a collection of Notes).  There are also
+ArpChords, which are similar to Chords, but are intended to be specifically
+used by the `wubwub.tracks.Arpeggiator`.
 """
+
+__all__ = ['Note', 'Chord', 'ArpChord', 'arpeggiate',
+           'alter_notes', 'new_chord', 'chord_from_name']
 
 from collections.abc import Iterable
 from fractions import Fraction
 from itertools import cycle, chain
-from numbers import Number
 from sortedcontainers import SortedList
 
 from wubwub.errors import WubWubError
@@ -17,6 +26,7 @@ from wubwub.pitch import named_chords, pitch_from_semitones, relative_pitch_to_i
 from wubwub.resources import random_choice_generator
 
 class Note(object):
+    '''Class to represent an atomic MIDI-like note in wubwub.'''
     __slots__ = ('pitch', 'length', 'volume')
 
     def __init__(self, pitch=0, length=1, volume=0):
