@@ -33,24 +33,50 @@ class Note(object):
     __slots__ = ('pitch', 'length', 'volume')
 
     def __init__(self, pitch=0, length=1, volume=0):
+        '''
+        Initialize the note.
+
+        Parameters
+        ----------
+        pitch : number or str, optional
+            Relative pitch in semitones or scientific pitch string.
+            The default is 0.
+        length : number, optional
+            The length of the note in beats. The default is 1.  The
+            actual length in seconds is determined by the BPM
+            of the Sequencer.
+        volume : number, optional
+            Relative amount of decibels to change the volume of the
+            sample. The default is 0.
+
+        Returns
+        -------
+        None.
+
+        '''
         object.__setattr__(self, "pitch", pitch)
         object.__setattr__(self, "length", length)
         object.__setattr__(self, "volume", volume)
 
     def __setattr__(self, *args):
+        '''Lock setting of attributes for Notes.'''
         name = self.__class__.__name__
         raise AttributeError(f"'{name}' object doesn't support item assignment")
 
     def __delattr__(self, *args):
+        '''Lock deleting of attributes for Notes.'''
         name = self.__class__.__name__
         raise AttributeError(f"'{name}' object doesn't support item deletion")
 
     def __repr__(self):
+        '''The string representation of the Note.'''
         attribs = ('pitch', 'length', 'volume')
         output = ', '.join([a + '=' + str(getattr(self, a)) for a in attribs])
         return f'Note({output})'
 
     def __eq__(self, other):
+        '''Check if the other object is a Note where the pitch, length,
+        and volume are equal.'''
         try:
             return all((self.pitch == other.pitch,
                         self.length == other.length,
@@ -59,6 +85,7 @@ class Note(object):
             return False
 
     def __add__(self, other):
+        '''Create a Chord by summing this and another Note.'''
         if hasattr(other, 'notes'):
             other = other.notes
         else:
@@ -66,20 +93,57 @@ class Note(object):
         return Chord([self] + other)
 
     def __radd__(self, other):
+        '''Create a Chord by summing this and another Note.'''
         if other == 0:
             return self
         else:
             return self.__add__(other)
 
     def alter(self, pitch=False, length=False, volume=False):
+        '''
+        Create a new note which has the same attributes as self,
+        except where specified.
+
+        Parameters
+        ----------
+        pitch : number or str, optional
+            The new pitch. The default is False.
+        length : number, optional
+            The new length. The default is False.
+        volume : number, optional
+            The new volume. The default is False.
+
+        Returns
+        -------
+        wubwub.notes.Note
+            The new Note.
+
+        '''
         pitch = self.pitch if pitch is False else pitch
         length = self.length if length is False else length
         volume = self.volume if volume is False else volume
         return Note(pitch, length, volume)
 
 class Chord(object):
+    '''Class to represent an atomic MIDI-like chord in wubwub.'''
     __slots__ = ('notes')
     def __init__(self, notes):
+        '''
+        Initialze the Chord with a set of Notes.
+
+        Parameters
+        ----------
+        notes : list-like
+            Collection of `wubwub.notes.Note` objects.  These are added
+            to a SortedList, where the key is the pitch.  Any notes with
+            scientific pitch notation values for the pitch are given a semitone
+            value relative to C4 for sorting purposes.
+
+        Returns
+        -------
+        None
+
+        '''
         def keyfunc(note):
             if isinstance(note.pitch, str):
                 val = relative_pitch_to_int('C4', note.pitch)
@@ -89,6 +153,7 @@ class Chord(object):
         object.__setattr__(self, "notes", SortedList(notes, key=keyfunc))
 
     def __repr__(self):
+        '''String representation of the Chord.'''
         pitches = []
         lengths = []
         volumes = []
@@ -102,23 +167,31 @@ class Chord(object):
         return s
 
     def __setattr__(self, *args):
+        '''Lock attribute setting.'''
         name = self.__class__.__name__
         raise AttributeError(f"'{name}' object doesn't support item assignment")
 
     def __delattr__(self, *args):
+        '''Lock attribute deletion.'''
         name = self.__class__.__name__
         raise AttributeError(f"'{name}' object doesn't support item deletion")
 
     def __iter__(self):
+        '''Iterate over the Notes of the Chord.'''
         return iter(self.notes)
 
-    def __getitem__(self, index):
-        return self.notes[index]
+    def __getitem__(self, i):
+        '''Return the ith Note of the Chord.'''
+        return self.notes[i]
 
     def __len__(self):
+        '''Return the number of Notes in the Chord.'''
         return len(self.notes)
 
     def __eq__(self, other):
+        '''Check for equivalence with another Chord.  Returns True only if
+        other is of the same length of self, and if all of its `notes`
+        are equal to all the `notes` of self.'''
         try:
             return (len(self) == len(other) and
                     all((a == b for a, b in zip(self.notes, other.notes))))
@@ -126,6 +199,7 @@ class Chord(object):
             return False
 
     def __add__(self, other):
+        '''Create a new Chord by adding another Note or Chord.'''
         if hasattr(other, 'notes'):
             other = other.notes
         else:
@@ -133,6 +207,7 @@ class Chord(object):
         return Chord(self.notes + other)
 
     def __radd__(self, other):
+        '''Create a new Chord by adding another Note or Chord.'''
         if other == 0:
             return self
         else:
@@ -140,14 +215,17 @@ class Chord(object):
 
     @property
     def pitches(self):
+        '''Return the `pitch` value for each Note.'''
         return [note.pitch for note in self.notes]
 
     @property
     def lengths(self):
+        '''Return the `length` value for each Note.'''
         return [note.length for note in self.notes]
 
     @property
     def volumes(self):
+        '''Return the `volume` value for each Note.'''
         return [note.volume for note in self.notes]
 
 class ArpChord(Chord):
