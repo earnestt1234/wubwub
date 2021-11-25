@@ -182,24 +182,50 @@ class Note(object):
     __slots__ = (&#39;pitch&#39;, &#39;length&#39;, &#39;volume&#39;)
 
     def __init__(self, pitch=0, length=1, volume=0):
+        &#39;&#39;&#39;
+        Initialize the note.
+
+        Parameters
+        ----------
+        pitch : number or str, optional
+            Relative pitch in semitones or scientific pitch string.
+            The default is 0.
+        length : number, optional
+            The length of the note in beats. The default is 1.  The
+            actual length in seconds is determined by the BPM
+            of the Sequencer.
+        volume : number, optional
+            Relative amount of decibels to change the volume of the
+            sample. The default is 0.
+
+        Returns
+        -------
+        None.
+
+        &#39;&#39;&#39;
         object.__setattr__(self, &#34;pitch&#34;, pitch)
         object.__setattr__(self, &#34;length&#34;, length)
         object.__setattr__(self, &#34;volume&#34;, volume)
 
     def __setattr__(self, *args):
+        &#39;&#39;&#39;Lock setting of attributes for Notes.&#39;&#39;&#39;
         name = self.__class__.__name__
         raise AttributeError(f&#34;&#39;{name}&#39; object doesn&#39;t support item assignment&#34;)
 
     def __delattr__(self, *args):
+        &#39;&#39;&#39;Lock deleting of attributes for Notes.&#39;&#39;&#39;
         name = self.__class__.__name__
         raise AttributeError(f&#34;&#39;{name}&#39; object doesn&#39;t support item deletion&#34;)
 
     def __repr__(self):
+        &#39;&#39;&#39;The string representation of the Note.&#39;&#39;&#39;
         attribs = (&#39;pitch&#39;, &#39;length&#39;, &#39;volume&#39;)
         output = &#39;, &#39;.join([a + &#39;=&#39; + str(getattr(self, a)) for a in attribs])
         return f&#39;Note({output})&#39;
 
     def __eq__(self, other):
+        &#39;&#39;&#39;Check if the other object is a Note where the pitch, length,
+        and volume are equal.&#39;&#39;&#39;
         try:
             return all((self.pitch == other.pitch,
                         self.length == other.length,
@@ -208,6 +234,7 @@ class Note(object):
             return False
 
     def __add__(self, other):
+        &#39;&#39;&#39;Create a Chord by summing this and another Note.&#39;&#39;&#39;
         if hasattr(other, &#39;notes&#39;):
             other = other.notes
         else:
@@ -215,20 +242,57 @@ class Note(object):
         return Chord([self] + other)
 
     def __radd__(self, other):
+        &#39;&#39;&#39;Create a Chord by summing this and another Note.&#39;&#39;&#39;
         if other == 0:
             return self
         else:
             return self.__add__(other)
 
     def alter(self, pitch=False, length=False, volume=False):
+        &#39;&#39;&#39;
+        Create a new note which has the same attributes as self,
+        except where specified.
+
+        Parameters
+        ----------
+        pitch : number or str, optional
+            The new pitch. The default is False.
+        length : number, optional
+            The new length. The default is False.
+        volume : number, optional
+            The new volume. The default is False.
+
+        Returns
+        -------
+        wubwub.notes.Note
+            The new Note.
+
+        &#39;&#39;&#39;
         pitch = self.pitch if pitch is False else pitch
         length = self.length if length is False else length
         volume = self.volume if volume is False else volume
         return Note(pitch, length, volume)
 
 class Chord(object):
+    &#39;&#39;&#39;Class to represent an atomic MIDI-like chord in wubwub.&#39;&#39;&#39;
     __slots__ = (&#39;notes&#39;)
     def __init__(self, notes):
+        &#39;&#39;&#39;
+        Initialze the Chord with a set of Notes.
+
+        Parameters
+        ----------
+        notes : list-like
+            Collection of `wubwub.notes.Note` objects.  These are added
+            to a SortedList, where the key is the pitch.  Any notes with
+            scientific pitch notation values for the pitch are given a semitone
+            value relative to C4 for sorting purposes.
+
+        Returns
+        -------
+        None
+
+        &#39;&#39;&#39;
         def keyfunc(note):
             if isinstance(note.pitch, str):
                 val = relative_pitch_to_int(&#39;C4&#39;, note.pitch)
@@ -238,6 +302,7 @@ class Chord(object):
         object.__setattr__(self, &#34;notes&#34;, SortedList(notes, key=keyfunc))
 
     def __repr__(self):
+        &#39;&#39;&#39;String representation of the Chord.&#39;&#39;&#39;
         pitches = []
         lengths = []
         volumes = []
@@ -251,23 +316,31 @@ class Chord(object):
         return s
 
     def __setattr__(self, *args):
+        &#39;&#39;&#39;Lock attribute setting.&#39;&#39;&#39;
         name = self.__class__.__name__
         raise AttributeError(f&#34;&#39;{name}&#39; object doesn&#39;t support item assignment&#34;)
 
     def __delattr__(self, *args):
+        &#39;&#39;&#39;Lock attribute deletion.&#39;&#39;&#39;
         name = self.__class__.__name__
         raise AttributeError(f&#34;&#39;{name}&#39; object doesn&#39;t support item deletion&#34;)
 
     def __iter__(self):
+        &#39;&#39;&#39;Iterate over the Notes of the Chord.&#39;&#39;&#39;
         return iter(self.notes)
 
-    def __getitem__(self, index):
-        return self.notes[index]
+    def __getitem__(self, i):
+        &#39;&#39;&#39;Return the ith Note of the Chord.&#39;&#39;&#39;
+        return self.notes[i]
 
     def __len__(self):
+        &#39;&#39;&#39;Return the number of Notes in the Chord.&#39;&#39;&#39;
         return len(self.notes)
 
     def __eq__(self, other):
+        &#39;&#39;&#39;Check for equivalence with another Chord.  Returns True only if
+        other is of the same length of self, and if all of its `notes`
+        are equal to all the `notes` of self.&#39;&#39;&#39;
         try:
             return (len(self) == len(other) and
                     all((a == b for a, b in zip(self.notes, other.notes))))
@@ -275,6 +348,7 @@ class Chord(object):
             return False
 
     def __add__(self, other):
+        &#39;&#39;&#39;Create a new Chord by adding another Note or Chord.&#39;&#39;&#39;
         if hasattr(other, &#39;notes&#39;):
             other = other.notes
         else:
@@ -282,6 +356,7 @@ class Chord(object):
         return Chord(self.notes + other)
 
     def __radd__(self, other):
+        &#39;&#39;&#39;Create a new Chord by adding another Note or Chord.&#39;&#39;&#39;
         if other == 0:
             return self
         else:
@@ -289,14 +364,17 @@ class Chord(object):
 
     @property
     def pitches(self):
+        &#39;&#39;&#39;Return the `pitch` value for each Note.&#39;&#39;&#39;
         return [note.pitch for note in self.notes]
 
     @property
     def lengths(self):
+        &#39;&#39;&#39;Return the `length` value for each Note.&#39;&#39;&#39;
         return [note.length for note in self.notes]
 
     @property
     def volumes(self):
+        &#39;&#39;&#39;Return the `volume` value for each Note.&#39;&#39;&#39;
         return [note.volume for note in self.notes]
 
 class ArpChord(Chord):
@@ -546,7 +624,23 @@ def chord_from_name(root, kind=&#39;&#39;, voicing=0, lengths=1, volumes=0, add=
 <span>(</span><span>notes, length)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Class to represent an atomic MIDI-like chord in wubwub.</p>
+<p>Initialze the Chord with a set of Notes.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>notes</code></strong> :&ensp;<code>list-like</code></dt>
+<dd>Collection of <code><a title="wubwub.notes.Note" href="#wubwub.notes.Note">Note</a></code> objects.
+These are added
+to a SortedList, where the key is the pitch.
+Any notes with
+scientific pitch notation values for the pitch are given a semitone
+value relative to C4 for sorting purposes.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>None</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -620,7 +714,10 @@ def chord_from_name(root, kind=&#39;&#39;, voicing=0, lengths=1, volumes=0, add=
 <ul class="hlist">
 <li><code><b><a title="wubwub.notes.Chord" href="#wubwub.notes.Chord">Chord</a></b></code>:
 <ul class="hlist">
+<li><code><a title="wubwub.notes.Chord.lengths" href="#wubwub.notes.Chord.lengths">lengths</a></code></li>
 <li><code><a title="wubwub.notes.Chord.notes" href="#wubwub.notes.Chord.notes">notes</a></code></li>
+<li><code><a title="wubwub.notes.Chord.pitches" href="#wubwub.notes.Chord.pitches">pitches</a></code></li>
+<li><code><a title="wubwub.notes.Chord.volumes" href="#wubwub.notes.Chord.volumes">volumes</a></code></li>
 </ul>
 </li>
 </ul>
@@ -630,14 +727,47 @@ def chord_from_name(root, kind=&#39;&#39;, voicing=0, lengths=1, volumes=0, add=
 <span>(</span><span>notes)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Class to represent an atomic MIDI-like chord in wubwub.</p>
+<p>Initialze the Chord with a set of Notes.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>notes</code></strong> :&ensp;<code>list-like</code></dt>
+<dd>Collection of <code><a title="wubwub.notes.Note" href="#wubwub.notes.Note">Note</a></code> objects.
+These are added
+to a SortedList, where the key is the pitch.
+Any notes with
+scientific pitch notation values for the pitch are given a semitone
+value relative to C4 for sorting purposes.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>None</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Chord(object):
+    &#39;&#39;&#39;Class to represent an atomic MIDI-like chord in wubwub.&#39;&#39;&#39;
     __slots__ = (&#39;notes&#39;)
     def __init__(self, notes):
+        &#39;&#39;&#39;
+        Initialze the Chord with a set of Notes.
+
+        Parameters
+        ----------
+        notes : list-like
+            Collection of `wubwub.notes.Note` objects.  These are added
+            to a SortedList, where the key is the pitch.  Any notes with
+            scientific pitch notation values for the pitch are given a semitone
+            value relative to C4 for sorting purposes.
+
+        Returns
+        -------
+        None
+
+        &#39;&#39;&#39;
         def keyfunc(note):
             if isinstance(note.pitch, str):
                 val = relative_pitch_to_int(&#39;C4&#39;, note.pitch)
@@ -647,6 +777,7 @@ def chord_from_name(root, kind=&#39;&#39;, voicing=0, lengths=1, volumes=0, add=
         object.__setattr__(self, &#34;notes&#34;, SortedList(notes, key=keyfunc))
 
     def __repr__(self):
+        &#39;&#39;&#39;String representation of the Chord.&#39;&#39;&#39;
         pitches = []
         lengths = []
         volumes = []
@@ -660,23 +791,31 @@ def chord_from_name(root, kind=&#39;&#39;, voicing=0, lengths=1, volumes=0, add=
         return s
 
     def __setattr__(self, *args):
+        &#39;&#39;&#39;Lock attribute setting.&#39;&#39;&#39;
         name = self.__class__.__name__
         raise AttributeError(f&#34;&#39;{name}&#39; object doesn&#39;t support item assignment&#34;)
 
     def __delattr__(self, *args):
+        &#39;&#39;&#39;Lock attribute deletion.&#39;&#39;&#39;
         name = self.__class__.__name__
         raise AttributeError(f&#34;&#39;{name}&#39; object doesn&#39;t support item deletion&#34;)
 
     def __iter__(self):
+        &#39;&#39;&#39;Iterate over the Notes of the Chord.&#39;&#39;&#39;
         return iter(self.notes)
 
-    def __getitem__(self, index):
-        return self.notes[index]
+    def __getitem__(self, i):
+        &#39;&#39;&#39;Return the ith Note of the Chord.&#39;&#39;&#39;
+        return self.notes[i]
 
     def __len__(self):
+        &#39;&#39;&#39;Return the number of Notes in the Chord.&#39;&#39;&#39;
         return len(self.notes)
 
     def __eq__(self, other):
+        &#39;&#39;&#39;Check for equivalence with another Chord.  Returns True only if
+        other is of the same length of self, and if all of its `notes`
+        are equal to all the `notes` of self.&#39;&#39;&#39;
         try:
             return (len(self) == len(other) and
                     all((a == b for a, b in zip(self.notes, other.notes))))
@@ -684,6 +823,7 @@ def chord_from_name(root, kind=&#39;&#39;, voicing=0, lengths=1, volumes=0, add=
             return False
 
     def __add__(self, other):
+        &#39;&#39;&#39;Create a new Chord by adding another Note or Chord.&#39;&#39;&#39;
         if hasattr(other, &#39;notes&#39;):
             other = other.notes
         else:
@@ -691,6 +831,7 @@ def chord_from_name(root, kind=&#39;&#39;, voicing=0, lengths=1, volumes=0, add=
         return Chord(self.notes + other)
 
     def __radd__(self, other):
+        &#39;&#39;&#39;Create a new Chord by adding another Note or Chord.&#39;&#39;&#39;
         if other == 0:
             return self
         else:
@@ -698,14 +839,17 @@ def chord_from_name(root, kind=&#39;&#39;, voicing=0, lengths=1, volumes=0, add=
 
     @property
     def pitches(self):
+        &#39;&#39;&#39;Return the `pitch` value for each Note.&#39;&#39;&#39;
         return [note.pitch for note in self.notes]
 
     @property
     def lengths(self):
+        &#39;&#39;&#39;Return the `length` value for each Note.&#39;&#39;&#39;
         return [note.length for note in self.notes]
 
     @property
     def volumes(self):
+        &#39;&#39;&#39;Return the `volume` value for each Note.&#39;&#39;&#39;
         return [note.volume for note in self.notes]</code></pre>
 </details>
 <h3>Subclasses</h3>
@@ -716,13 +860,14 @@ def chord_from_name(root, kind=&#39;&#39;, voicing=0, lengths=1, volumes=0, add=
 <dl>
 <dt id="wubwub.notes.Chord.lengths"><code class="name">var <span class="ident">lengths</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Return the <code>length</code> value for each Note.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def lengths(self):
+    &#39;&#39;&#39;Return the `length` value for each Note.&#39;&#39;&#39;
     return [note.length for note in self.notes]</code></pre>
 </details>
 </dd>
@@ -732,25 +877,27 @@ def lengths(self):
 </dd>
 <dt id="wubwub.notes.Chord.pitches"><code class="name">var <span class="ident">pitches</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Return the <code>pitch</code> value for each Note.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def pitches(self):
+    &#39;&#39;&#39;Return the `pitch` value for each Note.&#39;&#39;&#39;
     return [note.pitch for note in self.notes]</code></pre>
 </details>
 </dd>
 <dt id="wubwub.notes.Chord.volumes"><code class="name">var <span class="ident">volumes</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Return the <code>volume</code> value for each Note.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def volumes(self):
+    &#39;&#39;&#39;Return the `volume` value for each Note.&#39;&#39;&#39;
     return [note.volume for note in self.notes]</code></pre>
 </details>
 </dd>
@@ -761,7 +908,24 @@ def volumes(self):
 <span>(</span><span>pitch=0, length=1, volume=0)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class to represent an atomic MIDI-like note in wubwub.</p></div>
+<div class="desc"><p>Class to represent an atomic MIDI-like note in wubwub.</p>
+<p>Initialize the note.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>pitch</code></strong> :&ensp;<code>number</code> or <code>str</code>, optional</dt>
+<dd>Relative pitch in semitones or scientific pitch string.
+The default is 0.</dd>
+<dt><strong><code>length</code></strong> :&ensp;<code>number</code>, optional</dt>
+<dd>The length of the note in beats. The default is 1.
+The
+actual length in seconds is determined by the BPM
+of the Sequencer.</dd>
+<dt><strong><code>volume</code></strong> :&ensp;<code>number</code>, optional</dt>
+<dd>Relative amount of decibels to change the volume of the
+sample. The default is 0.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>None.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -771,24 +935,50 @@ def volumes(self):
     __slots__ = (&#39;pitch&#39;, &#39;length&#39;, &#39;volume&#39;)
 
     def __init__(self, pitch=0, length=1, volume=0):
+        &#39;&#39;&#39;
+        Initialize the note.
+
+        Parameters
+        ----------
+        pitch : number or str, optional
+            Relative pitch in semitones or scientific pitch string.
+            The default is 0.
+        length : number, optional
+            The length of the note in beats. The default is 1.  The
+            actual length in seconds is determined by the BPM
+            of the Sequencer.
+        volume : number, optional
+            Relative amount of decibels to change the volume of the
+            sample. The default is 0.
+
+        Returns
+        -------
+        None.
+
+        &#39;&#39;&#39;
         object.__setattr__(self, &#34;pitch&#34;, pitch)
         object.__setattr__(self, &#34;length&#34;, length)
         object.__setattr__(self, &#34;volume&#34;, volume)
 
     def __setattr__(self, *args):
+        &#39;&#39;&#39;Lock setting of attributes for Notes.&#39;&#39;&#39;
         name = self.__class__.__name__
         raise AttributeError(f&#34;&#39;{name}&#39; object doesn&#39;t support item assignment&#34;)
 
     def __delattr__(self, *args):
+        &#39;&#39;&#39;Lock deleting of attributes for Notes.&#39;&#39;&#39;
         name = self.__class__.__name__
         raise AttributeError(f&#34;&#39;{name}&#39; object doesn&#39;t support item deletion&#34;)
 
     def __repr__(self):
+        &#39;&#39;&#39;The string representation of the Note.&#39;&#39;&#39;
         attribs = (&#39;pitch&#39;, &#39;length&#39;, &#39;volume&#39;)
         output = &#39;, &#39;.join([a + &#39;=&#39; + str(getattr(self, a)) for a in attribs])
         return f&#39;Note({output})&#39;
 
     def __eq__(self, other):
+        &#39;&#39;&#39;Check if the other object is a Note where the pitch, length,
+        and volume are equal.&#39;&#39;&#39;
         try:
             return all((self.pitch == other.pitch,
                         self.length == other.length,
@@ -797,6 +987,7 @@ def volumes(self):
             return False
 
     def __add__(self, other):
+        &#39;&#39;&#39;Create a Chord by summing this and another Note.&#39;&#39;&#39;
         if hasattr(other, &#39;notes&#39;):
             other = other.notes
         else:
@@ -804,12 +995,32 @@ def volumes(self):
         return Chord([self] + other)
 
     def __radd__(self, other):
+        &#39;&#39;&#39;Create a Chord by summing this and another Note.&#39;&#39;&#39;
         if other == 0:
             return self
         else:
             return self.__add__(other)
 
     def alter(self, pitch=False, length=False, volume=False):
+        &#39;&#39;&#39;
+        Create a new note which has the same attributes as self,
+        except where specified.
+
+        Parameters
+        ----------
+        pitch : number or str, optional
+            The new pitch. The default is False.
+        length : number, optional
+            The new length. The default is False.
+        volume : number, optional
+            The new volume. The default is False.
+
+        Returns
+        -------
+        wubwub.notes.Note
+            The new Note.
+
+        &#39;&#39;&#39;
         pitch = self.pitch if pitch is False else pitch
         length = self.length if length is False else length
         volume = self.volume if volume is False else volume
@@ -836,12 +1047,46 @@ def volumes(self):
 <span>def <span class="ident">alter</span></span>(<span>self, pitch=False, length=False, volume=False)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Create a new note which has the same attributes as self,
+except where specified.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>pitch</code></strong> :&ensp;<code>number</code> or <code>str</code>, optional</dt>
+<dd>The new pitch. The default is False.</dd>
+<dt><strong><code>length</code></strong> :&ensp;<code>number</code>, optional</dt>
+<dd>The new length. The default is False.</dd>
+<dt><strong><code>volume</code></strong> :&ensp;<code>number</code>, optional</dt>
+<dd>The new volume. The default is False.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="wubwub.notes.Note" href="#wubwub.notes.Note">Note</a></code></dt>
+<dd>The new Note.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def alter(self, pitch=False, length=False, volume=False):
+    &#39;&#39;&#39;
+    Create a new note which has the same attributes as self,
+    except where specified.
+
+    Parameters
+    ----------
+    pitch : number or str, optional
+        The new pitch. The default is False.
+    length : number, optional
+        The new length. The default is False.
+    volume : number, optional
+        The new volume. The default is False.
+
+    Returns
+    -------
+    wubwub.notes.Note
+        The new Note.
+
+    &#39;&#39;&#39;
     pitch = self.pitch if pitch is False else pitch
     length = self.length if length is False else length
     volume = self.volume if volume is False else volume
