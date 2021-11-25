@@ -11,6 +11,9 @@ The Note is a single atomic note with a pitch, length, and volume.  Notes can
 be combined to create Chords (basically a collection of Notes).  There are also
 ArpChords, which are similar to Chords, but are intended to be specifically
 used by the `wubwub.tracks.Arpeggiator`.
+
+.. include:: ../docs/notes.md
+
 """
 
 __all__ = ['Note', 'Chord', 'ArpChord', 'arpeggiate',
