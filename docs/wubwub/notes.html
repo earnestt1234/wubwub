@@ -165,7 +165,7 @@ used by the `wubwub.tracks.Arpeggiator`.
 
 &#34;&#34;&#34;
 
-__all__ = [&#39;Note&#39;, &#39;Chord&#39;, &#39;ArpChord&#39;, &#39;arpeggiate&#39;,
+__all__ = [&#39;Note&#39;, &#39;Chord&#39;, &#39;ArpChord&#39;, &#39;arpeggiate&#39;, &#39;arpeggio_generator&#39;,
            &#39;alter_notes&#39;, &#39;new_chord&#39;, &#39;chord_from_name&#39;]
 
 from collections.abc import Iterable
@@ -378,17 +378,41 @@ class Chord(object):
         return [note.volume for note in self.notes]
 
 class ArpChord(Chord):
+    &#39;&#39;&#39;Class to represent a Chord for use by the Arpeggiator Track.  Very
+    similar to the Chord class, but has its own length attribute for setting
+    the duration of arpeggiation.&#39;&#39;&#39;
     __slots__ = (&#39;notes&#39;, &#39;length&#39;)
     def __init__(self, notes, length):
+        &#39;&#39;&#39;
+        Initialze the ArpChord with a set of Notes and a length.
+
+        Parameters
+        ----------
+        notes : list-like
+            Collection of `wubwub.notes.Note` objects.  These are added
+            to a SortedList, where the key is the pitch.  Any notes with
+            scientific pitch notation values for the pitch are given a semitone
+            value relative to C4 for sorting purposes.
+        length : number
+            Duration (in beats) of the Arpeggiation.
+
+        Returns
+        -------
+        None
+
+        &#39;&#39;&#39;
         super().__init__(notes)
         object.__setattr__(self, &#34;length&#34;, length)
 
     def __repr__(self):
+        &#39;&#39;&#39;Set the string representation for the ArpChord&#39;&#39;&#39;
         pitches = [note.pitch for note in self.notes]
         s = f&#39;ArpChord(pitches={pitches}, length={self.length})&#39;
         return s
 
     def __eq__(self, other):
+        &#39;&#39;&#39;Returns True if other has the same number of Notes, equal Notes,
+        and the same length.&#39;&#39;&#39;
         try:
             return (len(self) == len(other) and
                     all((a == b for a, b in zip(self.notes, other.notes))) and
@@ -397,33 +421,81 @@ class ArpChord(Chord):
             return False
 
     def __add__(self, other):
+        &#39;&#39;&#39;Generate a new ArpChord by adding another Note, Chord, or ArpChord.
+        The new Chord will have the notes of self and the note(s) of other.  If
+        other is an ArpChord (has a length attribute), then the longer of the
+        two will be the new length.
+        &#39;&#39;&#39;
         newl = self.length
         if hasattr(other, &#39;notes&#39;):
-            other = other.notes
+            toadd = other.notes
             if hasattr(other, &#39;length&#39;):
                 newl = max(newl, other.length)
         else:
-            other = [other]
-        return ArpChord(self.notes + other, newl)
+            toadd = [other]
+        return ArpChord(self.notes + toadd, newl)
 
     def __radd__(self, other):
+        &#39;&#39;&#39;Generate a new ArpChord by adding another Note, Chord, or ArpChord.
+        The new Chord will have the notes of self and the note(s) of other.  If
+        other is an ArpChord (has a length attribute), then the longer of the
+        two will be the new length.
+        &#39;&#39;&#39;
         if other == 0:
             return self
         else:
             return self.__add__(other)
 
     def changelength(self, newlength):
+        &#39;&#39;&#39;
+        Return a new ArpChord with a different length.
+
+        Parameters
+        ----------
+        newlength : number
+            The new length setting.
+
+        Returns
+        -------
+        wubwub.notes.ArpChord
+            The new arpeggiator chord.
+
+        &#39;&#39;&#39;
         return ArpChord(self.notes, newlength)
 
-
+# keep track of all Note types
 _notetypes_ = [Note, Chord, ArpChord]
 
 def arpeggio_generator(notes, method):
+    &#39;&#39;&#39;
+    Helper method for generating arpeggiated notes.  Takes a collection of Notes,
+    and returns an infinite generator based on those Notes.  The pattern
+    of Notes is determined by the `method` parameter, based on several
+    standard arpeggiation patterns.
+
+    Parameters
+    ----------
+    notes : list-like
+        Collection of Notes.
+    method : &#39;up&#39;, &#39;down&#39;, &#39;updown&#39;, &#39;downup&#39;, &#39;up&amp;down&#39;, &#39;down&amp;up&#39;, `or` &#39;random&#39;
+        DESCRIPTION.
+
+    Raises
+    ------
+    WubWubError
+        DESCRIPTION.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    &#39;&#39;&#39;
     methods = [&#39;up&#39;, &#39;down&#39;, &#39;updown&#39;, &#39;downup&#39;, &#39;up&amp;down&#39;, &#39;down&amp;up&#39;,
                &#39;random&#39;]
     if method not in methods:
         formatted = &#39;, &#39;.join(m for m in methods)
-        raise WubWubError(f&#39;method must be in {formatted}&#39;)
+        raise WubWubError(f&#39;Arpeggiator method must be one of {formatted}&#39;)
 
     if method == &#39;up&#39;:
         return cycle(notes)
@@ -566,6 +638,84 @@ def chord_from_name(root, kind=&#39;&#39;, voicing=0, lengths=1, volumes=0, add=
     return arpeggiated</code></pre>
 </details>
 </dd>
+<dt id="wubwub.notes.arpeggio_generator"><code class="name flex">
+<span>def <span class="ident">arpeggio_generator</span></span>(<span>notes, method)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper method for generating arpeggiated notes.
+Takes a collection of Notes,
+and returns an infinite generator based on those Notes.
+The pattern
+of Notes is determined by the <code>method</code> parameter, based on several
+standard arpeggiation patterns.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>notes</code></strong> :&ensp;<code>list-like</code></dt>
+<dd>Collection of Notes.</dd>
+<dt><strong><code>method</code></strong> :&ensp;<code>'up', 'down', 'updown', 'downup', 'up&amp;down', 'down&amp;up',</code>or<code>'random'</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>WubWubError</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def arpeggio_generator(notes, method):
+    &#39;&#39;&#39;
+    Helper method for generating arpeggiated notes.  Takes a collection of Notes,
+    and returns an infinite generator based on those Notes.  The pattern
+    of Notes is determined by the `method` parameter, based on several
+    standard arpeggiation patterns.
+
+    Parameters
+    ----------
+    notes : list-like
+        Collection of Notes.
+    method : &#39;up&#39;, &#39;down&#39;, &#39;updown&#39;, &#39;downup&#39;, &#39;up&amp;down&#39;, &#39;down&amp;up&#39;, `or` &#39;random&#39;
+        DESCRIPTION.
+
+    Raises
+    ------
+    WubWubError
+        DESCRIPTION.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    &#39;&#39;&#39;
+    methods = [&#39;up&#39;, &#39;down&#39;, &#39;updown&#39;, &#39;downup&#39;, &#39;up&amp;down&#39;, &#39;down&amp;up&#39;,
+               &#39;random&#39;]
+    if method not in methods:
+        formatted = &#39;, &#39;.join(m for m in methods)
+        raise WubWubError(f&#39;Arpeggiator method must be one of {formatted}&#39;)
+
+    if method == &#39;up&#39;:
+        return cycle(notes)
+    if method == &#39;down&#39;:
+        return cycle(notes[::-1])
+    if method == &#39;updown&#39;:
+        return cycle(chain(notes, notes[-2:0:-1]))
+    if method == &#39;downup&#39;:
+        return cycle(chain(notes[::-1], notes[1:-1]))
+    if method == &#39;up&amp;down&#39;:
+        return cycle(chain(notes, notes[::-1]))
+    if method == &#39;down&amp;up&#39;:
+        return cycle(chain(notes[::-1], notes))
+    if method == &#39;random&#39;:
+        return random_choice_generator(notes)</code></pre>
+</details>
+</dd>
 <dt id="wubwub.notes.chord_from_name"><code class="name flex">
 <span>def <span class="ident">chord_from_name</span></span>(<span>root, kind='', voicing=0, lengths=1, volumes=0, add=None)</span>
 </code></dt>
@@ -624,8 +774,11 @@ def chord_from_name(root, kind=&#39;&#39;, voicing=0, lengths=1, volumes=0, add=
 <span>(</span><span>notes, length)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class to represent an atomic MIDI-like chord in wubwub.</p>
-<p>Initialze the Chord with a set of Notes.</p>
+<div class="desc"><p>Class to represent a Chord for use by the Arpeggiator Track.
+Very
+similar to the Chord class, but has its own length attribute for setting
+the duration of arpeggiation.</p>
+<p>Initialze the ArpChord with a set of Notes and a length.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>notes</code></strong> :&ensp;<code>list-like</code></dt>
@@ -635,6 +788,8 @@ to a SortedList, where the key is the pitch.
 Any notes with
 scientific pitch notation values for the pitch are given a semitone
 value relative to C4 for sorting purposes.</dd>
+<dt><strong><code>length</code></strong> :&ensp;<code>number</code></dt>
+<dd>Duration (in beats) of the Arpeggiation.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -646,17 +801,41 @@ value relative to C4 for sorting purposes.</dd>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class ArpChord(Chord):
+    &#39;&#39;&#39;Class to represent a Chord for use by the Arpeggiator Track.  Very
+    similar to the Chord class, but has its own length attribute for setting
+    the duration of arpeggiation.&#39;&#39;&#39;
     __slots__ = (&#39;notes&#39;, &#39;length&#39;)
     def __init__(self, notes, length):
+        &#39;&#39;&#39;
+        Initialze the ArpChord with a set of Notes and a length.
+
+        Parameters
+        ----------
+        notes : list-like
+            Collection of `wubwub.notes.Note` objects.  These are added
+            to a SortedList, where the key is the pitch.  Any notes with
+            scientific pitch notation values for the pitch are given a semitone
+            value relative to C4 for sorting purposes.
+        length : number
+            Duration (in beats) of the Arpeggiation.
+
+        Returns
+        -------
+        None
+
+        &#39;&#39;&#39;
         super().__init__(notes)
         object.__setattr__(self, &#34;length&#34;, length)
 
     def __repr__(self):
+        &#39;&#39;&#39;Set the string representation for the ArpChord&#39;&#39;&#39;
         pitches = [note.pitch for note in self.notes]
         s = f&#39;ArpChord(pitches={pitches}, length={self.length})&#39;
         return s
 
     def __eq__(self, other):
+        &#39;&#39;&#39;Returns True if other has the same number of Notes, equal Notes,
+        and the same length.&#39;&#39;&#39;
         try:
             return (len(self) == len(other) and
                     all((a == b for a, b in zip(self.notes, other.notes))) and
@@ -665,22 +844,46 @@ value relative to C4 for sorting purposes.</dd>
             return False
 
     def __add__(self, other):
+        &#39;&#39;&#39;Generate a new ArpChord by adding another Note, Chord, or ArpChord.
+        The new Chord will have the notes of self and the note(s) of other.  If
+        other is an ArpChord (has a length attribute), then the longer of the
+        two will be the new length.
+        &#39;&#39;&#39;
         newl = self.length
         if hasattr(other, &#39;notes&#39;):
-            other = other.notes
+            toadd = other.notes
             if hasattr(other, &#39;length&#39;):
                 newl = max(newl, other.length)
         else:
-            other = [other]
-        return ArpChord(self.notes + other, newl)
+            toadd = [other]
+        return ArpChord(self.notes + toadd, newl)
 
     def __radd__(self, other):
+        &#39;&#39;&#39;Generate a new ArpChord by adding another Note, Chord, or ArpChord.
+        The new Chord will have the notes of self and the note(s) of other.  If
+        other is an ArpChord (has a length attribute), then the longer of the
+        two will be the new length.
+        &#39;&#39;&#39;
         if other == 0:
             return self
         else:
             return self.__add__(other)
 
     def changelength(self, newlength):
+        &#39;&#39;&#39;
+        Return a new ArpChord with a different length.
+
+        Parameters
+        ----------
+        newlength : number
+            The new length setting.
+
+        Returns
+        -------
+        wubwub.notes.ArpChord
+            The new arpeggiator chord.
+
+        &#39;&#39;&#39;
         return ArpChord(self.notes, newlength)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -700,12 +903,36 @@ value relative to C4 for sorting purposes.</dd>
 <span>def <span class="ident">changelength</span></span>(<span>self, newlength)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Return a new ArpChord with a different length.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>newlength</code></strong> :&ensp;<code>number</code></dt>
+<dd>The new length setting.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="wubwub.notes.ArpChord" href="#wubwub.notes.ArpChord">ArpChord</a></code></dt>
+<dd>The new arpeggiator chord.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def changelength(self, newlength):
+    &#39;&#39;&#39;
+    Return a new ArpChord with a different length.
+
+    Parameters
+    ----------
+    newlength : number
+        The new length setting.
+
+    Returns
+    -------
+    wubwub.notes.ArpChord
+        The new arpeggiator chord.
+
+    &#39;&#39;&#39;
     return ArpChord(self.notes, newlength)</code></pre>
 </details>
 </dd>
@@ -1121,6 +1348,7 @@ except where specified.</p>
 <ul class="">
 <li><code><a title="wubwub.notes.alter_notes" href="#wubwub.notes.alter_notes">alter_notes</a></code></li>
 <li><code><a title="wubwub.notes.arpeggiate" href="#wubwub.notes.arpeggiate">arpeggiate</a></code></li>
+<li><code><a title="wubwub.notes.arpeggio_generator" href="#wubwub.notes.arpeggio_generator">arpeggio_generator</a></code></li>
 <li><code><a title="wubwub.notes.chord_from_name" href="#wubwub.notes.chord_from_name">chord_from_name</a></code></li>
 <li><code><a title="wubwub.notes.new_chord" href="#wubwub.notes.new_chord">new_chord</a></code></li>
 </ul>

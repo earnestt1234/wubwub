@@ -16,7 +16,7 @@ used by the `wubwub.tracks.Arpeggiator`.
 
 """
 
-__all__ = ['Note', 'Chord', 'ArpChord', 'arpeggiate',
+__all__ = ['Note', 'Chord', 'ArpChord', 'arpeggiate', 'arpeggio_generator',
            'alter_notes', 'new_chord', 'chord_from_name']
 
 from collections.abc import Iterable
@@ -229,17 +229,41 @@ class Chord(object):
         return [note.volume for note in self.notes]
 
 class ArpChord(Chord):
+    '''Class to represent a Chord for use by the Arpeggiator Track.  Very
+    similar to the Chord class, but has its own length attribute for setting
+    the duration of arpeggiation.'''
     __slots__ = ('notes', 'length')
     def __init__(self, notes, length):
+        '''
+        Initialze the ArpChord with a set of Notes and a length.
+
+        Parameters
+        ----------
+        notes : list-like
+            Collection of `wubwub.notes.Note` objects.  These are added
+            to a SortedList, where the key is the pitch.  Any notes with
+            scientific pitch notation values for the pitch are given a semitone
+            value relative to C4 for sorting purposes.
+        length : number
+            Duration (in beats) of the Arpeggiation.
+
+        Returns
+        -------
+        None
+
+        '''
         super().__init__(notes)
         object.__setattr__(self, "length", length)
 
     def __repr__(self):
+        '''Set the string representation for the ArpChord'''
         pitches = [note.pitch for note in self.notes]
         s = f'ArpChord(pitches={pitches}, length={self.length})'
         return s
 
     def __eq__(self, other):
+        '''Returns True if other has the same number of Notes, equal Notes,
+        and the same length.'''
         try:
             return (len(self) == len(other) and
                     all((a == b for a, b in zip(self.notes, other.notes))) and
@@ -248,33 +272,81 @@ class ArpChord(Chord):
             return False
 
     def __add__(self, other):
+        '''Generate a new ArpChord by adding another Note, Chord, or ArpChord.
+        The new Chord will have the notes of self and the note(s) of other.  If
+        other is an ArpChord (has a length attribute), then the longer of the
+        two will be the new length.
+        '''
         newl = self.length
         if hasattr(other, 'notes'):
-            other = other.notes
+            toadd = other.notes
             if hasattr(other, 'length'):
                 newl = max(newl, other.length)
         else:
-            other = [other]
-        return ArpChord(self.notes + other, newl)
+            toadd = [other]
+        return ArpChord(self.notes + toadd, newl)
 
     def __radd__(self, other):
+        '''Generate a new ArpChord by adding another Note, Chord, or ArpChord.
+        The new Chord will have the notes of self and the note(s) of other.  If
+        other is an ArpChord (has a length attribute), then the longer of the
+        two will be the new length.
+        '''
         if other == 0:
             return self
         else:
             return self.__add__(other)
 
     def changelength(self, newlength):
+        '''
+        Return a new ArpChord with a different length.
+
+        Parameters
+        ----------
+        newlength : number
+            The new length setting.
+
+        Returns
+        -------
+        wubwub.notes.ArpChord
+            The new arpeggiator chord.
+
+        '''
         return ArpChord(self.notes, newlength)
 
-
+# keep track of all Note types
 _notetypes_ = [Note, Chord, ArpChord]
 
 def arpeggio_generator(notes, method):
+    '''
+    Helper method for generating arpeggiated notes.  Takes a collection of Notes,
+    and returns an infinite generator based on those Notes.  The pattern
+    of Notes is determined by the `method` parameter, based on several
+    standard arpeggiation patterns.
+
+    Parameters
+    ----------
+    notes : list-like
+        Collection of Notes.
+    method : 'up', 'down', 'updown', 'downup', 'up&down', 'down&up', `or` 'random'
+        DESCRIPTION.
+
+    Raises
+    ------
+    WubWubError
+        DESCRIPTION.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    '''
     methods = ['up', 'down', 'updown', 'downup', 'up&down', 'down&up',
                'random']
     if method not in methods:
         formatted = ', '.join(m for m in methods)
-        raise WubWubError(f'method must be in {formatted}')
+        raise WubWubError(f'Arpeggiator method must be one of {formatted}')
 
     if method == 'up':
         return cycle(notes)
