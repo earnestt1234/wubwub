@@ -31,6 +31,7 @@ named_chords = (
      'aug'  : (0, 4, 8),
      'dim'  : (0, 3, 6),
      '7'    : (0, 4, 7, 10)})
+"""Dictionary of pitches (relative to the root) for severval classes of chord."""
 
 chordnames_re = '|'.join(named_chords.keys())
 
