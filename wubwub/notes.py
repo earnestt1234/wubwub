@@ -329,17 +329,17 @@ def arpeggio_generator(notes, method):
     notes : list-like
         Collection of Notes.
     method : 'up', 'down', 'updown', 'downup', 'up&down', 'down&up', `or` 'random'
-        DESCRIPTION.
+        Identifier for the arpeggiation pattern.
 
     Raises
     ------
     WubWubError
-        DESCRIPTION.
+        `method` is not recognized.
 
     Returns
     -------
-    TYPE
-        DESCRIPTION.
+    generator
+        Generator of the arpeggiated notes.
 
     '''
     methods = ['up', 'down', 'updown', 'downup', 'up&down', 'down&up',
@@ -364,7 +364,38 @@ def arpeggio_generator(notes, method):
         return random_choice_generator(notes)
 
 def arpeggiate(chord, beat, length=None, freq=0.5, method='up', auto_chord_length='max'):
+    '''
+    Create an arpeggiation of notes in time, based on a chord, a starting beat,
+    and pattern.  Produces a dictionary of beat & note pairs.
 
+    Parameters
+    ----------
+    chord : wubwub.notes.ArpChord or wubwub.notes.Chord
+        Chord to arpeggiate.
+    beat : int or float
+        Beat to start the arpeggiation from.
+    length : int or float, optional
+        Duration of the arpeggiation. The default is None, in which case the
+        duration is inferred from the `chord`.
+    freq : int or float, optional
+        How fast (in beats) the arpeggiation is. The default is 0.5.
+    method : str, optional
+        Arpeggiation method. The default is 'up'.
+    auto_chord_length : 'max' or 'min', optional
+        How to handle inferring the length of the arpeggiation when a
+        `wubwub.notes.Chord` is passed. The default is 'max'.
+
+    Raises
+    ------
+    WubWubError
+        `chord` is not a wubwub Chord type.
+
+    Returns
+    -------
+    arpeggiated : dict
+        Dictionary of arpeggiated notes and their respective beats.
+
+    '''
     notes = chord.notes
 
     if length is None:
@@ -396,9 +427,13 @@ def arpeggiate(chord, beat, length=None, freq=0.5, method='up', auto_chord_lengt
     return arpeggiated
 
 def alter_notes(array, pitch=False, length=False, volume=False):
+    '''
+    Call the `alter_notes()` method for all Notes in an array.
+    '''
     return [n.alter(pitch, length, volume) for n in array]
 
 def new_chord(pitches, lengths=1, volumes=0):
+    '''Helper method for generating a new chord.'''
     size = len(pitches)
     if not isinstance(lengths, Iterable):
         lengths = [lengths] * size
@@ -408,7 +443,37 @@ def new_chord(pitches, lengths=1, volumes=0):
     notes = [Note(p, l, v) for p, l, v in zip(pitches, lengths, volumes)]
     return Chord(notes)
 
-def chord_from_name(root, kind='', voicing=0, lengths=1, volumes=0, add=None):
+def chord_from_name(root, kind='', lengths=1, volumes=0, add=None):
+    '''
+    Generate a wubwub chord from its musical name.
+
+    Parameters
+    ----------
+    root : str
+        A scientific pitch string.
+    kind : str, optional
+        String denoting the chord type (e.g. 'Maj7' for major 7th). See
+        `wubwub.pitch.named_chords` for all options. The default is ''
+        (which fetches a major triad).
+    lengths : number or array of numbers, optional
+        Note lengths for the new Chord. The default is 1.
+    volumes : number or array of numbers, optional
+        Note volumes for the new Chord. The default is 0.
+    add : int, optional
+        Note (in semitones from the root) to add to the chord.
+        The default is None.
+
+    Raises
+    ------
+    WubWubError
+        DESCRIPTION.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    '''
     try:
         pitches = list(named_chords[kind])
     except KeyError:
@@ -425,4 +490,3 @@ def chord_from_name(root, kind='', voicing=0, lengths=1, volumes=0, add=None):
     if isinstance(root, str):
         pitches = [pitch_from_semitones(root, p) for p in pitches]
     return new_chord(pitches, lengths, volumes)
-
