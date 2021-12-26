@@ -577,7 +577,7 @@ def arpeggiate(chord, beat, length=None, freq=0.5, method=&#39;up&#39;, auto_cho
 
 def alter_notes(array, pitch=False, length=False, volume=False):
     &#39;&#39;&#39;
-    Call the `alter_notes()` method for all Notes in an array.
+    Call the `wubwub.notes.Note.alter()` method for all Notes in an array.
     &#39;&#39;&#39;
     return [n.alter(pitch, length, volume) for n in array]
 
@@ -652,14 +652,14 @@ def chord_from_name(root, kind=&#39;&#39;, lengths=1, volumes=0, add=None):
 <span>def <span class="ident">alter_notes</span></span>(<span>array, pitch=False, length=False, volume=False)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Call the <code><a title="wubwub.notes.alter_notes" href="#wubwub.notes.alter_notes">alter_notes()</a></code> method for all Notes in an array.</p></div>
+<div class="desc"><p>Call the <code><a title="wubwub.notes.Note.alter" href="#wubwub.notes.Note.alter">Note.alter()</a></code> method for all Notes in an array.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def alter_notes(array, pitch=False, length=False, volume=False):
     &#39;&#39;&#39;
-    Call the `alter_notes()` method for all Notes in an array.
+    Call the `wubwub.notes.Note.alter()` method for all Notes in an array.
     &#39;&#39;&#39;
     return [n.alter(pitch, length, volume) for n in array]</code></pre>
 </details>

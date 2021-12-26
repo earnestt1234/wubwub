@@ -428,7 +428,7 @@ def arpeggiate(chord, beat, length=None, freq=0.5, method='up', auto_chord_lengt
 
 def alter_notes(array, pitch=False, length=False, volume=False):
     '''
-    Call the `alter_notes()` method for all Notes in an array.
+    Call the `wubwub.notes.Note.alter()` method for all Notes in an array.
     '''
     return [n.alter(pitch, length, volume) for n in array]
 
