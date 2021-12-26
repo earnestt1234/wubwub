@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Feb  9 10:13:16 2021
-
-@author: earnestt1234
+Functions and resources for dealing with pitch in wubwub.
 """
-from collections import deque
+
 import re
 
 from wubwub.errors import WubWubError
@@ -14,7 +12,6 @@ NOTES = ['C' , 'C#', 'Db', 'D' , 'D#', 'Eb', 'E' , 'F', 'F#',
          'Gb', 'G' , 'G#', 'Ab', 'A' , 'A#', 'Bb', 'B',]
 DIFF =  [0   , 1   , 1   , 2   , 3   , 3   , 4   , 5   , 6   ,
          6   , 7   , 8   , 8   , 9   , 10  , 10  , 11  ]
-
 NOTES_JOIN = '|'.join(NOTES)
 
 named_chords = (
@@ -36,20 +33,39 @@ named_chords = (
 chordnames_re = '|'.join(named_chords.keys())
 
 def valid_chord_str(s):
+    '''Returns True if `s` is a valid chord string.'''
     pattern = f"^({NOTES_JOIN})({chordnames_re})$"
     return bool(re.match(pattern, s))
 
 def valid_pitch_str(s):
+    '''Returns True is `s` is a valid scientific pitch string.'''
     pattern = f"^({NOTES_JOIN})[0-9]$"
     return bool(re.match(pattern, s))
 
 def pitch_from_semitones(pitch, semitones):
+    '''
+    Return a new pitch string, based on a difference in semitones from an
+    initial pitch string.
+
+    Parameters
+    ----------
+    pitch : str
+        Scientific pitch string.
+    semitones : int
+        Difference in semitones from `pitch`.
+
+    Returns
+    -------
+    str
+        New scientific pitch string
+
+    '''
     oldname, oldoct = splitoctave(pitch)
     idx_old = NOTES.index(oldname)
     old_diff = DIFF[idx_old]
     octave_change = (old_diff + semitones) // 12
     new_diff = semitones + old_diff
-    new_diff = new_diff % 12 if new_diff >= 0 else 12 + (new_diff % -12)
+    new_diff = (new_diff % 12) if (new_diff >= 0) else ((12 + (new_diff % -12)) % 12)
     newpitch = NOTES[DIFF.index(new_diff)]
     return newpitch + str(oldoct + octave_change)
 
