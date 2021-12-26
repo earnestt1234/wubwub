@@ -70,6 +70,23 @@ def pitch_from_semitones(pitch, semitones):
     return newpitch + str(oldoct + octave_change)
 
 def relative_pitch_to_int(a, b):
+    '''
+    Take two notes and compute the number of semitones betwee them.  The answer
+    will be relative to the first note.
+
+    Parameters
+    ----------
+    a : str
+        Scientific pitch string.
+    b : str
+        Scientific pitch string.
+
+    Returns
+    -------
+    int
+        Integer.
+
+    '''
     pitch_a, octave_a = splitoctave(a)
     pitch_b, octave_b = splitoctave(b)
     octave_diff = octave_b - octave_a
@@ -77,11 +94,33 @@ def relative_pitch_to_int(a, b):
     return pitch_diff + (12 * octave_diff)
 
 def splitoctave(pitch_str, octave_type=int):
+    '''
+    Split a scientific pitch string into the pitch class and the octave.
+
+    Parameters
+    ----------
+    pitch_str : str
+        Scientific pitch string
+    octave_type : dtype, optional
+        Data type for the octave returned. The default is int.
+
+    Raises
+    ------
+    WubWubError
+        Pitch string is not valid.
+
+    Returns
+    -------
+    pitch, octave
+        Tuple of the pitch name and octave.
+
+    '''
     if not valid_pitch_str(pitch_str):
         raise WubWubError(f'"{pitch_str}" is not a valid pitch string')
     return pitch_str[:-1], octave_type(pitch_str[-1])
 
 def splitchordname(chord_str):
+    '''Split a named chord into the pitch and chord type.'''
     if not valid_chord_str(chord_str):
         raise WubWubError(f'"{chord_str}" is not a valid chord string')
     if chord_str[1] in ['#, b']:
@@ -90,6 +129,23 @@ def splitchordname(chord_str):
         return chord_str[:1], chord_str[1:]
 
 def shift_pitch(sound, semitones):
+    '''
+    Pitch a pydub AudioSegment up or down.  Note that this is achieved by
+    speeding up or slowing down the audio, like many samplers do.
+
+    Parameters
+    ----------
+    sound : pydub.AudioSegment
+        Sound to repitch.
+    semitones : number
+        Number of semitones to repitch the sound.  Can be int or float.
+
+    Returns
+    -------
+    new_sound : pydub.AudioSegment
+        The repitched sound.
+
+    '''
     octaves = (semitones/12)
     new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
     new_sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sample_rate})

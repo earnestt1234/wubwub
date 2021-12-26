@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.1" />
 <title>wubwub.pitch API documentation</title>
-<meta name="description" content="Created on Tue Feb
-9 10:13:16 2021 …" />
+<meta name="description" content="Functions and resources for dealing with pitch in wubwub." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -23,9 +22,7 @@
 <h1 class="title">Module <code>wubwub.pitch</code></h1>
 </header>
 <section id="section-intro">
-<p>Created on Tue Feb
-9 10:13:16 2021</p>
-<p>@author: earnestt1234</p>
+<p>Functions and resources for dealing with pitch in wubwub.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -33,11 +30,9 @@
 <pre><code class="python">#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 &#34;&#34;&#34;
-Created on Tue Feb  9 10:13:16 2021
-
-@author: earnestt1234
+Functions and resources for dealing with pitch in wubwub.
 &#34;&#34;&#34;
-from collections import deque
+
 import re
 
 from wubwub.errors import WubWubError
@@ -46,7 +41,6 @@ NOTES = [&#39;C&#39; , &#39;C#&#39;, &#39;Db&#39;, &#39;D&#39; , &#39;D#&#39;, &
          &#39;Gb&#39;, &#39;G&#39; , &#39;G#&#39;, &#39;Ab&#39;, &#39;A&#39; , &#39;A#&#39;, &#39;Bb&#39;, &#39;B&#39;,]
 DIFF =  [0   , 1   , 1   , 2   , 3   , 3   , 4   , 5   , 6   ,
          6   , 7   , 8   , 8   , 9   , 10  , 10  , 11  ]
-
 NOTES_JOIN = &#39;|&#39;.join(NOTES)
 
 named_chords = (
@@ -68,24 +62,60 @@ named_chords = (
 chordnames_re = &#39;|&#39;.join(named_chords.keys())
 
 def valid_chord_str(s):
+    &#39;&#39;&#39;Returns True if `s` is a valid chord string.&#39;&#39;&#39;
     pattern = f&#34;^({NOTES_JOIN})({chordnames_re})$&#34;
     return bool(re.match(pattern, s))
 
 def valid_pitch_str(s):
+    &#39;&#39;&#39;Returns True is `s` is a valid scientific pitch string.&#39;&#39;&#39;
     pattern = f&#34;^({NOTES_JOIN})[0-9]$&#34;
     return bool(re.match(pattern, s))
 
 def pitch_from_semitones(pitch, semitones):
+    &#39;&#39;&#39;
+    Return a new pitch string, based on a difference in semitones from an
+    initial pitch string.
+
+    Parameters
+    ----------
+    pitch : str
+        Scientific pitch string.
+    semitones : int
+        Difference in semitones from `pitch`.
+
+    Returns
+    -------
+    str
+        New scientific pitch string
+
+    &#39;&#39;&#39;
     oldname, oldoct = splitoctave(pitch)
     idx_old = NOTES.index(oldname)
     old_diff = DIFF[idx_old]
     octave_change = (old_diff + semitones) // 12
     new_diff = semitones + old_diff
-    new_diff = new_diff % 12 if new_diff &gt;= 0 else 12 + (new_diff % -12)
+    new_diff = (new_diff % 12) if (new_diff &gt;= 0) else ((12 + (new_diff % -12)) % 12)
     newpitch = NOTES[DIFF.index(new_diff)]
     return newpitch + str(oldoct + octave_change)
 
 def relative_pitch_to_int(a, b):
+    &#39;&#39;&#39;
+    Take two notes and compute the number of semitones betwee them.  The answer
+    will be relative to the first note.
+
+    Parameters
+    ----------
+    a : str
+        Scientific pitch string.
+    b : str
+        Scientific pitch string.
+
+    Returns
+    -------
+    int
+        Integer.
+
+    &#39;&#39;&#39;
     pitch_a, octave_a = splitoctave(a)
     pitch_b, octave_b = splitoctave(b)
     octave_diff = octave_b - octave_a
@@ -93,11 +123,33 @@ def relative_pitch_to_int(a, b):
     return pitch_diff + (12 * octave_diff)
 
 def splitoctave(pitch_str, octave_type=int):
+    &#39;&#39;&#39;
+    Split a scientific pitch string into the pitch class and the octave.
+
+    Parameters
+    ----------
+    pitch_str : str
+        Scientific pitch string
+    octave_type : dtype, optional
+        Data type for the octave returned. The default is int.
+
+    Raises
+    ------
+    WubWubError
+        Pitch string is not valid.
+
+    Returns
+    -------
+    pitch, octave
+        Tuple of the pitch name and octave.
+
+    &#39;&#39;&#39;
     if not valid_pitch_str(pitch_str):
         raise WubWubError(f&#39;&#34;{pitch_str}&#34; is not a valid pitch string&#39;)
     return pitch_str[:-1], octave_type(pitch_str[-1])
 
 def splitchordname(chord_str):
+    &#39;&#39;&#39;Split a named chord into the pitch and chord type.&#39;&#39;&#39;
     if not valid_chord_str(chord_str):
         raise WubWubError(f&#39;&#34;{chord_str}&#34; is not a valid chord string&#39;)
     if chord_str[1] in [&#39;#, b&#39;]:
@@ -106,6 +158,23 @@ def splitchordname(chord_str):
         return chord_str[:1], chord_str[1:]
 
 def shift_pitch(sound, semitones):
+    &#39;&#39;&#39;
+    Pitch a pydub AudioSegment up or down.  Note that this is achieved by
+    speeding up or slowing down the audio, like many samplers do.
+
+    Parameters
+    ----------
+    sound : pydub.AudioSegment
+        Sound to repitch.
+    semitones : number
+        Number of semitones to repitch the sound.  Can be int or float.
+
+    Returns
+    -------
+    new_sound : pydub.AudioSegment
+        The repitched sound.
+
+    &#39;&#39;&#39;
     octaves = (semitones/12)
     new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
     new_sound = sound._spawn(sound.raw_data, overrides={&#39;frame_rate&#39;: new_sample_rate})
@@ -131,18 +200,48 @@ def shift_pitch(sound, semitones):
 <span>def <span class="ident">pitch_from_semitones</span></span>(<span>pitch, semitones)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Return a new pitch string, based on a difference in semitones from an
+initial pitch string.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>pitch</code></strong> :&ensp;<code>str</code></dt>
+<dd>Scientific pitch string.</dd>
+<dt><strong><code>semitones</code></strong> :&ensp;<code>int</code></dt>
+<dd>Difference in semitones from <code>pitch</code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>str</code></dt>
+<dd>New scientific pitch string</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def pitch_from_semitones(pitch, semitones):
+    &#39;&#39;&#39;
+    Return a new pitch string, based on a difference in semitones from an
+    initial pitch string.
+
+    Parameters
+    ----------
+    pitch : str
+        Scientific pitch string.
+    semitones : int
+        Difference in semitones from `pitch`.
+
+    Returns
+    -------
+    str
+        New scientific pitch string
+
+    &#39;&#39;&#39;
     oldname, oldoct = splitoctave(pitch)
     idx_old = NOTES.index(oldname)
     old_diff = DIFF[idx_old]
     octave_change = (old_diff + semitones) // 12
     new_diff = semitones + old_diff
-    new_diff = new_diff % 12 if new_diff &gt;= 0 else 12 + (new_diff % -12)
+    new_diff = (new_diff % 12) if (new_diff &gt;= 0) else ((12 + (new_diff % -12)) % 12)
     newpitch = NOTES[DIFF.index(new_diff)]
     return newpitch + str(oldoct + octave_change)</code></pre>
 </details>
@@ -151,12 +250,43 @@ def shift_pitch(sound, semitones):
 <span>def <span class="ident">relative_pitch_to_int</span></span>(<span>a, b)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Take two notes and compute the number of semitones betwee them.
+The answer
+will be relative to the first note.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>a</code></strong> :&ensp;<code>str</code></dt>
+<dd>Scientific pitch string.</dd>
+<dt><strong><code>b</code></strong> :&ensp;<code>str</code></dt>
+<dd>Scientific pitch string.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>int</code></dt>
+<dd>Integer.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def relative_pitch_to_int(a, b):
+    &#39;&#39;&#39;
+    Take two notes and compute the number of semitones betwee them.  The answer
+    will be relative to the first note.
+
+    Parameters
+    ----------
+    a : str
+        Scientific pitch string.
+    b : str
+        Scientific pitch string.
+
+    Returns
+    -------
+    int
+        Integer.
+
+    &#39;&#39;&#39;
     pitch_a, octave_a = splitoctave(a)
     pitch_b, octave_b = splitoctave(b)
     octave_diff = octave_b - octave_a
@@ -168,12 +298,44 @@ def shift_pitch(sound, semitones):
 <span>def <span class="ident">shift_pitch</span></span>(<span>sound, semitones)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Pitch a pydub AudioSegment up or down.
+Note that this is achieved by
+speeding up or slowing down the audio, like many samplers do.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>sound</code></strong> :&ensp;<code>pydub.AudioSegment</code></dt>
+<dd>Sound to repitch.</dd>
+<dt><strong><code>semitones</code></strong> :&ensp;<code>number</code></dt>
+<dd>Number of semitones to repitch the sound.
+Can be int or float.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>new_sound</code></strong> :&ensp;<code>pydub.AudioSegment</code></dt>
+<dd>The repitched sound.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def shift_pitch(sound, semitones):
+    &#39;&#39;&#39;
+    Pitch a pydub AudioSegment up or down.  Note that this is achieved by
+    speeding up or slowing down the audio, like many samplers do.
+
+    Parameters
+    ----------
+    sound : pydub.AudioSegment
+        Sound to repitch.
+    semitones : number
+        Number of semitones to repitch the sound.  Can be int or float.
+
+    Returns
+    -------
+    new_sound : pydub.AudioSegment
+        The repitched sound.
+
+    &#39;&#39;&#39;
     octaves = (semitones/12)
     new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
     new_sound = sound._spawn(sound.raw_data, overrides={&#39;frame_rate&#39;: new_sample_rate})
@@ -185,12 +347,13 @@ def shift_pitch(sound, semitones):
 <span>def <span class="ident">splitchordname</span></span>(<span>chord_str)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Split a named chord into the pitch and chord type.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def splitchordname(chord_str):
+    &#39;&#39;&#39;Split a named chord into the pitch and chord type.&#39;&#39;&#39;
     if not valid_chord_str(chord_str):
         raise WubWubError(f&#39;&#34;{chord_str}&#34; is not a valid chord string&#39;)
     if chord_str[1] in [&#39;#, b&#39;]:
@@ -203,12 +366,50 @@ def shift_pitch(sound, semitones):
 <span>def <span class="ident">splitoctave</span></span>(<span>pitch_str, octave_type=builtins.int)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Split a scientific pitch string into the pitch class and the octave.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>pitch_str</code></strong> :&ensp;<code>str</code></dt>
+<dd>Scientific pitch string</dd>
+<dt><strong><code>octave_type</code></strong> :&ensp;<code>dtype</code>, optional</dt>
+<dd>Data type for the octave returned. The default is int.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>WubWubError</code></dt>
+<dd>Pitch string is not valid.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pitch, octave</code></dt>
+<dd>Tuple of the pitch name and octave.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def splitoctave(pitch_str, octave_type=int):
+    &#39;&#39;&#39;
+    Split a scientific pitch string into the pitch class and the octave.
+
+    Parameters
+    ----------
+    pitch_str : str
+        Scientific pitch string
+    octave_type : dtype, optional
+        Data type for the octave returned. The default is int.
+
+    Raises
+    ------
+    WubWubError
+        Pitch string is not valid.
+
+    Returns
+    -------
+    pitch, octave
+        Tuple of the pitch name and octave.
+
+    &#39;&#39;&#39;
     if not valid_pitch_str(pitch_str):
         raise WubWubError(f&#39;&#34;{pitch_str}&#34; is not a valid pitch string&#39;)
     return pitch_str[:-1], octave_type(pitch_str[-1])</code></pre>
@@ -218,12 +419,13 @@ def shift_pitch(sound, semitones):
 <span>def <span class="ident">valid_chord_str</span></span>(<span>s)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Returns True if <code>s</code> is a valid chord string.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def valid_chord_str(s):
+    &#39;&#39;&#39;Returns True if `s` is a valid chord string.&#39;&#39;&#39;
     pattern = f&#34;^({NOTES_JOIN})({chordnames_re})$&#34;
     return bool(re.match(pattern, s))</code></pre>
 </details>
@@ -232,12 +434,13 @@ def shift_pitch(sound, semitones):
 <span>def <span class="ident">valid_pitch_str</span></span>(<span>s)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Returns True is <code>s</code> is a valid scientific pitch string.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def valid_pitch_str(s):
+    &#39;&#39;&#39;Returns True is `s` is a valid scientific pitch string.&#39;&#39;&#39;
     pattern = f&#34;^({NOTES_JOIN})[0-9]$&#34;
     return bool(re.match(pattern, s))</code></pre>
 </details>
