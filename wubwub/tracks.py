@@ -357,16 +357,16 @@ class Track(metaclass=ABCMeta):
 
     def plot(self, yaxis='semitones', timesig=4, grid=True, ax=None,
              plot_kwds=None, scatter_kwds=None):
-        trackplot(track=self,
-                  yaxis=yaxis,
-                  timesig=timesig,
-                  grid=grid,
-                  ax=ax,
-                  plot_kwds=plot_kwds,
-                  scatter_kwds=scatter_kwds)
+        return trackplot(track=self,
+                         yaxis=yaxis,
+                         timesig=timesig,
+                         grid=grid,
+                         ax=ax,
+                         plot_kwds=plot_kwds,
+                         scatter_kwds=scatter_kwds)
 
     def pianoroll(self, timesig=4, grid=True,):
-        pianoroll(track=self, timesig=timesig, grid=grid)
+        return pianoroll(track=self, timesig=timesig, grid=grid)
 
 class SamplerLikeTrack(Track):
     def __init__(self, name, sequencer, **kwargs):

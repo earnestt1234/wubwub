@@ -818,12 +818,12 @@ class Sequencer:
             The Figure containing the axes used.
 
         &#39;&#39;&#39;
-        sequencerplot(self,
-                      timesig=timesig,
-                      grid=grid,
-                      ax=ax,
-                      scatter_kwds=scatter_kwds,
-                      plot_kwds=plot_kwds)
+        return sequencerplot(self,
+                             timesig=timesig,
+                             grid=grid,
+                             ax=ax,
+                             scatter_kwds=scatter_kwds,
+                             plot_kwds=plot_kwds)
 
 
 def stitch(sequencers, internal_overhang=0, end_overhang=0, overhang_type=&#39;beats&#39;):
@@ -2001,12 +2001,12 @@ the output audio and creates a container for subsidiary tracks.</p></div>
             The Figure containing the axes used.
 
         &#39;&#39;&#39;
-        sequencerplot(self,
-                      timesig=timesig,
-                      grid=grid,
-                      ax=ax,
-                      scatter_kwds=scatter_kwds,
-                      plot_kwds=plot_kwds)</code></pre>
+        return sequencerplot(self,
+                             timesig=timesig,
+                             grid=grid,
+                             ax=ax,
+                             scatter_kwds=scatter_kwds,
+                             plot_kwds=plot_kwds)</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -2965,12 +2965,12 @@ The default is None.</p>
         The Figure containing the axes used.
 
     &#39;&#39;&#39;
-    sequencerplot(self,
-                  timesig=timesig,
-                  grid=grid,
-                  ax=ax,
-                  scatter_kwds=scatter_kwds,
-                  plot_kwds=plot_kwds)</code></pre>
+    return sequencerplot(self,
+                         timesig=timesig,
+                         grid=grid,
+                         ax=ax,
+                         scatter_kwds=scatter_kwds,
+                         plot_kwds=plot_kwds)</code></pre>
 </details>
 </dd>
 <dt id="wubwub.sequencer.Sequencer.postprocess"><code class="name flex">

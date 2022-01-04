@@ -4,6 +4,8 @@
 Various plots for visualizing the contents of a `wubwub.sequencer.Sequencer`.
 """
 
+__pdoc__ = {'draw_pianoroll': False}
+
 from numbers import Number
 
 import matplotlib as mpl
@@ -67,6 +69,17 @@ def sequencerplot(sequencer, timesig=4, grid=True, ax=None, scatter_kwds=None,
     matplotlib.figure.Figure
         The Figure containing the axes used.
 
+    Examples
+    --------
+
+    Example sequencerplot for the "Electro" example:
+
+    ```
+    seq.plot()
+    ```
+
+    .. image:: ../../img/electro_seqplot.png
+
     '''
     if ax is None:
         ax = plt.gca()
@@ -123,11 +136,11 @@ def sequencerplot(sequencer, timesig=4, grid=True, ax=None, scatter_kwds=None,
     ax.set_xticks(xticks)
     minor_locator = AutoMinorLocator(2)
     ax.xaxis.set_minor_locator(minor_locator)
-    print(ax.figure)
 
     return ax.figure
 
 def _convert_semitones_str_yaxis(plottype, note, track):
+    '''Convert scientific pitch notations and relative semitones.'''
     if plottype == 'semitones' and isinstance(note.pitch, str):
         if not hasattr(track, 'basepitch'):
             raise WubWubError('Cannot convert pitch to semitoes with no `basepitch` attribute.')
@@ -140,6 +153,7 @@ def _convert_semitones_str_yaxis(plottype, note, track):
         return note.pitch
 
 def _format_pitch_yaxis(ax, pitchnums, max_range=24, max_pitches=12):
+    '''Format the y-axis when plotting pitches.'''
     lo = min(pitchnums)
     hi = max(pitchnums)
     pitchrange = hi - lo
@@ -153,6 +167,60 @@ def _format_pitch_yaxis(ax, pitchnums, max_range=24, max_pitches=12):
 
 def trackplot(track, yaxis='semitones', timesig=4, grid=True, ax=None,
               scatter_kwds=None, plot_kwds=None):
+    '''
+    Create a pitch vs. beat plot for one Track.
+
+    Parameters
+    ----------
+    track : wubwub Track
+        Any wubwub Track class.
+    yaxis : 'semitones' or 'pitch' or 'names', optional
+        Determines how elements are plotted on the y-axis.
+        The default is 'semitones'.
+        - `'semitones'`: plot semitones on the y-axis (relative to the original sample)
+        - `'pitch'`: plot scientific pitch strings (the Track should have a meaningul `basepitch`)
+        - `'names'`: plot note names in alphabetical order, not inferring pitch; useful for MultiSample tracks
+    timesig : int, optional
+        Sets the ticks/grid to a given frequency of beats. The default is 4.. The default is 4.
+    grid : bool, optional
+        Whether to include a grid. The default is True.
+    ax : matplotlib.axes.Axes, optional
+        Axes to create the plot on. The default is None.
+    scatter_kwds : dict, optional
+        Keyword arguments passed to `matplotlib.axes.Axes.scatter`.
+        The default is None.
+    plot_kwds : dict, optional
+        Keyword arguments passed to `matplotlib.axes.Axes.plot`.
+        The default is None.
+
+    Raises
+    ------
+    WubWubError
+        `y-axis` value is not valid.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        The Figure for the track plot.
+
+    Examples
+    --------
+
+    Example track plots for the `"hinote1"` track in the "Electro" example:
+
+    ```python
+    seq['hinote1'].plot()
+    ```
+
+    .. image:: ../../img/electro_hinote1_trackplot_semitones.png
+
+    ```python
+    seq['hinote1'].plot(yaxis='pitch')
+    ```
+
+    .. image:: ../../img/electro_hinote1_trackplot_pitch.png
+
+    '''
     if yaxis not in ['pitch', 'semitones', 'names']:
         raise WubWubError('yaxis must be "pitch", "semitones", or "names".')
     if ax is None:
@@ -235,6 +303,7 @@ def trackplot(track, yaxis='semitones', timesig=4, grid=True, ax=None,
     return ax.figure
 
 def draw_pianoroll(ax, lo, hi, notenames=True):
+    '''Draw the pianoroll on Axes.'''
     lo_num = relative_pitch_to_int('C1', lo) - 2
     hi_num = relative_pitch_to_int('C1', hi) + 2
     num_notes = hi_num - lo_num
@@ -260,6 +329,35 @@ def draw_pianoroll(ax, lo, hi, notenames=True):
             ax.text(0.1, i + 0.5, note, color=textcolor, va='center', fontsize=fontsize)
 
 def pianoroll(track, timesig=4, grid=True,):
+    '''
+    Create a plot showing the track notes against piano keys.
+
+    Parameters
+    ----------
+    track : wubwub Track
+        Trakc to plot.
+    timesig : int, optional
+        Sets the ticks/grid to a given frequency of beats. The default is 4.. The default is 4.
+    grid : bool, optional
+        Whether to include a grid. The default is True.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        Pianoroll Figure with 2 Axes.
+
+    Examples
+    --------
+
+    Example pianoroll plot for the `"rhodes2"` track in the "LoFi" example:
+
+    ```python
+    seq['rhodes2'].pianoroll()
+    ```
+
+    .. image:: ../../img/lofi_rhodes2_pianoroll.png
+
+    '''
 
     fig = plt.figure()
     gs = fig.add_gridspec(1, 10)

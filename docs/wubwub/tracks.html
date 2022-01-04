@@ -389,16 +389,16 @@ class Track(metaclass=ABCMeta):
 
     def plot(self, yaxis=&#39;semitones&#39;, timesig=4, grid=True, ax=None,
              plot_kwds=None, scatter_kwds=None):
-        trackplot(track=self,
-                  yaxis=yaxis,
-                  timesig=timesig,
-                  grid=grid,
-                  ax=ax,
-                  plot_kwds=plot_kwds,
-                  scatter_kwds=scatter_kwds)
+        return trackplot(track=self,
+                         yaxis=yaxis,
+                         timesig=timesig,
+                         grid=grid,
+                         ax=ax,
+                         plot_kwds=plot_kwds,
+                         scatter_kwds=scatter_kwds)
 
     def pianoroll(self, timesig=4, grid=True,):
-        pianoroll(track=self, timesig=timesig, grid=grid)
+        return pianoroll(track=self, timesig=timesig, grid=grid)
 
 class SamplerLikeTrack(Track):
     def __init__(self, name, sequencer, **kwargs):
@@ -1940,16 +1940,16 @@ def sample(self):
 
     def plot(self, yaxis=&#39;semitones&#39;, timesig=4, grid=True, ax=None,
              plot_kwds=None, scatter_kwds=None):
-        trackplot(track=self,
-                  yaxis=yaxis,
-                  timesig=timesig,
-                  grid=grid,
-                  ax=ax,
-                  plot_kwds=plot_kwds,
-                  scatter_kwds=scatter_kwds)
+        return trackplot(track=self,
+                         yaxis=yaxis,
+                         timesig=timesig,
+                         grid=grid,
+                         ax=ax,
+                         plot_kwds=plot_kwds,
+                         scatter_kwds=scatter_kwds)
 
     def pianoroll(self, timesig=4, grid=True,):
-        pianoroll(track=self, timesig=timesig, grid=grid)</code></pre>
+        return pianoroll(track=self, timesig=timesig, grid=grid)</code></pre>
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
@@ -2246,7 +2246,7 @@ def build(self, overhang=0, overhang_type=&#39;beats&#39;):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def pianoroll(self, timesig=4, grid=True,):
-    pianoroll(track=self, timesig=timesig, grid=grid)</code></pre>
+    return pianoroll(track=self, timesig=timesig, grid=grid)</code></pre>
 </details>
 </dd>
 <dt id="wubwub.tracks.Track.play"><code class="name flex">
@@ -2278,13 +2278,13 @@ def build(self, overhang=0, overhang_type=&#39;beats&#39;):
 </summary>
 <pre><code class="python">def plot(self, yaxis=&#39;semitones&#39;, timesig=4, grid=True, ax=None,
          plot_kwds=None, scatter_kwds=None):
-    trackplot(track=self,
-              yaxis=yaxis,
-              timesig=timesig,
-              grid=grid,
-              ax=ax,
-              plot_kwds=plot_kwds,
-              scatter_kwds=scatter_kwds)</code></pre>
+    return trackplot(track=self,
+                     yaxis=yaxis,
+                     timesig=timesig,
+                     grid=grid,
+                     ax=ax,
+                     plot_kwds=plot_kwds,
+                     scatter_kwds=scatter_kwds)</code></pre>
 </details>
 </dd>
 <dt id="wubwub.tracks.Track.postprocess"><code class="name flex">
