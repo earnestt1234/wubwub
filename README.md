@@ -29,7 +29,7 @@ kick.make_notes(beats=[1, 3, 5, 7])
 hihat.make_notes_every(freq=.5)
 
 # initialize notes and add them with set-item syntax
-snare[[2::2]] = wb.Note() # 2, 4, 6, 8
+snare[2::2] = wb.Note() # 2, 4, 6, 8
 snare[8.5] = wb.Note()
 ```
 
