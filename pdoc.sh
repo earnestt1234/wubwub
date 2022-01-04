@@ -1,1 +1,1 @@
-pdoc --html -o docs wubwub --force
+pdoc --html -o docs --template-dir docs/templates wubwub --force
