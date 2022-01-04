@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.1" />
 <title>wubwub.pattern API documentation</title>
-<meta name="description" content="Created on Tue Jul 13 22:45:17 2021 …" />
+<meta name="description" content="Class for encoding rhythmic patterns." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -22,8 +22,7 @@
 <h1 class="title">Module <code>wubwub.pattern</code></h1>
 </header>
 <section id="section-intro">
-<p>Created on Tue Jul 13 22:45:17 2021</p>
-<p>@author: earnestt1234</p>
+<p>Class for encoding rhythmic patterns.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -31,28 +30,33 @@
 <pre><code class="python">#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 &#34;&#34;&#34;
-Created on Tue Jul 13 22:45:17 2021
-
-@author: earnestt1234
+Class for encoding rhythmic patterns.
 &#34;&#34;&#34;
 
 from sortedcontainers import SortedList
 
 class Pattern:
-    def __init__(self, pattern, length,):
+    &#39;&#39;&#39;Class for encoding a rhythmic pattern.&#39;&#39;&#39;
+    def __init__(self, pattern, length):
+        &#39;&#39;&#39;Initialize with a list of beats and a length of the pattern (in beats).
+        The `pattern` will be converted into a SortedList.&#39;&#39;&#39;
         self.pattern = SortedList(pattern)
         self.length = length
 
     def __repr__(self):
+        &#39;&#39;&#39;String representation&#39;&#39;&#39;
         return f&#39;Pattern(pattern={self.pattern}, length={self.length})&#39;
 
     def __eq__(self, other):
+        &#39;&#39;&#39;Returns True if the pattern and length of other equal that of self.&#39;&#39;&#39;
         return self.pattern == other.pattern and self.length == other.length
 
     def __iter__(self):
+        &#39;&#39;&#39;Iterate over the beats in the pattern of self.&#39;&#39;&#39;
         return iter(self.pattern)
 
     def __add__(self, other):
+        &#39;&#39;&#39;Create a new pattern with the beats of self followed by the beats of other.&#39;&#39;&#39;
         if not isinstance(other, Pattern):
             raise TypeError(f&#39;Can only add Pattern with Pattern, not {type(other)}.&#39;)
         newp = self.pattern + [p + self.length for p in other.pattern]
@@ -60,17 +64,20 @@ class Pattern:
         return Pattern(newp, newl)
 
     def __radd__(self, other):
+        &#39;&#39;&#39;Create a new pattern with the beats of self followed by the beats of other.&#39;&#39;&#39;
         if other == 0:
             return self
         else:
             return self.__add__(other)
 
     def __iadd__(self, other):
+        &#39;&#39;&#39;Add to the pattern of self.&#39;&#39;&#39;
         self.pattern += [p + self.length for p in other.pattern]
         self.length += other.length
         return self
 
     def __mul__(self, n):
+        &#39;&#39;&#39;Repeat the pattern n times.&#39;&#39;&#39;
         if not isinstance(n, int):
             raise TypeError(&#39;Can only multiply Pattern by int, not {type(other)}.&#39;)
         newp = SortedList()
@@ -81,9 +88,11 @@ class Pattern:
         return Pattern(newp, newl)
 
     def __rmul__(self, n):
+        &#39;&#39;&#39;Repeat the pattern n times.&#39;&#39;&#39;
         return self.__mul__(n)
 
     def __imul__(self, n):
+        &#39;&#39;&#39;Repeat the pattern n times.&#39;&#39;&#39;
         if not isinstance(n, int):
             raise TypeError(&#39;Can only multiply Pattern by int, not {type(other)}.&#39;)
         newp = SortedList()
@@ -96,9 +105,37 @@ class Pattern:
         return self
 
     def __len__(self):
+        &#39;&#39;&#39;Return the number of elements in the pattern of self.&#39;&#39;&#39;
         return len(self.pattern)
 
     def merge(self, other):
+        &#39;&#39;&#39;
+        Join a new pattern, keeping the union of beats and the maximum length.
+
+        Parameters
+        ----------
+        other : Pattern
+            New pattern to merge.
+
+        Returns
+        -------
+        Pattern
+            A new Pattern object.
+
+        Examples
+        --------
+
+        ```python
+        &gt;&gt;&gt; import wubwub as wb
+
+        &gt;&gt;&gt; a = wb.Pattern([1, 3, 5, 7], length=8)
+        &gt;&gt;&gt; b = wb.Pattern([6, 8], length=4)
+        &gt;&gt;&gt; a.merge(b)
+        Pattern(pattern=SortedList([1, 3, 5, 6, 7, 8]), length=8)
+
+        ```
+
+        &#39;&#39;&#39;
         newp = self.pattern.copy()
         for p in other.pattern:
             if p not in newp:
@@ -107,24 +144,133 @@ class Pattern:
         return Pattern(newp, newl)
 
     def on(self, beat):
+        &#39;&#39;&#39;
+        Create a new Pattern with the same rhythm as self but
+        starting on a new beat.
+
+        Parameters
+        ----------
+        beat : number
+            New beat to start the pattern on.
+
+        Returns
+        -------
+        Pattern
+            New Pattern.
+
+        Examples
+        --------
+
+        ```python
+        &gt;&gt;&gt; import wubwub as wb
+
+        &gt;&gt;&gt; a = wb.Pattern([1, 1.25, 1.75, 2, 2.5], length=2)
+        &gt;&gt;&gt; a.on(42)
+        Pattern(pattern=SortedList([42, 42.25, 42.75, 43, 43.5]), length=2)
+
+        ```
+
+        &#39;&#39;&#39;
         return Pattern([(beat-1) + p for p in self.pattern], self.length)
 
     def onmeasure(self, measure, measurelen=None):
+        &#39;&#39;&#39;
+        Shift a Pattern of given number of measures.
+
+        Parameters
+        ----------
+        measure : int
+            Measure number.
+        measurelen : int, optional
+            Number of beats in the measure. The default is None, in which case
+            the Pattern length is used.
+
+        Returns
+        -------
+        Pattern
+            New Pattern.
+
+        Examples
+        --------
+
+        ```python
+        &gt;&gt;&gt; import wubwub as wb
+
+        &gt;&gt;&gt; a = wb.Pattern([1, 1.25, 1.75, 2, 2.5], length=2)
+        &gt;&gt;&gt; a.onmeasure(3, measurelen=4)
+        Pattern(pattern=SortedList([9, 9.25, 9.75, 10, 10.5]), length=2)
+
+        ```
+
+        &#39;&#39;&#39;
         if measurelen == None:
             measurelen = self.length
-        return self.on(beat = 1 + (measure - 1) * measurelen)
+        return self.on(1 + (measure - 1) * measurelen)
 
     def chop(self, beat):
+        &#39;&#39;&#39;
+        Keep only elements of the Pattern before a given beat.
+
+        Parameters
+        ----------
+        beat : number
+            Beat to chop on.  Also sets the length of the new Pattern.
+
+        Returns
+        -------
+        Pattern
+            A new Pattern.
+
+        Examples
+        --------
+
+        ```python
+        &gt;&gt;&gt; import wubwub as wb
+
+        &gt;&gt;&gt; a = wb.Pattern([1, 1.25, 1.5, 2, 3.25, 3.75, 4.25], length=4)
+        &gt;&gt;&gt; a.chop(3)
+        Pattern(pattern=SortedList([1, 1.25, 1.5, 2]), length=2)
+
+        ```
+
+        &#39;&#39;&#39;
         newp = [p for p in self.pattern if p &lt; beat]
-        newl = beat
+        newl = beat - 1
         return Pattern(newp, newl)
 
     def copy(self):
+        &#39;&#39;&#39;Return a copy of self.&#39;&#39;&#39;
         return Pattern(self.pattern, self.length)
 
     def until(self, beat):
+        &#39;&#39;&#39;
+        Repeat the current pattern until a certain beat.
+
+        Parameters
+        ----------
+        beat : number
+            Beat to repeat until.
+
+        Returns
+        -------
+        Pattern
+            New Pattern.
+
+        Examples
+        --------
+
+        ```python
+        &gt;&gt;&gt; import wubwub as wb
+
+        &gt;&gt;&gt; a = wb.Pattern([1, 2, 3, 4], length=4)
+        &gt;&gt;&gt; a = wb.Pattern([1, 2, 3, 4], length=4)
+        Pattern(pattern=SortedList([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]), length=16)
+
+        ```
+
+        &#39;&#39;&#39;
         repeats, extra = divmod(beat, self.length)
-        return self.copy() * repeats + self.copy().chop(extra)</code></pre>
+        return self.copy() * repeats + self.copy().chop(extra + 1)</code></pre>
 </details>
 </section>
 <section>
@@ -141,26 +287,35 @@ class Pattern:
 <span>(</span><span>pattern, length)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Class for encoding a rhythmic pattern.</p>
+<p>Initialize with a list of beats and a length of the pattern (in beats).
+The <code>pattern</code> will be converted into a SortedList.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Pattern:
-    def __init__(self, pattern, length,):
+    &#39;&#39;&#39;Class for encoding a rhythmic pattern.&#39;&#39;&#39;
+    def __init__(self, pattern, length):
+        &#39;&#39;&#39;Initialize with a list of beats and a length of the pattern (in beats).
+        The `pattern` will be converted into a SortedList.&#39;&#39;&#39;
         self.pattern = SortedList(pattern)
         self.length = length
 
     def __repr__(self):
+        &#39;&#39;&#39;String representation&#39;&#39;&#39;
         return f&#39;Pattern(pattern={self.pattern}, length={self.length})&#39;
 
     def __eq__(self, other):
+        &#39;&#39;&#39;Returns True if the pattern and length of other equal that of self.&#39;&#39;&#39;
         return self.pattern == other.pattern and self.length == other.length
 
     def __iter__(self):
+        &#39;&#39;&#39;Iterate over the beats in the pattern of self.&#39;&#39;&#39;
         return iter(self.pattern)
 
     def __add__(self, other):
+        &#39;&#39;&#39;Create a new pattern with the beats of self followed by the beats of other.&#39;&#39;&#39;
         if not isinstance(other, Pattern):
             raise TypeError(f&#39;Can only add Pattern with Pattern, not {type(other)}.&#39;)
         newp = self.pattern + [p + self.length for p in other.pattern]
@@ -168,17 +323,20 @@ class Pattern:
         return Pattern(newp, newl)
 
     def __radd__(self, other):
+        &#39;&#39;&#39;Create a new pattern with the beats of self followed by the beats of other.&#39;&#39;&#39;
         if other == 0:
             return self
         else:
             return self.__add__(other)
 
     def __iadd__(self, other):
+        &#39;&#39;&#39;Add to the pattern of self.&#39;&#39;&#39;
         self.pattern += [p + self.length for p in other.pattern]
         self.length += other.length
         return self
 
     def __mul__(self, n):
+        &#39;&#39;&#39;Repeat the pattern n times.&#39;&#39;&#39;
         if not isinstance(n, int):
             raise TypeError(&#39;Can only multiply Pattern by int, not {type(other)}.&#39;)
         newp = SortedList()
@@ -189,9 +347,11 @@ class Pattern:
         return Pattern(newp, newl)
 
     def __rmul__(self, n):
+        &#39;&#39;&#39;Repeat the pattern n times.&#39;&#39;&#39;
         return self.__mul__(n)
 
     def __imul__(self, n):
+        &#39;&#39;&#39;Repeat the pattern n times.&#39;&#39;&#39;
         if not isinstance(n, int):
             raise TypeError(&#39;Can only multiply Pattern by int, not {type(other)}.&#39;)
         newp = SortedList()
@@ -204,9 +364,37 @@ class Pattern:
         return self
 
     def __len__(self):
+        &#39;&#39;&#39;Return the number of elements in the pattern of self.&#39;&#39;&#39;
         return len(self.pattern)
 
     def merge(self, other):
+        &#39;&#39;&#39;
+        Join a new pattern, keeping the union of beats and the maximum length.
+
+        Parameters
+        ----------
+        other : Pattern
+            New pattern to merge.
+
+        Returns
+        -------
+        Pattern
+            A new Pattern object.
+
+        Examples
+        --------
+
+        ```python
+        &gt;&gt;&gt; import wubwub as wb
+
+        &gt;&gt;&gt; a = wb.Pattern([1, 3, 5, 7], length=8)
+        &gt;&gt;&gt; b = wb.Pattern([6, 8], length=4)
+        &gt;&gt;&gt; a.merge(b)
+        Pattern(pattern=SortedList([1, 3, 5, 6, 7, 8]), length=8)
+
+        ```
+
+        &#39;&#39;&#39;
         newp = self.pattern.copy()
         for p in other.pattern:
             if p not in newp:
@@ -215,24 +403,133 @@ class Pattern:
         return Pattern(newp, newl)
 
     def on(self, beat):
+        &#39;&#39;&#39;
+        Create a new Pattern with the same rhythm as self but
+        starting on a new beat.
+
+        Parameters
+        ----------
+        beat : number
+            New beat to start the pattern on.
+
+        Returns
+        -------
+        Pattern
+            New Pattern.
+
+        Examples
+        --------
+
+        ```python
+        &gt;&gt;&gt; import wubwub as wb
+
+        &gt;&gt;&gt; a = wb.Pattern([1, 1.25, 1.75, 2, 2.5], length=2)
+        &gt;&gt;&gt; a.on(42)
+        Pattern(pattern=SortedList([42, 42.25, 42.75, 43, 43.5]), length=2)
+
+        ```
+
+        &#39;&#39;&#39;
         return Pattern([(beat-1) + p for p in self.pattern], self.length)
 
     def onmeasure(self, measure, measurelen=None):
+        &#39;&#39;&#39;
+        Shift a Pattern of given number of measures.
+
+        Parameters
+        ----------
+        measure : int
+            Measure number.
+        measurelen : int, optional
+            Number of beats in the measure. The default is None, in which case
+            the Pattern length is used.
+
+        Returns
+        -------
+        Pattern
+            New Pattern.
+
+        Examples
+        --------
+
+        ```python
+        &gt;&gt;&gt; import wubwub as wb
+
+        &gt;&gt;&gt; a = wb.Pattern([1, 1.25, 1.75, 2, 2.5], length=2)
+        &gt;&gt;&gt; a.onmeasure(3, measurelen=4)
+        Pattern(pattern=SortedList([9, 9.25, 9.75, 10, 10.5]), length=2)
+
+        ```
+
+        &#39;&#39;&#39;
         if measurelen == None:
             measurelen = self.length
-        return self.on(beat = 1 + (measure - 1) * measurelen)
+        return self.on(1 + (measure - 1) * measurelen)
 
     def chop(self, beat):
+        &#39;&#39;&#39;
+        Keep only elements of the Pattern before a given beat.
+
+        Parameters
+        ----------
+        beat : number
+            Beat to chop on.  Also sets the length of the new Pattern.
+
+        Returns
+        -------
+        Pattern
+            A new Pattern.
+
+        Examples
+        --------
+
+        ```python
+        &gt;&gt;&gt; import wubwub as wb
+
+        &gt;&gt;&gt; a = wb.Pattern([1, 1.25, 1.5, 2, 3.25, 3.75, 4.25], length=4)
+        &gt;&gt;&gt; a.chop(3)
+        Pattern(pattern=SortedList([1, 1.25, 1.5, 2]), length=2)
+
+        ```
+
+        &#39;&#39;&#39;
         newp = [p for p in self.pattern if p &lt; beat]
-        newl = beat
+        newl = beat - 1
         return Pattern(newp, newl)
 
     def copy(self):
+        &#39;&#39;&#39;Return a copy of self.&#39;&#39;&#39;
         return Pattern(self.pattern, self.length)
 
     def until(self, beat):
+        &#39;&#39;&#39;
+        Repeat the current pattern until a certain beat.
+
+        Parameters
+        ----------
+        beat : number
+            Beat to repeat until.
+
+        Returns
+        -------
+        Pattern
+            New Pattern.
+
+        Examples
+        --------
+
+        ```python
+        &gt;&gt;&gt; import wubwub as wb
+
+        &gt;&gt;&gt; a = wb.Pattern([1, 2, 3, 4], length=4)
+        &gt;&gt;&gt; a = wb.Pattern([1, 2, 3, 4], length=4)
+        Pattern(pattern=SortedList([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]), length=16)
+
+        ```
+
+        &#39;&#39;&#39;
         repeats, extra = divmod(beat, self.length)
-        return self.copy() * repeats + self.copy().chop(extra)</code></pre>
+        return self.copy() * repeats + self.copy().chop(extra + 1)</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -240,14 +537,59 @@ class Pattern:
 <span>def <span class="ident">chop</span></span>(<span>self, beat)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Keep only elements of the Pattern before a given beat.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>beat</code></strong> :&ensp;<code>number</code></dt>
+<dd>Beat to chop on.
+Also sets the length of the new Pattern.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="wubwub.pattern.Pattern" href="#wubwub.pattern.Pattern">Pattern</a></code></dt>
+<dd>A new Pattern.</dd>
+</dl>
+<h2 id="examples">Examples</h2>
+<pre><code class="python">&gt;&gt;&gt; import wubwub as wb
+
+&gt;&gt;&gt; a = wb.Pattern([1, 1.25, 1.5, 2, 3.25, 3.75, 4.25], length=4)
+&gt;&gt;&gt; a.chop(3)
+Pattern(pattern=SortedList([1, 1.25, 1.5, 2]), length=2)
+
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def chop(self, beat):
+    &#39;&#39;&#39;
+    Keep only elements of the Pattern before a given beat.
+
+    Parameters
+    ----------
+    beat : number
+        Beat to chop on.  Also sets the length of the new Pattern.
+
+    Returns
+    -------
+    Pattern
+        A new Pattern.
+
+    Examples
+    --------
+
+    ```python
+    &gt;&gt;&gt; import wubwub as wb
+
+    &gt;&gt;&gt; a = wb.Pattern([1, 1.25, 1.5, 2, 3.25, 3.75, 4.25], length=4)
+    &gt;&gt;&gt; a.chop(3)
+    Pattern(pattern=SortedList([1, 1.25, 1.5, 2]), length=2)
+
+    ```
+
+    &#39;&#39;&#39;
     newp = [p for p in self.pattern if p &lt; beat]
-    newl = beat
+    newl = beat - 1
     return Pattern(newp, newl)</code></pre>
 </details>
 </dd>
@@ -255,12 +597,13 @@ class Pattern:
 <span>def <span class="ident">copy</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Return a copy of self.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def copy(self):
+    &#39;&#39;&#39;Return a copy of self.&#39;&#39;&#39;
     return Pattern(self.pattern, self.length)</code></pre>
 </details>
 </dd>
@@ -268,12 +611,58 @@ class Pattern:
 <span>def <span class="ident">merge</span></span>(<span>self, other)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Join a new pattern, keeping the union of beats and the maximum length.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>other</code></strong> :&ensp;<code><a title="wubwub.pattern.Pattern" href="#wubwub.pattern.Pattern">Pattern</a></code></dt>
+<dd>New pattern to merge.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="wubwub.pattern.Pattern" href="#wubwub.pattern.Pattern">Pattern</a></code></dt>
+<dd>A new Pattern object.</dd>
+</dl>
+<h2 id="examples">Examples</h2>
+<pre><code class="python">&gt;&gt;&gt; import wubwub as wb
+
+&gt;&gt;&gt; a = wb.Pattern([1, 3, 5, 7], length=8)
+&gt;&gt;&gt; b = wb.Pattern([6, 8], length=4)
+&gt;&gt;&gt; a.merge(b)
+Pattern(pattern=SortedList([1, 3, 5, 6, 7, 8]), length=8)
+
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def merge(self, other):
+    &#39;&#39;&#39;
+    Join a new pattern, keeping the union of beats and the maximum length.
+
+    Parameters
+    ----------
+    other : Pattern
+        New pattern to merge.
+
+    Returns
+    -------
+    Pattern
+        A new Pattern object.
+
+    Examples
+    --------
+
+    ```python
+    &gt;&gt;&gt; import wubwub as wb
+
+    &gt;&gt;&gt; a = wb.Pattern([1, 3, 5, 7], length=8)
+    &gt;&gt;&gt; b = wb.Pattern([6, 8], length=4)
+    &gt;&gt;&gt; a.merge(b)
+    Pattern(pattern=SortedList([1, 3, 5, 6, 7, 8]), length=8)
+
+    ```
+
+    &#39;&#39;&#39;
     newp = self.pattern.copy()
     for p in other.pattern:
         if p not in newp:
@@ -286,12 +675,58 @@ class Pattern:
 <span>def <span class="ident">on</span></span>(<span>self, beat)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Create a new Pattern with the same rhythm as self but
+starting on a new beat.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>beat</code></strong> :&ensp;<code>number</code></dt>
+<dd>New beat to start the pattern on.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="wubwub.pattern.Pattern" href="#wubwub.pattern.Pattern">Pattern</a></code></dt>
+<dd>New Pattern.</dd>
+</dl>
+<h2 id="examples">Examples</h2>
+<pre><code class="python">&gt;&gt;&gt; import wubwub as wb
+
+&gt;&gt;&gt; a = wb.Pattern([1, 1.25, 1.75, 2, 2.5], length=2)
+&gt;&gt;&gt; a.on(42)
+Pattern(pattern=SortedList([42, 42.25, 42.75, 43, 43.5]), length=2)
+
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def on(self, beat):
+    &#39;&#39;&#39;
+    Create a new Pattern with the same rhythm as self but
+    starting on a new beat.
+
+    Parameters
+    ----------
+    beat : number
+        New beat to start the pattern on.
+
+    Returns
+    -------
+    Pattern
+        New Pattern.
+
+    Examples
+    --------
+
+    ```python
+    &gt;&gt;&gt; import wubwub as wb
+
+    &gt;&gt;&gt; a = wb.Pattern([1, 1.25, 1.75, 2, 2.5], length=2)
+    &gt;&gt;&gt; a.on(42)
+    Pattern(pattern=SortedList([42, 42.25, 42.75, 43, 43.5]), length=2)
+
+    ```
+
+    &#39;&#39;&#39;
     return Pattern([(beat-1) + p for p in self.pattern], self.length)</code></pre>
 </details>
 </dd>
@@ -299,29 +734,123 @@ class Pattern:
 <span>def <span class="ident">onmeasure</span></span>(<span>self, measure, measurelen=None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Shift a Pattern of given number of measures.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>measure</code></strong> :&ensp;<code>int</code></dt>
+<dd>Measure number.</dd>
+<dt><strong><code>measurelen</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Number of beats in the measure. The default is None, in which case
+the Pattern length is used.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="wubwub.pattern.Pattern" href="#wubwub.pattern.Pattern">Pattern</a></code></dt>
+<dd>New Pattern.</dd>
+</dl>
+<h2 id="examples">Examples</h2>
+<pre><code class="python">&gt;&gt;&gt; import wubwub as wb
+
+&gt;&gt;&gt; a = wb.Pattern([1, 1.25, 1.75, 2, 2.5], length=2)
+&gt;&gt;&gt; a.onmeasure(3, measurelen=4)
+Pattern(pattern=SortedList([9, 9.25, 9.75, 10, 10.5]), length=2)
+
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def onmeasure(self, measure, measurelen=None):
+    &#39;&#39;&#39;
+    Shift a Pattern of given number of measures.
+
+    Parameters
+    ----------
+    measure : int
+        Measure number.
+    measurelen : int, optional
+        Number of beats in the measure. The default is None, in which case
+        the Pattern length is used.
+
+    Returns
+    -------
+    Pattern
+        New Pattern.
+
+    Examples
+    --------
+
+    ```python
+    &gt;&gt;&gt; import wubwub as wb
+
+    &gt;&gt;&gt; a = wb.Pattern([1, 1.25, 1.75, 2, 2.5], length=2)
+    &gt;&gt;&gt; a.onmeasure(3, measurelen=4)
+    Pattern(pattern=SortedList([9, 9.25, 9.75, 10, 10.5]), length=2)
+
+    ```
+
+    &#39;&#39;&#39;
     if measurelen == None:
         measurelen = self.length
-    return self.on(beat = 1 + (measure - 1) * measurelen)</code></pre>
+    return self.on(1 + (measure - 1) * measurelen)</code></pre>
 </details>
 </dd>
 <dt id="wubwub.pattern.Pattern.until"><code class="name flex">
 <span>def <span class="ident">until</span></span>(<span>self, beat)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Repeat the current pattern until a certain beat.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>beat</code></strong> :&ensp;<code>number</code></dt>
+<dd>Beat to repeat until.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="wubwub.pattern.Pattern" href="#wubwub.pattern.Pattern">Pattern</a></code></dt>
+<dd>New Pattern.</dd>
+</dl>
+<h2 id="examples">Examples</h2>
+<pre><code class="python">&gt;&gt;&gt; import wubwub as wb
+
+&gt;&gt;&gt; a = wb.Pattern([1, 2, 3, 4], length=4)
+&gt;&gt;&gt; a = wb.Pattern([1, 2, 3, 4], length=4)
+Pattern(pattern=SortedList([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]), length=16)
+
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def until(self, beat):
+    &#39;&#39;&#39;
+    Repeat the current pattern until a certain beat.
+
+    Parameters
+    ----------
+    beat : number
+        Beat to repeat until.
+
+    Returns
+    -------
+    Pattern
+        New Pattern.
+
+    Examples
+    --------
+
+    ```python
+    &gt;&gt;&gt; import wubwub as wb
+
+    &gt;&gt;&gt; a = wb.Pattern([1, 2, 3, 4], length=4)
+    &gt;&gt;&gt; a = wb.Pattern([1, 2, 3, 4], length=4)
+    Pattern(pattern=SortedList([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]), length=16)
+
+    ```
+
+    &#39;&#39;&#39;
     repeats, extra = divmod(beat, self.length)
-    return self.copy() * repeats + self.copy().chop(extra)</code></pre>
+    return self.copy() * repeats + self.copy().chop(extra + 1)</code></pre>
 </details>
 </dd>
 </dl>
