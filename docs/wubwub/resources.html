@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.1" />
 <title>wubwub.resources API documentation</title>
-<meta name="description" content="Created on Tue Feb
-9 10:13:26 2021 …" />
+<meta name="description" content="General functions/constants used by wubwub." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -23,9 +22,7 @@
 <h1 class="title">Module <code>wubwub.resources</code></h1>
 </header>
 <section id="section-intro">
-<p>Created on Tue Feb
-9 10:13:26 2021</p>
-<p>@author: earnestt1234</p>
+<p>General functions/constants used by wubwub.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -33,24 +30,21 @@
 <pre><code class="python">#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 &#34;&#34;&#34;
-Created on Tue Feb  9 10:13:26 2021
-
-@author: earnestt1234
+General functions/constants used by wubwub.
 &#34;&#34;&#34;
 
 import random
-
-import numpy as np
-
 
 SECOND = 1000
 MINUTE = 60 * SECOND
 
 def random_choice_generator(x):
+    &#39;&#39;&#39;Generate repeated random choices from `x`.&#39;&#39;&#39;
     while True:
         yield random.choice(x)
 
 def unique_name(base, others):
+    &#39;&#39;&#39;Generate a new name, checked against a list of names.&#39;&#39;&#39;
     c = 1
     name = base + str(c)
     while name in others:
@@ -70,12 +64,13 @@ def unique_name(base, others):
 <span>def <span class="ident">random_choice_generator</span></span>(<span>x)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Generate repeated random choices from <code>x</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def random_choice_generator(x):
+    &#39;&#39;&#39;Generate repeated random choices from `x`.&#39;&#39;&#39;
     while True:
         yield random.choice(x)</code></pre>
 </details>
@@ -84,12 +79,13 @@ def unique_name(base, others):
 <span>def <span class="ident">unique_name</span></span>(<span>base, others)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Generate a new name, checked against a list of names.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def unique_name(base, others):
+    &#39;&#39;&#39;Generate a new name, checked against a list of names.&#39;&#39;&#39;
     c = 1
     name = base + str(c)
     while name in others:
