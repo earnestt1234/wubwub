@@ -787,12 +787,12 @@ class Sequencer:
             The Figure containing the axes used.
 
         '''
-        sequencerplot(self,
-                      timesig=timesig,
-                      grid=grid,
-                      ax=ax,
-                      scatter_kwds=scatter_kwds,
-                      plot_kwds=plot_kwds)
+        return sequencerplot(self,
+                             timesig=timesig,
+                             grid=grid,
+                             ax=ax,
+                             scatter_kwds=scatter_kwds,
+                             plot_kwds=plot_kwds)
 
 
 def stitch(sequencers, internal_overhang=0, end_overhang=0, overhang_type='beats'):

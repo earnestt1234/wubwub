@@ -3,6 +3,7 @@
 """
 Various plots for visualizing the contents of a `wubwub.sequencer.Sequencer`.
 """
+
 from numbers import Number
 
 import matplotlib as mpl
@@ -13,10 +14,12 @@ from wubwub.errors import WubWubError
 from wubwub.pitch import pitch_from_semitones, relative_pitch_to_int
 from wubwub.resources import MINUTE
 
+# get the color cycle from mpl
 prop_cycle = plt.rcParams['axes.prop_cycle']
 colors = prop_cycle.by_key()['color']
 
 def _actual_soundlength(track, element):
+    '''Return how long a Note/Chord is based on the sample.'''
     mpb = 1 / track.get_bpm() * MINUTE
     clss = element.__class__.__name__
 
@@ -120,6 +123,7 @@ def sequencerplot(sequencer, timesig=4, grid=True, ax=None, scatter_kwds=None,
     ax.set_xticks(xticks)
     minor_locator = AutoMinorLocator(2)
     ax.xaxis.set_minor_locator(minor_locator)
+    print(ax.figure)
 
     return ax.figure
 
