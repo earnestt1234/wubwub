@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Feb  9 10:10:34 2021
-
-@author: earnestt1234
+Instrument classes for Sequencers in wubwub.
 """
 
 from abc import ABCMeta, abstractmethod
@@ -28,6 +26,7 @@ from wubwub.plots import trackplot, pianoroll
 from wubwub.resources import random_choice_generator, MINUTE, SECOND
 
 class SliceableDict:
+    '''Helper class to implement the "note slice" feature of Tracks.'''
     def __init__(self, d):
         self.d = d
 
@@ -55,6 +54,7 @@ class SliceableDict:
                              'slice, iterable, or boolean index.')
 
 class Track(metaclass=ABCMeta):
+    '''Generic Track class.'''
 
     handle_outside_notes = 'skip'
 
