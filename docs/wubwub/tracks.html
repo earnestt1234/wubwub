@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.1" />
 <title>wubwub.tracks API documentation</title>
-<meta name="description" content="Created on Tue Feb
-9 10:10:34 2021 …" />
+<meta name="description" content="Audio track classes for Sequencers in wubwub …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -23,9 +22,95 @@
 <h1 class="title">Module <code>wubwub.tracks</code></h1>
 </header>
 <section id="section-intro">
-<p>Created on Tue Feb
-9 10:10:34 2021</p>
-<p>@author: earnestt1234</p>
+<p>Audio track classes for Sequencers in wubwub.</p>
+<h1 id="tracks">Tracks</h1>
+<p>Tracks are the primary interface for creating and editing musical arrangements at the level of an individual instrument or sound.
+Sequencers (i.e. <code><a title="wubwub.sequencer.Sequencer" href="sequencer.html#wubwub.sequencer.Sequencer">Sequencer</a></code>) are populated with Tracks corresponding to instruments, and Tracks are populated with musical elements (notes and chords).
+All Tracks in wubwub are some kind of <em>sampler</em>; they load in an audio file and play it back with various manipulations (in pitch, volume, length, etc.).
+</p>
+<p>The following documentation will cover some of the major ideas behind Tracks, giving examples along the way.</p>
+<h2 id="module-structure">Module Structure</h2>
+<p>There is one major <code><a title="wubwub.tracks.Track" href="#wubwub.tracks.Track">Track</a></code> class which outlines the major functionalities of Tracks and defines the methods common to all flavors of Tracks in wubwub.
+Subclasses of this parent define more specific behaviors and constitute the objects which are actually interfaced with to make music.
+There are three major types of Track available to the user:</p>
+<ul>
+<li><code><a title="wubwub.tracks.Sampler" href="#wubwub.tracks.Sampler">Sampler</a></code> is the most basic Track, which takes in a single sample.</li>
+<li><code><a title="wubwub.tracks.MultiSampler" href="#wubwub.tracks.MultiSampler">MultiSampler</a></code> is similar to the Sampler, but can assign samples to different pitches.</li>
+<li><code><a title="wubwub.tracks.Arpeggiator" href="#wubwub.tracks.Arpeggiator">Arpeggiator</a></code> is similar to the Sampler in that it takes in one sample, but has specific methods designed for chord arpeggiation.</li>
+</ul>
+<h2 id="creating-tracks">Creating Tracks</h2>
+<p>Expect in rare cases, a Track must be connected with a <code><a title="wubwub.sequencer.Sequencer" href="sequencer.html#wubwub.sequencer.Sequencer">Sequencer</a></code>.
+The recommended approach is to initialize a Sequencer (i.e. a musical project/song) and then add Tracks (i.e. instruments/sounds) to it.
+There are specific Sequencer methods for creating Tracks:</p>
+<pre><code class="python">&gt;&gt;&gt; import wubwub as wb
+
+&gt;&gt;&gt; seq = wb.Sequencer(beats = 8, bpm = 100)
+&gt;&gt;&gt; kick = seq.add_sampler(sample='/my_samples/drums/kick.wav', name='kick')
+&gt;&gt;&gt; type(kick)
+&lt;class 'wubwub.tracks.Sampler'&gt;
+
+</code></pre>
+<p>In the above example, a Sequencer <code>seq</code> is initialized, and then the <code><a title="wubwub.sequencer.Sequencer.add_sampler" href="sequencer.html#wubwub.sequencer.Sequencer.add_sampler">Sequencer.add_sampler()</a></code> method is called to create a new Track.
+The Track is initialized by providing a path to an audio file (<code>sample</code>) and a string name for identifying the Track (<code>name</code>).
+Since it was created with the <code>add_sampler()</code> method, the Track is already linked to the <code>seq</code> Sequencer object.</p>
+<p>There are similar <code><a title="wubwub.sequencer.Sequencer.add_multisampler" href="sequencer.html#wubwub.sequencer.Sequencer.add_multisampler">Sequencer.add_multisampler()</a></code> and <code><a title="wubwub.sequencer.Sequencer.add_arpeggiator" href="sequencer.html#wubwub.sequencer.Sequencer.add_arpeggiator">Sequencer.add_arpeggiator()</a></code> methods for creating the other sorts of Tracks.
+But this "getting started" section will focus on the simple Sampler for now.</p>
+<p>The <code>sample</code> parameter can either be a system path to an audio file, or a <a href="https://github.com/jiaaro/pydub">pydub <code>AudioSegment</code></a> object (this is the type of object that the system paths are converted into).
+The latter option is utilized when working with the samples provided by <code><a title="wubwub.sounds" href="sounds.html">wubwub.sounds</a></code>:</p>
+<pre><code class="python">&gt;&gt;&gt; import wubwub.sounds as snd
+&gt;&gt;&gt; DRUMS = snd.load('drums.808')
+&gt;&gt;&gt; x = DRUMS['handclap'] # &lt;class 'pydub.audio_segment.AudioSegment'&gt;
+&gt;&gt;&gt; clap = seq.add_sampler(sample=x, name='clap')
+
+</code></pre>
+<h2 id="how-to-keep-track">How to keep &hellip; track</h2>
+<p>The Sequencer can help locate and manipulate its Tracks after creation.
+You can use indexing syntax to retrieve Tracks by name:</p>
+<pre><code class="python">&gt;&gt;&gt; seq['clap']
+Sampler(name=&quot;clap&quot;)
+
+</code></pre>
+<p>You can check all the Tracks contained within:</p>
+<pre><code class="python">&gt;&gt;&gt; seq.tracks()
+(Sampler(name=&quot;kick&quot;), Sampler(name=&quot;clap&quot;))
+
+&gt;&gt;&gt; seq.tracknames()
+['kick', 'clap']
+
+</code></pre>
+<p>There are several other methods documented under <code><a title="wubwub.sequencer.Sequencer" href="sequencer.html#wubwub.sequencer.Sequencer">Sequencer</a></code> which provide basic functionality for managing Tracks.
+If you need to delete or duplicate a Track, respectively look at <code><a title="wubwub.sequencer.Sequencer.delete_track" href="sequencer.html#wubwub.sequencer.Sequencer.delete_track">Sequencer.delete_track()</a></code> and <code><a title="wubwub.sequencer.Sequencer.duplicate_track" href="sequencer.html#wubwub.sequencer.Sequencer.duplicate_track">Sequencer.duplicate_track()</a></code>.</p>
+<p>A Track can also produce information about its parent Sequencer:</p>
+<pre><code class="python"># get the Sequencer itself
+&gt;&gt;&gt; clap.sequencer
+Sequencer(bpm=60, beats=60, tracks=2)
+
+# get the current BPM
+&gt;&gt;&gt; clap.get_bpm()
+60
+
+# or the number of beats
+&gt;&gt;&gt; clap.get_beats()
+8
+
+</code></pre>
+<h2 id="how-tracks-function">How Tracks function</h2>
+<p>Within a Sequencer, a Track records when and how its respective sample (or samples) should be played back.</p>
+<h3 id="the-notedict">The <code>notedict</code></h3>
+<p>All tracks have a <code>notedict</code> attribute for keeping track of musical directions.
+It is initialized as an empty <a href="http://www.grantjenks.com/docs/sortedcontainers/sorteddict.html">SortedDict</a>:</p>
+<pre><code class="python">&gt;&gt;&gt; kick.notedict()
+SortedDict({})
+
+</code></pre>
+<p>Each Track has its own:</p>
+<pre><code class="python">&gt;&gt;&gt; kick.notedict is clap.notedict
+False
+
+</code></pre>
+<p>Most of the creation in wubwub involves writing to the <code>notedict</code>, and there are several options for doing so (described in detail below).
+The keys for the <code>notedict</code> are numbers corresponding to sequencer pulses (i.e., musical beats), and the values are objects from the <code><a title="wubwub.notes" href="notes.html">wubwub.notes</a></code> module.</p>
+<h3 id="the-build-method">The <code>build</code> method</h3>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -33,9 +118,10 @@
 <pre><code class="python">#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 &#34;&#34;&#34;
-Created on Tue Feb  9 10:10:34 2021
+Audio track classes for Sequencers in wubwub.
 
-@author: earnestt1234
+.. include:: ../docs/tracks.md
+
 &#34;&#34;&#34;
 
 from abc import ABCMeta, abstractmethod
@@ -60,6 +146,7 @@ from wubwub.plots import trackplot, pianoroll
 from wubwub.resources import random_choice_generator, MINUTE, SECOND
 
 class SliceableDict:
+    &#39;&#39;&#39;Helper class to implement the &#34;note slice&#34; feature of Tracks.&#39;&#39;&#39;
     def __init__(self, d):
         self.d = d
 
@@ -87,6 +174,7 @@ class SliceableDict:
                              &#39;slice, iterable, or boolean index.&#39;)
 
 class Track(metaclass=ABCMeta):
+    &#39;&#39;&#39;Generic Track class.&#39;&#39;&#39;
 
     handle_outside_notes = &#39;skip&#39;
 
@@ -742,7 +830,7 @@ class Arpeggiator(SingleSampleTrack):
 <span>(</span><span>name, sample, sequencer, basepitch='C4', freq=0.5, method='up')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Generic Track class.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -969,7 +1057,7 @@ class Arpeggiator(SingleSampleTrack):
 <span>(</span><span>name, sequencer, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Generic Track class.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -993,7 +1081,7 @@ class Arpeggiator(SingleSampleTrack):
 <span>(</span><span>name, sequencer, overlap=True)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Generic Track class.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1184,7 +1272,7 @@ class Arpeggiator(SingleSampleTrack):
 <span>(</span><span>name, sample, sequencer, basepitch='C4', overlap=True)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Generic Track class.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1330,7 +1418,7 @@ class Arpeggiator(SingleSampleTrack):
 <span>(</span><span>name, sequencer, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Generic Track class.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1536,7 +1624,7 @@ class Arpeggiator(SingleSampleTrack):
 <span>(</span><span>name, sample, sequencer, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Generic Track class.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1594,12 +1682,13 @@ def sample(self):
 <span>(</span><span>d)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Helper class to implement the "note slice" feature of Tracks.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class SliceableDict:
+    &#39;&#39;&#39;Helper class to implement the &#34;note slice&#34; feature of Tracks.&#39;&#39;&#39;
     def __init__(self, d):
         self.d = d
 
@@ -1632,12 +1721,13 @@ def sample(self):
 <span>(</span><span>name, sequencer)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Generic Track class.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Track(metaclass=ABCMeta):
+    &#39;&#39;&#39;Generic Track class.&#39;&#39;&#39;
 
     handle_outside_notes = &#39;skip&#39;
 
@@ -2418,7 +2508,19 @@ def soundtest(self, duration=None, postprocess=True,):
 </header>
 <h1>Index</h1>
 <div class="toc">
-<ul></ul>
+<ul>
+<li><a href="#tracks">Tracks</a><ul>
+<li><a href="#module-structure">Module Structure</a></li>
+<li><a href="#creating-tracks">Creating Tracks</a></li>
+<li><a href="#how-to-keep-track">How to keep &hellip; track</a></li>
+<li><a href="#how-tracks-function">How Tracks function</a><ul>
+<li><a href="#the-notedict">The notedict</a></li>
+<li><a href="#the-build-method">The build method</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 </div>
 <ul id="index">
 <li><h3>Super-module</h3>

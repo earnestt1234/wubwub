@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Instrument classes for Sequencers in wubwub.
+Audio track classes for Sequencers in wubwub.
+
+.. include:: ../docs/tracks.md
+
 """
 
 from abc import ABCMeta, abstractmethod
