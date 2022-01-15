@@ -29,7 +29,7 @@ Sequencers (i.e. <code><a title="wubwub.sequencer.Sequencer" href="sequencer.htm
 All Tracks in wubwub are some kind of <em>sampler</em>; they load in an audio file and play it back with various manipulations (in pitch, volume, length, etc.).
 </p>
 <p>The following documentation will cover some of the major ideas behind Tracks, giving examples along the way.</p>
-<h2 id="module-structure">Module Structure</h2>
+<h2 id="module-structure">Module structure</h2>
 <p>There is one major <code><a title="wubwub.tracks.Track" href="#wubwub.tracks.Track">Track</a></code> class which outlines the major functionalities of Tracks and defines the methods common to all flavors of Tracks in wubwub.
 Subclasses of this parent define more specific behaviors and constitute the objects which are actually interfaced with to make music.
 There are three major types of Track available to the user:</p>
@@ -94,9 +94,7 @@ Sequencer(bpm=60, beats=60, tracks=2)
 8
 
 </code></pre>
-<h2 id="how-tracks-function">How Tracks function</h2>
-<p>Within a Sequencer, a Track records when and how its respective sample (or samples) should be played back.</p>
-<h3 id="the-notedict">The <code>notedict</code></h3>
+<h2 id="the-note-dictionary">The note dictionary</h2>
 <p>All tracks have a <code>notedict</code> attribute for keeping track of musical directions.
 It is initialized as an empty <a href="http://www.grantjenks.com/docs/sortedcontainers/sorteddict.html">SortedDict</a>:</p>
 <pre><code class="python">&gt;&gt;&gt; kick.notedict()
@@ -108,9 +106,27 @@ SortedDict({})
 False
 
 </code></pre>
-<p>Most of the creation in wubwub involves writing to the <code>notedict</code>, and there are several options for doing so (described in detail below).
-The keys for the <code>notedict</code> are numbers corresponding to sequencer pulses (i.e., musical beats), and the values are objects from the <code><a title="wubwub.notes" href="notes.html">wubwub.notes</a></code> module.</p>
-<h3 id="the-build-method">The <code>build</code> method</h3>
+<p>The keys for the <code>notedict</code> are numbers corresponding to sequencer pulses (i.e., musical beats), and the values are objects from the <code><a title="wubwub.notes" href="notes.html">wubwub.notes</a></code> module (i.e. "Notes" which determine the pitch, length, and volume of sample playback).
+When playing back or exporting a song, each Track looks at its own notedict to decide when and how to play back samples.</p>
+<h2 id="adding-notes">Adding notes</h2>
+<p>Most of the creation in wubwub involves writing to the note dictionary, and there are several options for doing so.
+You can simply access the <code>notedict</code> attribute and add to it, but there are other approaches which are more versatile.</p>
+<h3 id="track-specific-methods">Track specific methods</h3>
+<p>All Tracks have specific helper methods intended to simplify music writing.
+For most of these, the user provides where to create notes (i.e. what beats); the function then construct the <code><a title="wubwub.notes.Note" href="notes.html#wubwub.notes.Note">Note</a></code> and <code><a title="wubwub.notes.Chord" href="notes.html#wubwub.notes.Chord">Chord</a></code> objects and add them to the note dictionary in the correct places:</p>
+<pre><code class="python">&gt;&gt;&gt; kick.make_notes(beats = [1, 3, 5, 7])
+&gt;&gt;&gt; kick.pprint_notedict()
+{1: Note(pitch=0, length=1, volume=0),
+ 3: Note(pitch=0, length=1, volume=0),
+ 5: Note(pitch=0, length=1, volume=0),
+ 7: Note(pitch=0, length=1, volume=0)}
+
+</code></pre>
+<p>The notes were added to the <code>kick</code> Track note dictionary on the desired <code>beats</code>, and initialized with default pitch, length, and volume values which can be set by <code><a title="wubwub.tracks.SamplerLikeTrack.make_notes" href="#wubwub.tracks.SamplerLikeTrack.make_notes">SamplerLikeTrack.make_notes()</a></code>.
+The values themselves are all some sort of relative measurement (pitch is semitones relative to the original sample, length is beats relative to the Sequencer BPM, and volume is decibels relative to the original sample).
+</p>
+<p><audio controls="">
+<source src="../download.mp3" type="audio/mpeg"> Your browser does not support the audio element.</audio></p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2510,12 +2526,12 @@ def soundtest(self, duration=None, postprocess=True,):
 <div class="toc">
 <ul>
 <li><a href="#tracks">Tracks</a><ul>
-<li><a href="#module-structure">Module Structure</a></li>
+<li><a href="#module-structure">Module structure</a></li>
 <li><a href="#creating-tracks">Creating Tracks</a></li>
 <li><a href="#how-to-keep-track">How to keep &hellip; track</a></li>
-<li><a href="#how-tracks-function">How Tracks function</a><ul>
-<li><a href="#the-notedict">The notedict</a></li>
-<li><a href="#the-build-method">The build method</a></li>
+<li><a href="#the-note-dictionary">The note dictionary</a></li>
+<li><a href="#adding-notes">Adding notes</a><ul>
+<li><a href="#track-specific-methods">Track specific methods</a></li>
 </ul>
 </li>
 </ul>

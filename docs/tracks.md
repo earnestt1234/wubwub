@@ -4,7 +4,7 @@ Tracks are the primary interface for creating and editing musical arrangements a
 
 The following documentation will cover some of the major ideas behind Tracks, giving examples along the way.
 
-## Module Structure
+## Module structure
 
 There is one major `wubwub.tracks.Track` class which outlines the major functionalities of Tracks and defines the methods common to all flavors of Tracks in wubwub.  Subclasses of this parent define more specific behaviors and constitute the objects which are actually interfaced with to make music.  There are three major types of Track available to the user:
 
@@ -80,11 +80,7 @@ Sequencer(bpm=60, beats=60, tracks=2)
 
 ```
 
-## How Tracks function
-
-Within a Sequencer, a Track records when and how its respective sample (or samples) should be played back.
-
-### The `notedict` 
+## The note dictionary 
 
 All tracks have a `notedict` attribute for keeping track of musical directions.  It is initialized as an empty [SortedDict](http://www.grantjenks.com/docs/sortedcontainers/sorteddict.html):
 
@@ -102,7 +98,27 @@ False
 
 ```
 
-Most of the creation in wubwub involves writing to the `notedict`, and there are several options for doing so (described in detail below).  The keys for the `notedict` are numbers corresponding to sequencer pulses (i.e., musical beats), and the values are objects from the `wubwub.notes` module.
+The keys for the `notedict` are numbers corresponding to sequencer pulses (i.e., musical beats), and the values are objects from the `wubwub.notes` module (i.e. "Notes" which determine the pitch, length, and volume of sample playback).  When playing back or exporting a song, each Track looks at its own notedict to decide when and how to play back samples.
 
-### The `build` method
+## Adding notes
+
+Most of the creation in wubwub involves writing to the note dictionary, and there are several options for doing so.  You can simply access the `notedict` attribute and add to it, but there are other approaches which are more versatile.
+
+### Track specific methods
+
+All Tracks have specific helper methods intended to simplify music writing.  For most of these, the user provides where to create notes (i.e. what beats); the function then construct the `wubwub.notes.Note` and `wubwub.notes.Chord` objects and add them to the note dictionary in the correct places:
+
+```python
+>>> kick.make_notes(beats = [1, 3, 5, 7])
+>>> kick.pprint_notedict()
+{1: Note(pitch=0, length=1, volume=0),
+ 3: Note(pitch=0, length=1, volume=0),
+ 5: Note(pitch=0, length=1, volume=0),
+ 7: Note(pitch=0, length=1, volume=0)}
+
+```
+
+The notes were added to the `kick` Track note dictionary on the desired `beats`, and initialized with default pitch, length, and volume values which can be set by `wubwub.tracks.SamplerLikeTrack.make_notes()`.  The values themselves are all some sort of relative measurement (pitch is semitones relative to the original sample, length is beats relative to the Sequencer BPM, and volume is decibels relative to the original sample).
+
+
 
