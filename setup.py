@@ -18,11 +18,11 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 with open(path.join(this_directory, 'wubwub', '_version.py'), encoding='utf-8') as f:
     version = f.read().split('=')[1].strip('\'"')
 
-requirements = ['gdown',
-                'matplotlib',
-                'numpy',
-                'pydub',
-                'sortedcontainers']
+requirements = ['gdown>=4.5',
+                'matplotlib>=3.5',
+                'numpy>=1.21',
+                'pydub>=0.25',
+                'sortedcontainers>=2.4']
 
 setup(name='wubwub',
       version=version,
