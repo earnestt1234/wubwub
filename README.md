@@ -12,7 +12,7 @@ import wubwub as wb
 seq = wb.Sequencer(bpm=120, beats=8)
 ```
 
-Samples can be loaded into the sequencer in different tracks (with a name provided for easier access):
+Samples can be loaded into the sequencer in different tracks - typically the [Sampler](https://earnestt1234.github.io/wubwub/wubwub/tracks.html#wubwub.tracks.Sampler) track.  Names are provided for easier access:
 
 ```python
 kick = seq.add_sampler('sounds/kick1.wav', name='kick')
@@ -65,13 +65,14 @@ seq.export('my_beat.wav')
 ```
 
  ## Other features & functions to help create stuff...
-- Arpeggiator and multi-sampler tracks
-- Split a single sequencer, or join multiple together
-- Loop play
+- [Arpeggiator](https://earnestt1234.github.io/wubwub/wubwub/tracks.html#wubwub.tracks.Arpeggiator) and [multi-sampler](https://earnestt1234.github.io/wubwub/wubwub/tracks.html#wubwub.tracks.MultiSampler) tracks
+- [Split](https://earnestt1234.github.io/wubwub/wubwub/sequencer.html#wubwub.sequencer.Sequencer.split) a single sequencer, or [join](https://earnestt1234.github.io/wubwub/wubwub/sequencer.html#wubwub.sequencer.join) multiple together
+- [Loop play](https://earnestt1234.github.io/wubwub/wubwub/sequencer.html#wubwub.sequencer.Sequencer.loopplay)
 - Set the overall volume or panning of a track
-- Duplicate tracks, or copy/paste sections of a track
-- Create chords (by adding notes, or specifying their name)
-- Text diagrams and plots for visualizing the sequencer
+- [Duplicate tracks](https://earnestt1234.github.io/wubwub/wubwub/sequencer.html#wubwub.sequencer.Sequencer.duplicate_track), or [copy/paste](https://earnestt1234.github.io/wubwub/wubwub/tracks.html#wubwub.tracks.Track.copypaste) sections of a track
+- Create [chords](https://earnestt1234.github.io/wubwub/wubwub/notes.html) (by adding notes, or specifying their name)
+- [Text diagrams](https://earnestt1234.github.io/wubwub/wubwub/seqstring.html) and [plots](https://earnestt1234.github.io/wubwub/wubwub/plots.html) for visualizing the sequencer
+- [Downloadable sound library](https://earnestt1234.github.io/wubwub/wubwub/sounds.html)
 
 ## Gallery
 
@@ -84,13 +85,15 @@ The above examples are all created with samples from `wubwub.sounds`.  This modu
 
 ## Installation
 
-wubwub is not yet on PyPi, but it will be soon.  For now, you can clone this repo and `pip` install:
+You can clone this repo and `pip` install:
 
 ```
 git clone https://github.com/earnestt1234/wubwub
 cd wubwub
 pip install .
 ```
+
+There are currently not plans to put wubwub on PyPI, unless some of the rough edges of wubwub can be softened...
 
 You may also want to install other software to make full use of wubwub:
 
@@ -99,18 +102,19 @@ You may also want to install other software to make full use of wubwub:
 
 ## Documentation
 
-Full docstrings and example usage for wubwub are in the making.  For now, refer to the examples in the Gallery above if you would like to try playing around with wubwub.  Feel free to share any questions on the issues page.
+**Note: docstrings are a work in progress (see the [issues page](https://github.com/earnestt1234/wubwub/issues))**. 
+
+Access the [API documentation here](https://earnestt1234.github.io/wubwub/wubwub/index.html).  You can also refer to the examples in the Gallery above if you would like to try playing around with wubwub.  Feel free to share any questions on the issues page.
 
 ## Contributing
 
 There are a few ways you can help improve wubwub:
 
 - Use it and share any bugs or problems on the [issues page](https://github.com/earnestt1234/wubwub/issues).
-- Create something with wubwub (e.g. a small loop or musical vignette) that could be added to the example gallery.  Preferably, your example would only use sounds from `wubwub.sounds` so that others could reproduce it.  But if not, I may still want to share it.  There is an "example" issue label where you can share your example.
-- I would be thrilled about others also improving the code base; I am not very familiar with handling pull requests from others, but would be certainly interested in trying to incorporate them.
+- Create a pull request for any issues logged on on the [issues page](https://github.com/earnestt1234/wubwub/issues).  I am not very familiar with handling pull requests from others, but would be certainly interested in trying to incorporate them.
+- Create something with wubwub (e.g. a small loop or musical vignette) that could be added to the example gallery.  Preferably, your example would only use sounds from `wubwub.sounds` so that others could reproduce it.  But if not, I may still want to share it.  Add it to the issues page and tag it as an example.
 
 Immediate goals for wubwub in the future are to:
 
-- Add full function docstrings
-- Create HTML for the documentation, with more examples (likely using `pdoc`)
+- Add full function docstrings and examples
 - Add unit tests
