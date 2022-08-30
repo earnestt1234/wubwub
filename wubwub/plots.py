@@ -78,7 +78,7 @@ def sequencerplot(sequencer, timesig=4, grid=True, ax=None, scatter_kwds=None,
     seq.plot()
     ```
 
-    .. image:: https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png
+    ![]https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png
 
     '''
     if ax is None:
@@ -212,13 +212,13 @@ def trackplot(track, yaxis='semitones', timesig=4, grid=True, ax=None,
     seq['hinote1'].plot()
     ```
 
-    .. image:: https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png/electro_hinote1_trackplot_semitones.png
+    ![]https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png/electro_hinote1_trackplot_semitones.png
 
     ```python
     seq['hinote1'].plot(yaxis='pitch')
     ```
 
-    .. image:: https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png/electro_hinote1_trackplot_pitch.png
+    ![]https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png/electro_hinote1_trackplot_pitch.png
 
     '''
     if yaxis not in ['pitch', 'semitones', 'names']:
@@ -355,7 +355,7 @@ def pianoroll(track, timesig=4, grid=True,):
     seq['rhodes2'].pianoroll()
     ```
 
-    .. image:: https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png/lofi_rhodes2_pianoroll.png
+    ![]https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png/lofi_rhodes2_pianoroll.png
 
     '''
 
