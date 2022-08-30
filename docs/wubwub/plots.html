@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.1" />
+<meta name="generator" content="pdoc 0.10.0" />
 <title>wubwub.plots API documentation</title>
 <meta name="description" content="Various plots for visualizing the contents of a `wubwub.sequencer.Sequencer`." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -107,7 +107,7 @@ def sequencerplot(sequencer, timesig=4, grid=True, ax=None, scatter_kwds=None,
     seq.plot()
     ```
 
-    .. image:: ../../img/electro_seqplot.png
+    ![]https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png
 
     &#39;&#39;&#39;
     if ax is None:
@@ -241,13 +241,13 @@ def trackplot(track, yaxis=&#39;semitones&#39;, timesig=4, grid=True, ax=None,
     seq[&#39;hinote1&#39;].plot()
     ```
 
-    .. image:: ../../img/electro_hinote1_trackplot_semitones.png
+    ![]https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png/electro_hinote1_trackplot_semitones.png
 
     ```python
     seq[&#39;hinote1&#39;].plot(yaxis=&#39;pitch&#39;)
     ```
 
-    .. image:: ../../img/electro_hinote1_trackplot_pitch.png
+    ![]https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png/electro_hinote1_trackplot_pitch.png
 
     &#39;&#39;&#39;
     if yaxis not in [&#39;pitch&#39;, &#39;semitones&#39;, &#39;names&#39;]:
@@ -384,7 +384,7 @@ def pianoroll(track, timesig=4, grid=True,):
     seq[&#39;rhodes2&#39;].pianoroll()
     ```
 
-    .. image:: ../../img/lofi_rhodes2_pianoroll.png
+    ![]https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png/lofi_rhodes2_pianoroll.png
 
     &#39;&#39;&#39;
 
@@ -469,9 +469,9 @@ def pianoroll(track, timesig=4, grid=True,):
 </dl>
 <h2 id="examples">Examples</h2>
 <p>Example pianoroll plot for the <code>"rhodes2"</code> track in the "LoFi" example:</p>
-<pre><code class="python">seq['rhodes2'].pianoroll()
+<pre><code class="language-python">seq['rhodes2'].pianoroll()
 </code></pre>
-<p><img alt="" src="../../img/lofi_rhodes2_pianoroll.png"></p></div>
+<p>![]<a href="https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png/lofi_rhodes2_pianoroll.png">https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png/lofi_rhodes2_pianoroll.png</a></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -503,7 +503,7 @@ def pianoroll(track, timesig=4, grid=True,):
     seq[&#39;rhodes2&#39;].pianoroll()
     ```
 
-    .. image:: ../../img/lofi_rhodes2_pianoroll.png
+    ![]https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png/lofi_rhodes2_pianoroll.png
 
     &#39;&#39;&#39;
 
@@ -593,7 +593,7 @@ The default is None.</dd>
 <p>Example sequencerplot for the "Electro" example:</p>
 <pre><code>seq.plot()
 </code></pre>
-<p><img alt="" src="../../img/electro_seqplot.png"></p></div>
+<p>![]<a href="https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png">https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png</a></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -636,7 +636,7 @@ The default is None.</dd>
     seq.plot()
     ```
 
-    .. image:: ../../img/electro_seqplot.png
+    ![]https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png
 
     &#39;&#39;&#39;
     if ax is None:
@@ -738,12 +738,12 @@ The default is None.</dd>
 </dl>
 <h2 id="examples">Examples</h2>
 <p>Example track plots for the <code>"hinote1"</code> track in the "Electro" example:</p>
-<pre><code class="python">seq['hinote1'].plot()
+<pre><code class="language-python">seq['hinote1'].plot()
 </code></pre>
-<p><img alt="" src="../../img/electro_hinote1_trackplot_semitones.png"></p>
-<pre><code class="python">seq['hinote1'].plot(yaxis='pitch')
+<p>![]<a href="https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png/electro_hinote1_trackplot_semitones.png">https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png/electro_hinote1_trackplot_semitones.png</a></p>
+<pre><code class="language-python">seq['hinote1'].plot(yaxis='pitch')
 </code></pre>
-<p><img alt="" src="../../img/electro_hinote1_trackplot_pitch.png"></p></div>
+<p>![]<a href="https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png/electro_hinote1_trackplot_pitch.png">https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png/electro_hinote1_trackplot_pitch.png</a></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -795,13 +795,13 @@ The default is None.</dd>
     seq[&#39;hinote1&#39;].plot()
     ```
 
-    .. image:: ../../img/electro_hinote1_trackplot_semitones.png
+    ![]https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png/electro_hinote1_trackplot_semitones.png
 
     ```python
     seq[&#39;hinote1&#39;].plot(yaxis=&#39;pitch&#39;)
     ```
 
-    .. image:: ../../img/electro_hinote1_trackplot_pitch.png
+    ![]https://raw.githubusercontent.com/earnestt1234/wubwub/main/img/electro_seqplot.png/electro_hinote1_trackplot_pitch.png
 
     &#39;&#39;&#39;
     if yaxis not in [&#39;pitch&#39;, &#39;semitones&#39;, &#39;names&#39;]:
@@ -918,7 +918,7 @@ The default is None.</dd>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.9.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
 </footer>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.1" />
+<meta name="generator" content="pdoc 0.10.0" />
 <title>wubwub.notes API documentation</title>
 <meta name="description" content="Notes are objects representing musical notes in wubwub.
 They are akin to
@@ -39,11 +39,11 @@ There are also
 ArpChords, which are similar to Chords, but are intended to be specifically
 used by the <code><a title="wubwub.tracks.Arpeggiator" href="tracks.html#wubwub.tracks.Arpeggiator">Arpeggiator</a></code>.</p>
 <h1 id="examples">Examples</h1>
-<pre><code class="python">import wubwub as wb
+<pre><code class="language-python">import wubwub as wb
 </code></pre>
 <h2 id="making-notes">Making Notes</h2>
 <p>Notes are initialized with a pitch, length, and volume.</p>
-<pre><code class="python"># the most generic note
+<pre><code class="language-python"># the most generic note
 n = wb.Note(pitch=0, length=1, volume=0)
 </code></pre>
 <p><strong>Pitch</strong> can be any number (positive or negative, integer or float), which represents the amount of semitones to shift the pitch of the sample being played.
@@ -57,7 +57,7 @@ E.g:</p>
 </ul>
 <p>Using scientific pitch is only really useful if you know the original pitch of the sample (wubwub cannot detect it automatically).
 In this case, you will typically set the <code>basepitch</code> attribute of the Track associated with the sample:</p>
-<pre><code class="python">seq = wb.Sequencer(bpm=120, beats=8)
+<pre><code class="language-python">seq = wb.Sequencer(bpm=120, beats=8)
 
 # load a sample and encode its true pitch
 seq.add_sampler(sample='piano_A4.wav', basepitch='A4', name='piano')
@@ -69,13 +69,13 @@ How long one beat is is dependent on the BPM of the Sequencer.</p>
 So <code>volume=0</code> means the volume of the sample will not be changed (not that it will be inaudible).</p>
 <h2 id="notes-are-immutable">Notes are immutable</h2>
 <p>Once a note is initialized, it cannot be changed.</p>
-<pre><code class="python">n = wb.Note(pitch=0)
+<pre><code class="language-python">n = wb.Note(pitch=0)
 n.pitch = 2
 # AttributeError: 'Note' object doesn't support item assignment
 </code></pre>
 <p>In adding Notes to tracks, you are basically inserting a reference to a particular Note with a set pitch, length, and volume.
 Because of this, you can add one Note object to multiple Tracks and not have to worry about the object being altered:</p>
-<pre><code class="python">seq = wb.Sequencer(bpm=120, beats=8)
+<pre><code class="language-python">seq = wb.Sequencer(bpm=120, beats=8)
 
 seq.add_sampler(sample='synth1.wav', name='synth')
 seq.add_sampler(sample='saxophone.wav', name='sax')
@@ -87,14 +87,14 @@ seq['sax'][1] = note
 # if you could change the Note in synth1, it would change the note in synth2
 </code></pre>
 <p>To change a Note, you have to overwrite it:</p>
-<pre><code class="python">seq['synth'][1] = wb.Note(pitch=4, length=4, volume=1)
+<pre><code class="language-python">seq['synth'][1] = wb.Note(pitch=4, length=4, volume=1)
 </code></pre>
 <p>There is an <code>alter</code> method for producing a similar Note from an existing one:</p>
-<pre><code class="python">seq['sax'][1] = seq['sax'][0].alter(volume=0)
+<pre><code class="language-python">seq['sax'][1] = seq['sax'][0].alter(volume=0)
 # the length is still 8, but the volume has been changed from 2 to 0
 </code></pre>
 <p>Two different Notes will be seen as equal if their pitch, volume, and length, are all equal:</p>
-<pre><code class="python">a = wb.Note(pitch=0, length=4, volume=1)
+<pre><code class="language-python">a = wb.Note(pitch=0, length=4, volume=1)
 b = wb.Note(pitch=3, length=4, volume=1)
 
 a == b # False
@@ -106,27 +106,27 @@ a.alter(pitch='Bb2') == b.alter(pitch='Bb2') # True
 <p>Chords are essentially a list of Notes.
 They indicate that multiple Notes should be played at the same time on a given beat.
 You can make a Chord by gathering a few Notes:</p>
-<pre><code class="python">amaj = wb.Chord([
+<pre><code class="language-python">amaj = wb.Chord([
   wb.Note('A4'),
   wb.Note('C#5'),
   wb.Note('E5')
 ])
 </code></pre>
 <p>You can also add Notes together to similar effect:</p>
-<pre><code class="python">cmin = wb.Note('C5') + wb.Note('Eb5') + wb.Note('G5')
+<pre><code class="language-python">cmin = wb.Note('C5') + wb.Note('Eb5') + wb.Note('G5')
 </code></pre>
 <p>The Notes are store as a <a href="http://www.grantjenks.com/docs/sortedcontainers/sortedlist.html">SortedList</a>, in order to ensure equivalence when comparing two Chords:</p>
-<pre><code class="python">amaj.notes
+<pre><code class="language-python">amaj.notes
  # SortedKeyList([Note(pitch=A4, length=1, volume=0), Note(pitch=C#5, length=1, volume=0), Note(pitch=E5, length=1, volume=0)], key=&lt;function Chord.__init__.&lt;locals&gt;.keyfunc at 0x7fb6edc03430&gt;)
 </code></pre>
 <p>Some other dunder methods are implemented:</p>
-<pre><code class="python">amaj == cmin # False, checks if all the Notes of each Chord are equal
+<pre><code class="language-python">amaj == cmin # False, checks if all the Notes of each Chord are equal
 len(amaj)    # 3, the number of Notes
 iter(amaj)   # for iterating over the Notes of a Chord
 amaj[0]      # retrieve the first Note of the Chord
 </code></pre>
 <p>You can also add Chords to produce new ones:</p>
-<pre><code class="python">chord1 = wb.Note('D3') + wb.Note('F3')
+<pre><code class="language-python">chord1 = wb.Note('D3') + wb.Note('F3')
 chord2 = wb.Note('A3') + wb.Note('C4')
 dmin7 = chord1 + chord2
 </code></pre>
@@ -135,12 +135,12 @@ dmin7 = chord1 + chord2
 <p>There is an additional type of Chord (literally a subclass) called an ArpChord.
 It is mainly intended to be used with the Arpeggiator Track.
 The main difference between a Chord and an ArpChord is that an ArpChord also has a length for the whole chord:</p>
-<pre><code class="python">notes = [wb.Note('D3'), wb.Note('F3'), wb.Note('A3'), wb.Note('C4')]
+<pre><code class="language-python">notes = [wb.Note('D3'), wb.Note('F3'), wb.Note('A3'), wb.Note('C4')]
 arp = wb.ArpChord(notes, length=4)
 </code></pre>
 <p>Even if the individual Notes that make up an ArpChord have different lengths, this length attribute will be used when playing back the arpeggiation.</p>
 <p>A normal Chord can also be converted to an ArpChord:</p>
-<pre><code class="python">&gt;&gt;&gt; wb.ArpChord(dmin7, length=3)
+<pre><code class="language-python">&gt;&gt;&gt; wb.ArpChord(dmin7, length=3)
 ArpChord(pitches=['D3', 'F3', 'A3', 'C4'], length=3)
 </code></pre>
 <details class="source">
@@ -1576,7 +1576,7 @@ except where specified.</p>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.9.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
 </footer>
 </body>
 </html>
