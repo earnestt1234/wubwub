@@ -22,7 +22,8 @@ requirements = ['gdown>=4.5',
                 'matplotlib>=3.5',
                 'numpy>=1.21',
                 'pydub>=0.25',
-                'sortedcontainers>=2.4']
+                'sortedcontainers>=2.4',
+                'simpleaudio>=1.0.4']
 
 setup(name='wubwub',
       version=version,
