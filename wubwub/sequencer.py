@@ -716,7 +716,7 @@ class Sequencer:
         '''
         _, fmt = os.path.splitext(path)
         build = self.build(overhang, overhang_type)
-        build.export(path, format=fmt)
+        build.export(path, format=fmt[1:])
 
     def show(self, printout=True, name_cutoff=None, resolution=1,
              singlenote='■', multinote='■', empty='□', wrap=32):
