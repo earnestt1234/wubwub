@@ -687,7 +687,7 @@ class Sequencer:
             track.soundtest(postprocess=postprocess)
             time.sleep(gap)
 
-    def export(self, path, overhang=0, overhang_type='beats'):
+    def export(self, path, overhang=0, overhang_type='beats', fmt=None):
         '''
         Saves the rendered audio to a file.  The Sequencer creates
         a pydub AudioSegment which contains all Tracks overlaid,
@@ -714,7 +714,9 @@ class Sequencer:
         None.
 
         '''
-        _, fmt = os.path.splitext(path)
+        if fmt is None:
+            _, fmt = os.path.splitext(path)
+            fmt = fmt.lstrip('.')
         build = self.build(overhang, overhang_type)
         build.export(path, format=fmt)
 
